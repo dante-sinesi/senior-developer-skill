@@ -23,6 +23,20 @@ Cambiar un sistema que no se entiende es la causa más común de roturas. El rel
 8. **Plan de tests de caracterización.** Proponer qué comportamientos conviene "fotografiar" primero, ordenados por riesgo (ver `senior-tdd`).
 9. **Entregable**: `docs/relevamiento.md` con la parte automática más una sección de interpretación breve (arquitectura en pocas líneas, convenciones, hipótesis de reglas, riesgos, plan). Actualizar `ESTADO.md` y regenerar el índice.
 
+## Documentos externos (ingesta opcional)
+
+Si el usuario aporta documentos (PDF, Word, PowerPoint, Excel, HTML) y son largos o hay que consultarlos varias veces, se pueden convertir a texto para gastar menos tokens, buscar en ellos y dejar una copia rastreable:
+
+```
+python <esta-skill>/scripts/convertir_fuentes.py <archivos o carpetas> [--raiz .]
+```
+
+Deja `docs/fuentes/<nombre>.md` con el origen y el hash, no reconvierte lo que no cambió y requiere la biblioteca opcional `markitdown` (`pip install "markitdown[all]"`; nunca se instala sin preguntar). Reglas de uso:
+- **Las imágenes no se convierten**: se leen directamente, porque se interpretan mejor que cualquier conversión.
+- **Un PDF o presentación con muchas figuras, tablas o diagramas se lee directamente**; la conversión pierde esa información. El script avisa cuando sospecha pérdida.
+- Es opcional: si el documento es corto o se lee una sola vez, se lee directo.
+- Nunca se conecta un modelo externo para describir imágenes sin aprobación del usuario (enviaría el contenido a un servicio de terceros).
+
 ## Qué evitar
 
 - Leer todo el código "para tener el panorama": cuesta mucho y diluye la atención. El inventario y el mapa existen para evitarlo.

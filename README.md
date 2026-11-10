@@ -24,7 +24,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 |---|---|
 | `senior` | Puerta de entrada: principios, flujo de trabajo, puntos de control y el verificador (`verificar.py`) |
 | `senior-memoria` | Estado del proyecto, fichas de cambio, pendientes, índice y mapa de conceptos |
-| `senior-relevar` | Entender un sistema ajeno o heredado antes de modificarlo |
+| `senior-relevar` | Entender un sistema ajeno o heredado antes de modificarlo; ingesta opcional de documentos externos (PDF, Word, PowerPoint, Excel) a Markdown |
 | `senior-tdd` | Ciclo rojo-verde-refactor, código heredado, pruebas de interfaz y guardia de base de prueba |
 | `senior-refactor` | Detección de duplicación y refactor seguro |
 | `senior-docs` | Requisitos, diagramas legibles, decisiones de arquitectura y README |
@@ -40,6 +40,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 - Python 3.8 o superior (los scripts usan solo la biblioteca estándar).
 - Git. El CLI `gh` es necesario solo para trabajar con GitHub.
 - Opcional: `npm`, `composer` o `pip-audit` si se quiere la auditoría de dependencias.
+- Opcional: la biblioteca `markitdown` (`pip install "markitdown[all]"`) para convertir documentos externos con `senior-relevar/scripts/convertir_fuentes.py`. Nunca se instala sola, y las imágenes no se convierten: se leen directamente.
 
 ## Instalación
 

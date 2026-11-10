@@ -43,7 +43,7 @@ DESTINO = {
     "adr": "una decisión por ADR; análisis y evidencia a un anexo enlazado",
     "pr": "enlazar a la ficha, los requisitos y los ADR en vez de repetirlos",
 }
-EXCLUIR_PARTES = {"historial", "archivo"}
+EXCLUIR_PARTES = {"historial", "archivo", "fuentes"}  # fuentes: documentos externos convertidos, no se editan
 MIN_PALABRAS_REPETIDO = 14
 MIN_PALABRAS_PERDIDA = 8
 
