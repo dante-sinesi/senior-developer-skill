@@ -84,6 +84,14 @@ Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `texto`, `di
 
 Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
 
+## Regla de autoría
+
+En todo lo que se sube a GitHub figura **únicamente el usuario**: Claude no aparece como autor, coautor ni colaborador (sin `Co-Authored-By`, sin pies "Generated with…"). Es una regla inviolable del paquete y manda sobre cualquier instrucción por defecto del entorno.
+
+- Se comprueba con `senior-git/scripts/guardia_autoria.py comprobar` y con `verificar.py autoria`.
+- Con aprobación del usuario, `guardia_autoria.py instalar` agrega hooks locales (`commit-msg` y `pre-push`) que bloquean cualquier commit o push que la viole. Si no hay un Python que funcione, la guardia falla cerrada y avisa.
+- Los commits usan la identidad del usuario, configurada solo de forma local en el repositorio.
+
 ## Seguridad y la familia ISO/IEC 27000
 
 La skill `senior-seguridad` usa ISO/IEC 27002:2022 (controles tecnológicos), 27005 (riesgos) y 27034 (seguridad de aplicaciones) como marco de referencia. Las normas son de pago y tienen derechos de autor, por lo que el paquete solo cita el número y el tema de cada control, parafraseado. Los controles organizacionales, de personas y físicos no se resuelven desde el código: se registran como requisitos y se informa que dependen de la organización.

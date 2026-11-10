@@ -20,6 +20,8 @@ Chequeos (sin argumento corre "todo"):
               información perdida en docs/ (ver texto.py)
   diagramas   legibilidad de los diagramas Mermaid (ver diagramas.py)
   comentarios calidad de los comentarios del código modificado (ver comentarios.py)
+  autoria     REGLA INVIOLABLE: en los commits nuevos solo figura el usuario; sin
+              Claude, coautores ni pies de atribución (ver senior-git/scripts/guardia_autoria.py)
   seguridad   alertas por lenguaje, secretos, logs sensibles (ver seguridad.py)
               con --auditar suma el chequeo de dependencias (usa la red)
 
@@ -245,6 +247,25 @@ def chequeo_readme(raiz, args):
     return ["README: " + "; ".join(problemas) + "."], False
 
 
+def chequeo_autoria(raiz, args):
+    """Regla inviolable: en lo que se sube a GitHub figura únicamente el usuario."""
+    guardia = Path(__file__).resolve().parents[2] / "senior-git" / "scripts" / "guardia_autoria.py"
+    if not guardia.exists():
+        return ["Autoría: no se encontró senior-git/scripts/guardia_autoria.py."], False
+    if not es_repo(raiz):
+        return ["Autoría: no es un repositorio git (se omite)."], True
+    import importlib.util
+    espec = importlib.util.spec_from_file_location("guardia_autoria", guardia)
+    modulo = importlib.util.module_from_spec(espec)
+    espec.loader.exec_module(modulo)
+    lista = modulo.commits(raiz, modulo.rango_por_defecto(raiz, None))
+    problemas, avisos = modulo.revisar(raiz, lista)
+    if problemas:
+        return [f"Autoría: {len(problemas)} problemas (solo debe figurar el usuario):"] + \
+               [f"  {p}" for p in problemas[:10]], False
+    return [f"Autoría: {len(lista)} commits revisados, sin rastro de Claude ni coautores."], True
+
+
 def chequeo_comentarios(raiz, args):
     hallazgos, revisados, modo = comentarios.analizar(raiz, args.base)
     if modo == "sin-git":
@@ -291,7 +312,7 @@ def chequeo_seguridad(raiz, args):
 CHEQUEOS = {
     "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado,
     "docs": chequeo_docs, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
-    "comentarios": chequeo_comentarios, "seguridad": chequeo_seguridad,
+    "comentarios": chequeo_comentarios, "autoria": chequeo_autoria, "seguridad": chequeo_seguridad,
 }
 
 

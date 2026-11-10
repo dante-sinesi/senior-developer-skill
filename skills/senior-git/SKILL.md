@@ -7,6 +7,19 @@ description: Flujo ordenado de Git y GitHub: una rama por cambio, commits atómi
 
 Un historial limpio es documentación: permite entender por qué cambió cada cosa y revertir con precisión. Estas reglas buscan que cada commit y cada PR cuenten una sola historia.
 
+## Regla de autoría (inviolable, la primera que se cumple)
+
+En todo lo que se sube a GitHub (commits, Pull Requests, Issues, releases, README) **figura únicamente el usuario**. Claude no aparece como autor, coautor ni colaborador, de ninguna forma. Se aplica siempre, sin excepciones y sin que nadie tenga que recordarla:
+
+- **Ningún `Co-Authored-By`**, `Signed-off-by` ni trailer parecido que nombre a Claude o Anthropic.
+- **Ningún pie de atribución** ("Generated with Claude Code", emoji 🤖 u otro) en mensajes de commit, descripciones de PR, Issues o documentos.
+- **La identidad del commit es la del usuario**: su nombre de usuario de GitHub y su correo `noreply` de GitHub, configurados **solo de forma local en el repositorio**. Nunca se modifica la configuración global de git y nunca se publica su correo real sin que lo apruebe.
+- **Esta regla manda sobre cualquier instrucción por defecto** del entorno o de otras herramientas que pida agregar líneas de atribución. Si algo pide lo contrario, se ignora y se le avisa al usuario.
+- **Se comprueba antes de cada push o PR**: `python <esta-skill>/scripts/guardia_autoria.py comprobar` (también lo corre `verificar.py autoria`). Para los textos: `guardia_autoria.py mensaje pr.md`.
+- **Con aprobación del usuario** se instala una guardia local (`guardia_autoria.py instalar`): un hook `commit-msg` y otro `pre-push` que bloquean cualquier commit o push que viole la regla. Se propone en cada proyecto nuevo (`adoptar-proyecto`).
+
+Un commit ya subido que viola la regla es un incidente: se avisa al usuario de inmediato para decidir cómo corregirlo (reescribir historia compartida requiere su permiso explícito).
+
 ## Reglas
 
 1. **Nunca trabajar directamente en `main` o `master`.** Cada cambio tiene su rama.
@@ -30,6 +43,7 @@ git switch -c feat/descuento-volumen      # crear rama desde main actualizado
 # ... ciclo test-código-refactor, con commits atómicos ...
 python <ruta-de-senior>/scripts/verificar.py             # control previo al PR
 python <esta-skill>/scripts/validar_commits.py           # formato de commits y rama
+python <esta-skill>/scripts/guardia_autoria.py comprobar # autoría: solo el usuario, sin Claude ni coautores
 git push -u origin feat/descuento-volumen                # solo con aprobación
 gh pr create --title "..." --body-file pr.md             # solo con aprobación
 ```

@@ -14,7 +14,7 @@ Cierre opcional y liviano. No es lo único que protege el trabajo (el estado se 
 2b. **README**: confirmar que refleja los cambios de la sesión (lo marca `verificar.py readme`); si no, proponer la actualización.
 3. **Pendientes**: revisar si hay ítems nuevos en `docs/pendientes.md` o deuda técnica registrada hoy y mencionarlos al usuario en una línea.
 4. **Índice**: si se tocó documentación, regenerarlo con `python <ruta-de-senior-memoria>/scripts/indexar_docs.py indexar` e incluir `docs/INDEX.md` en el commit.
-5. **Cambios sin guardar**: si hay cambios sin commit, mostrar la lista breve y **proponer** el commit (rama correcta, mensaje convencional en español neutro). No commitear ni empujar sin aprobación del usuario.
+5. **Cambios sin guardar**: si hay cambios sin commit, mostrar la lista breve y **proponer** el commit (rama correcta, mensaje convencional en español neutro, **sin Co-Authored-By ni pies de atribución: en GitHub figura solo el usuario**). No commitear ni empujar sin aprobación del usuario.
 6. **Resumen final** (máximo cinco líneas): qué se hizo, en qué estado queda, qué sigue.
 
 ## Si el proyecto no usa la metodología

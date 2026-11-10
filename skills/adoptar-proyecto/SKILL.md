@@ -23,7 +23,7 @@ Es el arranque ordenado: en lugar de imponer toda la metodología de golpe, se m
 4. **Completar a mano lo que el script no puede inferir**:
    - **Proyecto nuevo**: preguntar el stack y la herramienta de tests (perfil en `senior-lenguajes`), registrar el primer ADR con el stack elegido, completar las secciones marcadas `(completar)` del README y dejar la regla de ramas y commits (`senior-git`).
    - **Proyecto existente**: seguir `senior-relevar` (lectura dirigida, convenciones, riesgos), presentar al usuario las **reglas de negocio hipotéticas** para que las confirme (nunca se documentan como verdad por inferencia), proponer los tests de caracterización prioritarios (`senior-tdd`) y revisar la seguridad inicial (`verificar.py seguridad`).
-5. **Propuestas que requieren aprobación aparte**: el hook de apertura (`senior-memoria`), la plantilla de Pull Request de GitHub y la inicialización de git si el proyecto no es un repositorio.
+5. **Propuestas que requieren aprobación aparte**: la **guardia de autoría** (hooks locales que impiden subir commits con Claude o coautores: `senior-git/scripts/guardia_autoria.py instalar`), el hook de apertura (`senior-memoria`), la plantilla de Pull Request de GitHub y la inicialización de git si el proyecto no es un repositorio.
 6. **Cerrar**: `verificar.py`, actualizar `docs/ESTADO.md` con el punto de partida y mostrar al usuario un resumen de cinco líneas.
 
 ## Costo orientativo

@@ -73,6 +73,7 @@ def construir_plan(info, tipo):
     else:
         plan.append(("manual", "Preguntar el stack y la herramienta de tests; registrar el primer ADR"))
     plan.append(("auto", "Generar el índice de documentación (docs/INDEX.md)"))
+    plan.append(("propuesta", "Guardia de autoría (hooks locales): impide subir commits con Claude o coautores; en GitHub figura solo el usuario"))
     plan.append(("propuesta", "Hook de apertura que carga ESTADO.md (requiere aprobación aparte)"))
     plan.append(("propuesta", "Plantilla de Pull Request de GitHub (.github/pull_request_template.md)"))
     if not info["git"]:

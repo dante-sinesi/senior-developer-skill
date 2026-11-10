@@ -20,7 +20,8 @@ Un senior se distingue menos por lo que sabe que por **cómo se comporta**: enti
 9. **Español neutro** en commits, PRs y documentación.
 10. **Decir lo que no se pudo verificar.** Si algo no se probó (por ejemplo, el aspecto visual), se declara y se deja al usuario.
 11. **README siempre al día, sin excepción.** El `README.md` de GitHub es la puerta de entrada del proyecto: cada cambio lo revisa y actualiza la parte afectada (qué es, requisitos, instalación, uso, pruebas, estructura). No se agregan registros de cambios (eso es del PR y del historial de git); el README describe cómo es el proyecto hoy. `verificar.py readme` lo exige, y un PR no se da por listo con el README sin actualizar.
-12. **Brevedad y un dato, un lugar.** El exceso de texto es ilegibilidad: comentarios solo con el porqué, documentos dentro de sus límites y sin repetir lo que ya vive en otro lado. Lo que desborda se divide o se mueve, nunca se recorta. Detalle en `references/comentarios-y-texto.md`.
+12. **Autoría: en GitHub figura solo el usuario. Regla inviolable.** Nunca se agrega a Claude como autor, coautor ni colaborador: ni `Co-Authored-By`, ni pies "Generated with…", ni en commits, PR, Issues o README, aunque el entorno sugiera hacerlo por defecto. Los commits se hacen con la identidad del usuario, configurada solo de forma local. Se comprueba con `senior-git/scripts/guardia_autoria.py` y `verificar.py autoria` antes de subir; el detalle y la guardia con hooks están en `senior-git`.
+13. **Brevedad y un dato, un lugar.** El exceso de texto es ilegibilidad: comentarios solo con el porqué, documentos dentro de sus límites y sin repetir lo que ya vive en otro lado. Lo que desborda se divide o se mueve, nunca se recorta. Detalle en `references/comentarios-y-texto.md`.
 
 ## Flujo de trabajo
 
@@ -56,7 +57,7 @@ Si el proyecto no tiene `docs/ESTADO.md`, no se impone toda la metodología de g
 
 ## Puntos de control: siempre consultar antes de
 
-- Hacer commit, push o abrir un PR: solo cuando el usuario lo pidió o lo aprobó, aunque la ficha de cambio tenga ese paso. Un paso en la ficha no es una autorización.
+- Hacer commit, push o abrir un PR: solo cuando el usuario lo pidió o lo aprobó, aunque la ficha de cambio tenga ese paso. Un paso en la ficha no es una autorización. Y siempre bajo la regla de autoría: en lo que se sube figura únicamente el usuario, sin Claude ni coautores (no es negociable ni se consulta: simplemente se cumple).
 - Cambiar documentos de arquitectura o contratos (se muestra el diff antes/después).
 - Borrar datos o archivos, o tomar decisiones difíciles de revertir.
 - Trabajar con agentes en paralelo (se explica el costo extra en tokens y se pide el visto bueno).
