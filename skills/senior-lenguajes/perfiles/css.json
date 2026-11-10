@@ -1,0 +1,17 @@
+{
+  "lenguaje": "css",
+  "extensiones": [".css", ".scss", ".sass", ".less"],
+  "simbolos": [],
+  "tests": {
+    "herramienta": "stylelint (análisis estático) y Playwright para regresión visual puntual",
+    "instalar": "npm install --save-dev stylelint stylelint-config-standard",
+    "comando": "npx stylelint \"**/*.css\"",
+    "patron_archivos": "no aplica",
+    "nota": "CSS no tiene tests unitarios; se verifica con análisis estático y, si hace falta, capturas de pantalla comparadas."
+  },
+  "convenciones": [
+    "Respetar primero las convenciones ya presentes en el proyecto.",
+    "Sin convenciones previas: nombres de clase consistentes, variables CSS para colores y espaciados, evitar !important y selectores muy anidados."
+  ],
+  "alertas_seguridad": []
+}

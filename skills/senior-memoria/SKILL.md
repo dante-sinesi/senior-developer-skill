@@ -1,0 +1,71 @@
+---
+name: senior-memoria
+description: Memoria persistente del proyecto dentro del repositorio (docs/): estado, fichas de cambio, bandeja de pendientes, deuda técnica, y un índice con mapa de conceptos para recuperar información sin leer todo. Usar al abrir una sesión o retomar un proyecto, al terminar un hito, al notar algo fuera de alcance, al registrar una decisión, o cuando haya que ubicar un requisito, concepto o archivo en un proyecto con documentación. También para proponer el hook de apertura automática. Úsala aunque el usuario no hable de "memoria", cada vez que el trabajo pueda cortarse o continuarse en otra sesión.
+---
+
+# Memoria del proyecto
+
+Las conversaciones se pierden; el repositorio no. Todo lo que una sesión futura necesite para continuar vive en `docs/`. El diseño busca tres cosas: no perder el contexto entre sesiones, no perder lo que se nota de pasada, y no perder lo que quedó a medias.
+
+## Piezas
+
+| Pieza | Archivo | Para qué |
+|---|---|---|
+| Estado | `docs/ESTADO.md` | Dónde estamos, próximo paso, bloqueos. Corto. |
+| Ficha de cambio | `docs/cambios/AAAA-MM-DD-nombre.md` | Un cambio mediano o grande con alcance y pasos con casillas. |
+| Bandeja de pendientes | `docs/pendientes.md` | Lo notado fuera de alcance. |
+| Deuda técnica | `docs/deuda-tecnica.md` | Decisiones pospuestas, siempre con `motivo:`. |
+| Decisiones | `docs/decisiones/ADR-000.md` | El porqué de decisiones importantes (ver `senior-docs`). |
+| Índice y mapa | `docs/INDEX.md`, `docs/.grafo.json` | Navegar sin leer todo. Se regeneran con el script. |
+
+Las plantillas están en `plantillas/`. Si el proyecto no tiene `docs/`, `senior-docs` la crea con `scripts/iniciar_docs.py` (nunca pisa archivos existentes).
+
+## Protocolo de inicio de sesión
+
+1. Leer `docs/ESTADO.md`. Si está instalado el hook de apertura, ya llegó como contexto.
+2. Si hay una ficha "en curso", leer solo sus pasos abiertos.
+3. Para ubicar un concepto, **no leer documentos completos**: consultar el mapa.
+   ```
+   python <esta-skill>/scripts/indexar_docs.py consultar <término>
+   python <esta-skill>/scripts/indexar_docs.py vecinos <id>
+   ```
+4. Resumir al usuario en dos o tres líneas dónde se quedó y proponer el siguiente paso.
+
+## Guardado continuo (cada hito, no al final)
+
+Un cierre brusco (Alt+F4, apagón) no ejecuta ningún hook, así que el estado no puede depender del cierre. Actualizar `ESTADO.md` y la ficha cuando:
+- un test pasa de rojo a verde,
+- se hace un commit,
+- se marca un paso de la ficha,
+- aparece un bloqueo o una pregunta para el usuario.
+
+Cada actualización es breve (una o dos líneas); no se reescribe el documento.
+
+## Fuera de alcance: a la bandeja, no al olvido
+
+Si se nota una duplicación, un bug o una mejora mientras se trabaja en otra cosa, se anota en `docs/pendientes.md` con fecha y lugar. No se arregla de paso (minimalismo) y tampoco se pierde. Al cerrar, mencionarlo al usuario.
+
+## Cuando ESTADO.md crece
+
+`ESTADO.md` es una foto del presente (máximo 60 líneas), no un diario. Lo que envejece sale sin perderse: los cambios chicos antiguos y los bloqueos resueltos pasan a `docs/historial/AAAA-MM.md`, las decisiones a un ADR y el detalle del trabajo en curso a su ficha. En `ESTADO.md` queda solo un enlace. Al cerrar una ficha, se archiva en `docs/historial/` con un resumen de tres líneas. `verificar.py texto` avisa si algo se perdió.
+
+## Fichas escalonadas
+
+- Cambio trivial o chico: una línea en la sección "Cambios chicos recientes" de `ESTADO.md`.
+- Cambio mediano o grande: ficha propia con `## Alcance` y pasos. La ficha pasa a `Estado: terminado` al cerrarse.
+
+## Índice y mapa de conceptos
+
+`scripts/indexar_docs.py` (solo biblioteca estándar):
+- `indexar`: genera `docs/INDEX.md` y `docs/.grafo.json`. Une documentos, requisitos (RN-001, RF-012…), tests y código por enlaces `[[id]]` y por IDs citados en el código; suma clases, funciones y tablas detectadas con los perfiles de `senior-lenguajes`. Marca requisitos sin test e IDs usados sin documento.
+- `consultar <término>` y `vecinos <id>`: navegan el mapa sin leer todo.
+
+Regenerar el índice con `indexar` después de tocar documentación; `verificar.py docs` solo lo revisa y nunca modifica archivos. `docs/INDEX.md` se versiona junto con el cambio (su salida no tiene fechas, así que no ensucia el historial); `docs/.grafo.json` es regenerable y `iniciar_docs.py` lo deja ignorado en `docs/.gitignore`.
+
+## Hook de apertura (opcional, con aprobación)
+
+El script `scripts/cargar_estado.py` imprime un resumen del estado. Como hook `SessionStart` de Claude Code hace que cada sesión arranque sabiendo dónde quedó el trabajo. Es **el único hook recomendado**. Proponerlo al usuario y, si acepta, configurarlo con la skill `update-config`; nunca instalarlo sin su aprobación. Si no hay `docs/ESTADO.md`, el script no imprime nada.
+
+## Cierre ordenado
+
+El comando `/cerrar-sesion` (skill `cerrar-sesion`) hace el cierre completo, pero es opcional: el guardado continuo ya protege lo esencial.

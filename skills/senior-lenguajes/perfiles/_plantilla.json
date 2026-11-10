@@ -1,0 +1,29 @@
+{
+  "lenguaje": "nombre-en-minusculas",
+  "extensiones": [".ext"],
+  "simbolos": [
+    {"tipo": "funcion", "patron": "expresión regular con UN grupo de captura que devuelve el nombre"}
+  ],
+  "tests": {
+    "herramienta": "herramienta de tests estándar del lenguaje",
+    "instalar": "comando de instalación o 'ninguna'",
+    "comando": "comando que ejecuta toda la suite",
+    "patron_archivos": "patrón de nombre de los archivos de test",
+    "nota": "aclaraciones"
+  },
+  "convenciones": [
+    "Respetar primero las convenciones ya presentes en el proyecto.",
+    "Convención estándar de la comunidad, si no hay otra."
+  ],
+  "alertas_seguridad": [
+    {
+      "id": "SEC-NOMBRE",
+      "descripcion": "Qué riesgo representa y cómo se corrige.",
+      "patron": "regex que se evalúa línea por línea",
+      "excepto_linea": "regex opcional: si la línea también lo cumple, no se marca",
+      "archivo_requiere": "regex opcional: el archivo debe cumplirlo para evaluar la regla",
+      "archivo_ausente": "regex opcional: se marca el archivo si esto NO aparece (regla de ausencia)",
+      "iso": "número de control ISO/IEC 27002:2022, ej. 8.28"
+    }
+  ]
+}

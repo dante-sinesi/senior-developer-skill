@@ -1,0 +1,42 @@
+{
+  "lenguaje": "javascript",
+  "extensiones": [".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx"],
+  "simbolos": [
+    {"tipo": "clase", "patron": "^\\s*(?:export\\s+)?(?:default\\s+)?(?:abstract\\s+)?class\\s+(\\w+)"},
+    {"tipo": "funcion", "patron": "^\\s*(?:export\\s+)?(?:default\\s+)?(?:async\\s+)?function\\s*\\*?\\s*(\\w+)"},
+    {"tipo": "funcion", "patron": "^\\s*(?:export\\s+)?const\\s+(\\w+)\\s*=\\s*(?:async\\s*)?(?:\\([^)]*\\)|\\w+)\\s*=>"}
+  ],
+  "tests": {
+    "herramienta": "node:test (Node 18 o superior)",
+    "instalar": "ninguna: viene con Node",
+    "comando": "node --test",
+    "patron_archivos": "*.test.js",
+    "nota": "Si el proyecto ya usa Jest o Vitest, usar esa. Para pruebas de interfaz automatizadas, Playwright (ejecución sin ventana, salida resumida)."
+  },
+  "convenciones": [
+    "Respetar primero las convenciones ya presentes en el proyecto.",
+    "Sin convenciones previas: ES modules, const por defecto, funciones pequeñas y puras donde sea posible.",
+    "La lógica de negocio va en funciones probables sin DOM; la interfaz solo la invoca."
+  ],
+  "alertas_seguridad": [
+    {
+      "id": "SEC-XSS-INNERHTML",
+      "descripcion": "Dato dinámico insertado como HTML sin escapar (XSS); usar textContent o escapar/sanear.",
+      "patron": "\\.(innerHTML|outerHTML)\\s*\\+?=\\s*[^;]*(\\$\\{|\\+)|insertAdjacentHTML\\s*\\([^,]+,\\s*[^)]*(\\$\\{|\\+)|document\\.write\\s*\\(",
+      "excepto_linea": "escaparHtml|escapeHtml|DOMPurify|sanitize|textContent",
+      "iso": "8.28"
+    },
+    {
+      "id": "SEC-EVAL",
+      "descripcion": "Ejecución dinámica de código (eval o new Function).",
+      "patron": "\\beval\\s*\\(|new\\s+Function\\s*\\(",
+      "iso": "8.28"
+    },
+    {
+      "id": "SEC-SQL-CONCAT",
+      "descripcion": "SQL armado con datos concatenados o interpolados; usar consultas parametrizadas.",
+      "patron": "(?i)(select\\s.+\\sfrom|insert\\s+into|update\\s+\\w+\\s+set|delete\\s+from).*(\\$\\{|[\"'`]\\s*\\+)",
+      "iso": "8.28"
+    }
+  ]
+}

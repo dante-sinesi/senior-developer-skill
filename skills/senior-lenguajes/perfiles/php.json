@@ -1,0 +1,57 @@
+{
+  "lenguaje": "php",
+  "extensiones": [".php"],
+  "simbolos": [
+    {"tipo": "clase", "patron": "^\\s*(?:abstract\\s+|final\\s+)?class\\s+(\\w+)"},
+    {"tipo": "interfaz", "patron": "^\\s*interface\\s+(\\w+)"},
+    {"tipo": "trait", "patron": "^\\s*trait\\s+(\\w+)"},
+    {"tipo": "funcion", "patron": "^\\s*(?:(?:public|protected|private|static|final|abstract)\\s+)*function\\s+&?(\\w+)"}
+  ],
+  "tests": {
+    "herramienta": "PHPUnit",
+    "instalar": "composer require --dev phpunit/phpunit",
+    "comando": "vendor/bin/phpunit",
+    "patron_archivos": "*Test.php",
+    "nota": "Si el proyecto ya usa Pest u otra herramienta, usar esa."
+  },
+  "convenciones": [
+    "Respetar primero las convenciones ya presentes en el proyecto.",
+    "Sin convenciones previas: PSR-12 para estilo y PSR-4 para carga de clases.",
+    "Consultas siempre preparadas (PDO o equivalente); nunca concatenar datos externos en SQL."
+  ],
+  "alertas_seguridad": [
+    {
+      "id": "SEC-SQL-CONCAT",
+      "descripcion": "SQL armado con variables concatenadas o interpoladas; usar consultas preparadas.",
+      "patron": "(?i)(select\\s.+\\sfrom|insert\\s+into|update\\s+\\w+\\s+set|delete\\s+from)[^;\\n]*(\\$\\w+|[\"']\\s*\\.\\s*\\$)",
+      "iso": "8.28"
+    },
+    {
+      "id": "SEC-XSS-ECHO",
+      "descripcion": "Dato de la petición impreso sin escapar (XSS); usar htmlspecialchars.",
+      "patron": "echo\\s+[^;]*\\$_(GET|POST|REQUEST|COOKIE)",
+      "excepto_linea": "htmlspecialchars|htmlentities|intval|\\(int\\)",
+      "iso": "8.28"
+    },
+    {
+      "id": "SEC-SECRETO-SERIALIZADO",
+      "descripcion": "Posible secreto (contraseña, hash, token) incluido en datos que se serializan hacia el cliente.",
+      "patron": "['\"](password|contrasena|contraseña|pass|clave|hash|token|secret)\\w*['\"]\\s*=>",
+      "archivo_requiere": "jsonSerialize|json_encode",
+      "iso": "8.28"
+    },
+    {
+      "id": "SEC-SIN-SESION-CSRF",
+      "descripcion": "El archivo procesa datos de la petición pero no muestra chequeo de sesión, autenticación ni token CSRF.",
+      "archivo_requiere": "\\$_(POST|GET|REQUEST)",
+      "archivo_ausente": "(?i)(csrf|session|sesion|auth|login)",
+      "iso": "8.5"
+    },
+    {
+      "id": "SEC-DESPACHO-DINAMICO",
+      "descripcion": "Ejecución dinámica de código o métodos a partir de un valor variable; exigir lista blanca.",
+      "patron": "\\$this->\\$\\w+\\s*\\(|\\$\\$\\w+|call_user_func(_array)?\\s*\\(\\s*\\$_(GET|POST|REQUEST)|\\beval\\s*\\(",
+      "iso": "8.28"
+    }
+  ]
+}

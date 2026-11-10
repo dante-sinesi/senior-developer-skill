@@ -1,0 +1,41 @@
+{
+  "lenguaje": "sql",
+  "extensiones": [".sql"],
+  "simbolos": [
+    {"tipo": "tabla", "patron": "(?i)create\\s+table\\s+(?:if\\s+not\\s+exists\\s+)?[`\"\\[]?(\\w+)"},
+    {"tipo": "vista", "patron": "(?i)create\\s+(?:or\\s+replace\\s+)?view\\s+[`\"\\[]?(\\w+)"},
+    {"tipo": "procedimiento", "patron": "(?i)create\\s+(?:or\\s+replace\\s+)?(?:procedure|function)\\s+[`\"\\[]?(\\w+)"}
+  ],
+  "tests": {
+    "herramienta": "pruebas desde el lenguaje de la aplicación contra una base de prueba",
+    "instalar": "según el motor; opciones de nicho: pgTAP (PostgreSQL), tSQLt (SQL Server)",
+    "comando": "el de la herramienta de tests del lenguaje anfitrión",
+    "patron_archivos": "según el lenguaje anfitrión",
+    "nota": "Nunca ejecutar pruebas contra la base de desarrollo ni de producción: usar scripts/guardia_bd_prueba.py de senior-tdd."
+  },
+  "convenciones": [
+    "Respetar primero las convenciones ya presentes en el proyecto.",
+    "Cambios de esquema versionados y repetibles (scripts incrementales o migraciones).",
+    "Claves foráneas y restricciones explícitas; nombres consistentes."
+  ],
+  "alertas_seguridad": [
+    {
+      "id": "SEC-SQL-SECRETO",
+      "descripcion": "Contraseña escrita en claro dentro de un script SQL.",
+      "patron": "(?i)identified\\s+by\\s+['\"][^'\"]+['\"]",
+      "iso": "8.24"
+    },
+    {
+      "id": "SEC-SQL-PRIVILEGIOS",
+      "descripcion": "Privilegios excesivos (GRANT ALL); aplicar mínimo privilegio.",
+      "patron": "(?i)grant\\s+all\\s+privileges",
+      "iso": "8.2"
+    },
+    {
+      "id": "SEC-SQL-DINAMICO",
+      "descripcion": "SQL dinámico armado con concatenación dentro de la base; riesgo de inyección.",
+      "patron": "(?i)\\bprepare\\b.*concat\\s*\\(|\\bexec(ute)?\\s*\\(?\\s*@\\w+",
+      "iso": "8.28"
+    }
+  ]
+}

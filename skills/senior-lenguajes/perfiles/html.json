@@ -1,0 +1,31 @@
+{
+  "lenguaje": "html",
+  "extensiones": [".html", ".htm"],
+  "simbolos": [],
+  "tests": {
+    "herramienta": "Playwright (pruebas de interfaz automatizadas) y html-validate (validación estática)",
+    "instalar": "npm install --save-dev @playwright/test html-validate",
+    "comando": "npx playwright test --reporter=line",
+    "patron_archivos": "*.spec.js",
+    "nota": "Pocos recorridos críticos, sin ventana, salida resumida. La lógica va en funciones probadas aparte."
+  },
+  "convenciones": [
+    "Respetar primero las convenciones ya presentes en el proyecto.",
+    "HTML semántico, atributos alt en imágenes, etiquetas asociadas a cada campo de formulario.",
+    "Sin estilos ni scripts incrustados cuando el proyecto ya tiene archivos separados."
+  ],
+  "alertas_seguridad": [
+    {
+      "id": "SEC-HTML-BLANK-SIN-REL",
+      "descripcion": "Enlace con target=_blank sin rel=noopener (el destino puede controlar la pestaña de origen).",
+      "patron": "target=[\"']_blank[\"'](?![^>]*rel=)",
+      "iso": "8.28"
+    },
+    {
+      "id": "SEC-HTML-FORM-HTTP",
+      "descripcion": "Formulario que envía datos por HTTP sin cifrar.",
+      "patron": "<form[^>]*action=[\"']http://",
+      "iso": "8.24"
+    }
+  ]
+}
