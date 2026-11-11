@@ -80,6 +80,8 @@ python <esta-skill>/scripts/verificar.py tamano
 
 Si el proyecto no tiene `docs/ESTADO.md`, no se impone toda la metodología de golpe: se trabaja con lo que haya y se **propone** crear la base documental (`senior-docs`) cuando el usuario quiera.
 
+**Escala del proyecto: se pregunta una sola vez.** Si `docs/ESTADO.md` existe y no declara escala, se le pregunta al usuario de qué escala es el proyecto (pequeño, mediano o grande), mostrando qué incluye cada nivel con `python <esta-skill>/scripts/escala.py niveles`, y se registra con `escala.py fijar <nivel>`. Después **no se vuelve a preguntar**: si el proyecto crece, `escala.py evolucionar` (que corre también `escala.py estado`, al abrir y en `/cerrar-sesion`) sube la escala solo, nunca la baja, y se informa en una línea; lo que el nivel nuevo suma es una guía y no un bloqueo. `verificar.py escala` comprueba lo que exige el nivel que el usuario eligió; el usuario puede fijar otro cuando quiera. Si el usuario dice que el proyecto será grande, ese piso rige desde el primer cambio. No es el tamaño de cada cambio (`verificar.py tamano`): ese sigue ajustando la ceremonia por cambio.
+
 Si el proyecto está en GitHub (o lo estará), se completa la descripción y los Topics del repositorio y después se mantienen al día; ver «Descripción y Topics del repositorio» en `senior-git`.
 
 ## Puntos de control: siempre consultar antes de
