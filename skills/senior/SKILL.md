@@ -62,6 +62,10 @@ Alrededor de la escalera:
 - **Un atajo con límite conocido se deja marcado** con un comentario `atajo: <límite>; cuándo: <disparador>`; `atajos.py` los junta en un registro y `verificar.py deuda` avisa los que no tienen disparador.
 - **La escalera nunca recorta** tests, documentación, validación en los bordes de confianza, seguridad ni accesibilidad.
 
+## Decisiones que importan: dudar antes de darlas por buenas
+
+Antes de commitear una decisión no trivial (lógica con ramas, un límite entre módulos, algo que el compilador no verifica, un efecto difícil de deshacer), un subagente sin el hilo de la conversación intenta romperla. Se le pasa solo el artefacto y el contrato, nunca la afirmación ni el razonamiento propio; el resultado se reconcilia hallazgo por hallazgo; y a los tres ciclos, o ante dos seguidos sin ningún hallazgo accionable («teatro de duda»), se le plantea al usuario. `scripts/duda.py armar` prepara el texto del revisor y `duda.py decidir` indica qué sigue. Detalle en `references/duda.md`. No se usan herramientas de otros modelos sin autorización explícita del usuario.
+
 ## Proyecto nuevo o sin la metodología
 
 Para incorporar un proyecto (nuevo o existente) usar `adoptar-proyecto` (`/adoptar-proyecto`): muestra un plan, espera aprobación y crea la base documental y el README. Sin eso, se trabaja con lo que haya y se propone adoptar.
