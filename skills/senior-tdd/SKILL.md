@@ -60,6 +60,19 @@ Los tests **nunca** corren contra la base de desarrollo ni la de producción (IS
 
 Redactar tests desde las reglas con un agente independiente reduce el sesgo de "que pase", pero cuesta entre 8.000 y 25.000 tokens por uso. **Solo se usa con autorización explícita del usuario**, y el agente solo reporta: no corrige código.
 
+## Excusas frecuentes y qué se responde
+
+Atajos que se ofrecen solos cuando el trabajo aprieta. Si aparece uno de estos pensamientos, es la señal para frenar.
+
+| Excusa | Respuesta |
+|---|---|
+| «El test lo escribo después, con el código listo» | Termina copiando lo que el código ya hace, defectos incluidos. El rojo va primero. |
+| «Deduzco el valor esperado ejecutando el código» | Eso convierte un error en regla. El valor sale del requisito; si no hay requisito, se pregunta. |
+| «El test está en rojo, lo salteo, lo borro o le bajo el umbral» | Se corrige el código o, si la regla cambió, el requisito y después el test, con el usuario.. |
+| «Es una línea, no necesita test» | Una línea puede cambiar un resultado. Solo se omite el test si el cambio no altera comportamiento. |
+| «Lo probé a mano y anda» | Una prueba manual no se repite ni protege el próximo cambio. |
+| «Pruebo contra la base real, es más rápido» | Solo contra una base de prueba; `guardia_bd_prueba.py` bloquea lo contrario. |
+
 ## Costo orientativo
 
 Ejecutar la suite: segundos a un minuto y unos 300 tokens si se lee solo el resumen. Escribir un test: unos cientos a 1.500 tokens. Pruebas de interfaz: 10 a 60 s; unos 300 tokens si pasan, 1.000 a 3.000 si fallan.

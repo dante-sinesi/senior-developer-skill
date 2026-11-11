@@ -52,6 +52,19 @@ Además: secretos escritos en el código, datos sensibles en logs y dependencias
 
 Por defecto no se usa. **La skill lo propone** (y el usuario decide) cuando detecta: datos personales o sensibles reales (salud, finanzas, documentos de identidad, menores), exigencias legales o de clientes, o sistemas cuya caída o filtración tendría impacto grave. Incluye todo lo del modo liviano más un **registro de riesgos** por proyecto al estilo ISO/IEC 27005, en `docs/seguridad/riesgos.md` (plantilla en `references/plantilla-riesgos.md`): activo, amenaza, control, nivel de riesgo residual y responsable.
 
+## Excusas frecuentes y qué se responde
+
+Atajos que se ofrecen solos cuando el trabajo aprieta. Si aparece uno de estos pensamientos, es la señal para frenar.
+
+| Excusa | Respuesta |
+|---|---|
+| «Es una herramienta interna, no hace falta» | Lo interno se filtra y se expone con el tiempo. La lista de revisión se aplica igual; solo se le pone proporción. |
+| «Valido en el cliente y listo» | El cliente lo controla quien ataca. Toda entrada se valida en el servidor. |
+| «Dejo la clave en el código y la saco después» | Un secreto commiteado se considera comprometido aunque se borre. Va en el entorno desde la primera línea. |
+| «Es solo un log, no pasa nada» | Los registros se copian, se envían y se leen. Nunca llevan contraseñas, tokens ni datos personales. |
+| «La dependencia la mantiene mucha gente, debe estar bien» | Se audita con `verificar.py seguridad --auditar`; la popularidad no es una revisión. |
+| «La alerta del script es un falso positivo» | Puede serlo, pero se confirma leyendo la línea y se deja `senior-ignore: ID` con el motivo, no se ignora en silencio. |
+
 ## Cuánto cuesta (orientativo)
 
 Chequeos automáticos: 1 a 5 s y 200 a 1.000 tokens de lectura (la auditoría de dependencias suma unos segundos de red). Revisión con la lista: 500 a 1.500 tokens por cambio. Modo formal: unos 2.000 a 5.000 tokens para armar el registro inicial.

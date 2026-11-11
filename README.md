@@ -92,6 +92,8 @@ Instalación manual, si se prefiere: copiar las carpetas de `skills/` a `~/.clau
 
 La ceremonia se ajusta al tamaño del cambio: una corrección de texto no lleva ficha ni diagrama.
 
+Cada skill de proceso (`senior`, `senior-tdd`, `senior-git`, `senior-seguridad`, `senior-refactor`) trae una tabla corta de **excusas frecuentes**: los atajos que se ofrecen solos cuando el trabajo aprieta («lo pruebo después», «es un cambio chico», «ya me aprobó algo parecido») y qué se responde en cada caso. Sirven de freno: si aparece uno de esos pensamientos, es la señal para parar.
+
 ## Verificador
 
 `senior/scripts/verificar.py` ejecuta controles automáticos y devuelve pocas líneas, para que revisar no consuma tokens del modelo:

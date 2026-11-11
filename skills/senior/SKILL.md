@@ -104,6 +104,19 @@ Si el cambio toca una interfaz y **todavía no hay una dirección de diseño apr
 
 `scripts/verificar.py` (sin argumento corre todo) revisa tamaño, alcance, deuda, estado, documentación, calidad de los requisitos, README, texto (límites, repetición, información perdida), diagramas, comentarios del código modificado y seguridad, y devuelve pocas líneas. Con `--auditar` suma el chequeo de dependencias (usa la red). Ejecutarlo antes de cada PR y al cerrar la sesión.
 
+## Excusas frecuentes y qué se responde
+
+Atajos que se ofrecen solos cuando el trabajo aprieta. Si aparece uno de estos pensamientos, es la señal para frenar.
+
+| Excusa | Respuesta |
+|---|---|
+| «Es un cambio chico, no hace falta test ni ficha» | El tamaño lo mide `verificar.py tamano`. Lo trivial es lo que no cambia comportamiento; un cambio de comportamiento, por chico que sea, lleva test. |
+| «El README y la documentación los actualizo después» | Se actualizan en el mismo cambio: `verificar.py readme` lo exige y el «después» no llega. |
+| «El usuario ya aprobó algo parecido, sigo» | La aprobación es por acción. Cada commit, push, Pull Request y fusión se confirma de nuevo. |
+| «Ya entendí el sistema, me salteo el relevamiento» | Lo que no está escrito no se sabe. En un sistema ajeno se releva antes de tocar. |
+| «Dejo este archivo de paso fuera del proyecto» | Nada se crea fuera de la raíz. Lo de paso va en `.temporal/`, que git ignora. |
+| «Esto que salió en la conversación le sirve al README» | El README y todo lo que se sube describen solo el proyecto. Lo demás se contesta en el chat. |
+
 ## Mapa del paquete
 
 - `senior-memoria`: estado, fichas, pendientes, índice y mapa de conceptos.
