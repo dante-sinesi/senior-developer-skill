@@ -77,7 +77,17 @@ Instalación manual, si se prefiere: copiar las carpetas de `skills/` a `~/.clau
 
 ### Flujo de trabajo
 
-1. Leer el estado del proyecto. 2. Relevar si el sistema es ajeno. 3. Acordar un plan breve. 4. Crear la rama. 5. Test rojo desde la regla de negocio. 6. Código mínimo. 7. Refactor con tests en verde. 8. Actualizar documentación y README. 9. Verificar. 10. Commits atómicos y PR. 11. Actualizar el estado.
+1. Leer el estado del proyecto.
+2. Relevar si el sistema es ajeno.
+3. Acordar un plan breve.
+4. Crear la rama.
+5. Test rojo desde la regla de negocio.
+6. Código mínimo.
+7. Refactor con tests en verde.
+8. Actualizar documentación y README.
+9. Verificar.
+10. Commits atómicos y PR.
+11. Actualizar el estado.
 
 La ceremonia se ajusta al tamaño del cambio: una corrección de texto no lleva ficha ni diagrama.
 
@@ -103,7 +113,16 @@ Está prohibido leer directamente un PDF, DOCX, XLSX, PPTX, HTML, JSON u otro do
 - Lo que se manda por el chat no se lee: se copia a la carpeta con `convertir_fuentes.py --importar <archivos>`, se procesa y se lee el resultado.
 - Un **hook global de Claude Code** lo hace obligatorio (lo registra `guardia_autoria.py asegurar`): bloquea la lectura directa y, en los casos de excepción, le pregunta al usuario.
 
-Ahorro aproximado frente al original: HTML o web, de 65 % a 87 %; PDF con diseño o tablas, de 40 % a 75 %; DOCX, XLSX o PPTX, de 30 % a 60 %; JSON y datos, de 15 % a 30 %; imágenes reducidas a 1024 px, de 50 % a 75 % de los tokens de visión. **No se aplica** a los PDF escaneados como imagen (sin texto embebido, haría falta OCR) ni a los documentos donde importa el diseño visual (ahí se usa el original o capturas); los SVG y las imágenes de 1024 px o menos se leen directo. `verificar.py fuentes` avisa si hay archivos sin procesar.
+Ahorro aproximado frente al original:
+- HTML o web, de 65 % a 87 %
+- PDF con diseño o tablas, de 40 % a 75 %
+- DOCX, XLSX o PPTX, de 30 % a 60 %
+- JSON y datos, de 15 % a 30 %
+- imágenes reducidas a 1024 px, de 50 % a 75 % de los tokens de visión.
+
+**No se aplica** a los PDF escaneados como imagen (sin texto embebido, haría falta OCR) ni a los documentos donde importa el diseño visual (ahí se usa el original o capturas)
+
+Los SVG y las imágenes de 1024 px o menos se leen directo. `verificar.py fuentes` avisa si hay archivos sin procesar.
 
 ## Diseño de interfaces
 
