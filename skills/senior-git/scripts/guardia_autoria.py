@@ -11,7 +11,7 @@ Uso:
     python guardia_autoria.py instalar [--raiz .]                  # instala los hooks de Git de este repositorio
     python guardia_autoria.py asegurar [--raiz .] [--silencioso] [--solo-verificar]
         # comprueba que estén activos los hooks de Git del repositorio y el hook global de Claude Code
-        # (~/.claude/settings.json) y, si falta alguno, lo activa. El usuario lo autorizó de forma permanente.
+        # (~/.claude/settings.json: autoría y lectura de documentos externos) y, si falta alguno, lo activa. El usuario lo autorizó de forma permanente.
 
 Qué se prohíbe:
   - líneas Co-Authored-By (de cualquier persona o herramienta; el usuario puede
@@ -201,7 +201,12 @@ def cmd_instalar(raiz):
     return 0
 
 
-CLAUDE_HOOK = "hook_autoria_claude.py"
+HOOKS_CLAUDE = (  # hooks globales de Claude Code que esta guardia mantiene activos
+    {"script": "hook_autoria_claude.py", "skill": "senior-git", "matcher": "Bash|PowerShell",
+     "nombre": "de autoría"},
+    {"script": "hook_lectura_externa.py", "skill": "senior-relevar", "matcher": "Read|Bash|PowerShell|Write|Edit",
+     "nombre": "de lectura de documentos externos"},
+)
 
 
 def python_que_funciona():
@@ -215,10 +220,12 @@ def python_que_funciona():
     return None
 
 
-def ruta_hook_claude():
-    """Ruta estable del hook de Claude Code: la instalada en ~/.claude/skills si existe; si no, la de este repositorio."""
-    instalada = Path.home() / ".claude" / "skills" / "senior-git" / "scripts" / CLAUDE_HOOK
-    return instalada if instalada.exists() else Path(__file__).resolve().with_name(CLAUDE_HOOK)
+def ruta_hook_claude(hook):
+    """Ruta estable del hook: la instalada en ~/.claude/skills si existe; si no, la de este repositorio."""
+    instalada = Path.home() / ".claude" / "skills" / hook["skill"] / "scripts" / hook["script"]
+    if instalada.exists():
+        return instalada
+    return Path(__file__).resolve().parents[2] / hook["skill"] / "scripts" / hook["script"]
 
 
 def hooks_git_al_dia(raiz):
@@ -250,7 +257,7 @@ def asegurar_git(raiz, solo_verificar):
 
 
 def asegurar_claude(solo_verificar):
-    """Garantiza el hook global de Claude Code en ~/.claude/settings.json. Devuelve (lineas, falta)."""
+    """Garantiza los hooks globales de Claude Code en ~/.claude/settings.json. Devuelve (lineas, falta)."""
     destino = Path.home() / ".claude" / "settings.json"
     ajustes = {}
     if destino.exists():
@@ -260,34 +267,44 @@ def asegurar_claude(solo_verificar):
             return ["NO se tocó ~/.claude/settings.json porque no es un JSON válido; corregirlo y repetir"], True
     if not isinstance(ajustes, dict):
         return ["NO se tocó ~/.claude/settings.json: tiene una estructura inesperada"], True
-    script = ruta_hook_claude()
     previos = ajustes.setdefault("hooks", {}).setdefault("PreToolUse", [])
-    entrada = None
-    for grupo in previos:
-        for h in grupo.get("hooks", []) if isinstance(grupo, dict) else []:
-            if CLAUDE_HOOK in str(h.get("command", "")):
-                entrada = h
-    if entrada is not None:
-        m = re.search(r'"([^"]*' + re.escape(CLAUDE_HOOK) + r')"', entrada["command"])
-        if m and Path(m.group(1)).exists():
-            return ["hook global de Claude Code activo"], False
-    if solo_verificar:
-        return ["FALTA el hook global de Claude Code (~/.claude/settings.json)"], True
-    py = python_que_funciona()
-    if not py or not script.exists():
-        return ["NO se pudo activar el hook global de Claude Code: " +
-                ("no hay un Python que funcione" if not py else f"no existe {script}")], True
-    comando = f'{py} "{script.as_posix()}"'
-    if entrada is not None:
-        entrada["command"] = comando
-    else:
-        previos.append({"matcher": "Bash|PowerShell", "hooks": [{"type": "command", "command": comando}]})
-    destino.parent.mkdir(parents=True, exist_ok=True)
-    respaldo = destino.with_name("settings.json.bak-senior")
-    if destino.exists() and not respaldo.exists():
-        shutil.copyfile(destino, respaldo)
-    destino.write_text(json.dumps(ajustes, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
-    return ["activé el hook global de Claude Code (se aplica al abrir una sesión nueva)"], False
+    lineas, falta, cambio = [], False, False
+    for hook in HOOKS_CLAUDE:
+        script = ruta_hook_claude(hook)
+        entrada = None
+        for grupo in previos:
+            for h in grupo.get("hooks", []) if isinstance(grupo, dict) else []:
+                if hook["script"] in str(h.get("command", "")):
+                    entrada = h
+        if entrada is not None:
+            m = re.search(r'"([^"]*' + re.escape(hook["script"]) + r')"', entrada["command"])
+            if m and Path(m.group(1)).exists():
+                lineas.append(f"hook global de Claude Code {hook['nombre']} activo")
+                continue
+        if solo_verificar:
+            lineas.append(f"FALTA el hook global de Claude Code {hook['nombre']} (~/.claude/settings.json)")
+            falta = True
+            continue
+        py = python_que_funciona()
+        if not py or not script.exists():
+            lineas.append(f"NO se pudo activar el hook global de Claude Code {hook['nombre']}: " +
+                          ("no hay un Python que funcione" if not py else f"no existe {script}"))
+            falta = True
+            continue
+        comando = f'{py} "{script.as_posix()}"'
+        if entrada is not None:
+            entrada["command"] = comando
+        else:
+            previos.append({"matcher": hook["matcher"], "hooks": [{"type": "command", "command": comando}]})
+        lineas.append(f"activé el hook global de Claude Code {hook['nombre']} (se aplica al abrir una sesión nueva)")
+        cambio = True
+    if cambio:
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        respaldo = destino.with_name("settings.json.bak-senior")
+        if destino.exists() and not respaldo.exists():
+            shutil.copyfile(destino, respaldo)
+        destino.write_text(json.dumps(ajustes, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+    return lineas, falta
 
 
 def cmd_asegurar(raiz, silencioso, solo_verificar):
