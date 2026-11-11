@@ -12,6 +12,7 @@ Cómo pasar de una idea o un pedido a requisitos confiables cuando todavía no e
 7. Cuándo parar
 8. Validar y priorizar
 9. Trampas frecuentes
+10. Entrevista corta con hipótesis
 
 ## 1. La idea central
 
@@ -103,3 +104,16 @@ Como referencia, la mayoría de los temas se resuelven en **uno a tres lotes**. 
 - **Procedimiento formal contra práctica real:** lo que dice el manual y lo que se hace no coinciden. Se registran ambos y se pregunta cuál debe regir.
 - **Ambigüedad:** "rápido", "fácil", "adecuado". Cada una se convierte en un número, en un caso o se descarta. Lo detecta `revisar_requisitos.py`.
 - **El cuestionario eterno:** lotes largos o demasiados lotes cansan. Mejor pocas preguntas con propuesta que muchas abiertas.
+
+## 10. Entrevista corta con hipótesis
+
+El lote sirve cuando hay mucho por saber. Cuando el pedido es **vago o corto** («quiero algo para los turnos») y el usuario está presente, una conversación breve aclara más rápido, siempre que no se convierta en un interrogatorio.
+
+1. **Hipótesis.** Antes de preguntar, una frase con la mejor lectura del pedido y qué tan segura es («Entiendo que quieres una agenda de turnos para tu peluquería; estoy en un 60 %»). Por debajo de un 70 % se agrega qué es lo que falta.
+2. **Una pregunta a la vez, cada una con su suposición.** «¿Lo usa solo tu equipo o también los clientes? Supongo que solo el equipo.» Reaccionar a una suposición es más rápido que redactar una respuesta, y la siguiente pregunta suele depender de la anterior (por eso aquí no se agrupa).
+3. **Sondear lo convencional.** Ante una respuesta de manual o una palabra hueca («escalable», «lo estándar», «como todos»), preguntar qué querría el usuario si no tuviera que justificarlo ante nadie.
+4. **Reformular.** Con la confianza alta, escribir la intención en seis líneas: resultado, quién lo usa, por qué ahora, éxito, restricción y fuera de alcance. Se guarda con `python <esta-skill>/scripts/consultas.py intencion "tema"`, que la deja `sin confirmar`.
+5. **Confirmación explícita.** Solo cuenta un sí claro a lo reformulado. **Un «dale, lo que te parezca», un «no sé», un «sí, pero…», una respuesta a medias o el silencio no cuentan**: se vuelve a preguntar con opciones concretas. `consultas.py confirmar "<respuesta>"` ayuda a decidirlo y ante la duda dice que no. Distinto del lote: allí un `ok` acepta una propuesta puntual y lo no respondido queda provisorio; acá se confirma el sentido de todo el pedido.
+6. **Parar.** Cuando hay un sí explícito, o cuando se pueden anticipar las próximas tres reacciones del usuario. Si pasaron varias vueltas sin que suba la confianza, se frena y se le dice que puede faltar algo de base (para qué existe esto, quién lo necesita) en lugar de seguir preguntando.
+
+Al terminar se entrega la intención confirmada y se deja que el usuario elija el paso siguiente (un lote para el detalle, requisitos, un plan). No se arranca a construir en el mismo turno. No aplica a pedidos claros y acotados, a cambios mecánicos ni a contextos sin persona presente.
