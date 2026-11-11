@@ -21,6 +21,8 @@ Colores, tipografías, tamaños, espacios, duraciones y curvas se definen **una 
 
 `docs/diseno/sistema/inventario-componentes.md`: cada componente con sus **variantes** (principal, secundario, peligro), sus **estados** (reposo, hover, foco, presionado, deshabilitado, cargando) y **dónde se usa**. Un botón se define una vez; una variante es una modificación declarada, no un botón nuevo.
 
+Cada componente del inventario se muestra también en la **tarjeta de estilo** (`estilo.md`), con todas sus variantes y estados, y se agrega a ella **en el mismo cambio** que lo registra: `python scripts/tarjeta_estilo.py componente "Nombre" --variantes … --estados …`.
+
 ## 3. Regla: no hay componente nuevo sin justificarlo
 
 Antes de diseñar algo, se busca en el inventario:
@@ -39,6 +41,8 @@ Esto es un problema de **diseño** antes que de código: nadie le preguntaría a
 - **dos definiciones casi idénticas** del mismo componente (por ejemplo `.btn-a` y `.btn-b`).
 
 Es una heurística: una marca pide decidir si es el mismo componente o no.
+
+`scripts/tarjeta_estilo.py estado` (que también corre `verificar.py diseno`) falla si la tarjeta de estilo no muestra un componente, una variante o un estado del inventario, o una variable de color o de tipografía, o si le quedan huecos marcados `completar`.
 
 ## 5. Del diseño al código
 

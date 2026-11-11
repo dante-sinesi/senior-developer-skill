@@ -18,6 +18,7 @@ Cómo se trabaja con el usuario. El método es fijo; **el aspecto de lo que se d
 | 0 | Leer `docs/diseno/notas/preferencias.md` (no volver a proponer lo rechazado) | — |
 | 1 | **Briefing**: para quién, qué tarea, qué tono, qué referencias | usuario |
 | 2 | **UX**: tareas, flujo, jerarquía, desktop y mobile; **inventario de campos** de cada formulario | diseño, con el usuario |
+| 2b | **Estilo** (medianos y grandes con interfaz): tres tarjetas de estilo A, B y C, feedback y ajuste; la elegida queda como tarjeta viva (`estilo.md`) | diseño y usuario |
 | 3 | **Tres alternativas** que difieren en estructura | diseño |
 | 4 | **Feedback**: qué le gustó, qué cambiar; pide otras tres o ya una | usuario |
 | 5 | **Evolución o corrección** de la elegida, en una versión nueva | diseño |
@@ -28,6 +29,7 @@ Los pasos 4 y 5 se repiten tantas veces como haga falta. **Nunca se avanza sin f
 
 ## 2. Qué se entrega en cada paso
 
+- **Paso 2b:** tres archivos `estilo-a.html`, `-b` y `-c` en `docs/diseno/estilo/` (`scripts/tarjeta_estilo.py nueva`) y, al elegir, la tarjeta viva `estilo/tarjeta.html` con sus variables en `sistema/tokens.css`. Con la tarjeta creada, las tres direcciones del paso 3 usan ese estilo y difieren solo en estructura. Detalle en `estilo.md`.
 - **Pasos 1 y 2:** en un trabajo chico, la hoja `NOTAS.md` de la ronda (briefing mínimo, campos, supuestos, decisiones, preguntas); en uno grande, `--completo` agrega `briefing.md` e `inventario-campos.md` (`plantillas/`). Lo supuesto va marcado como provisorio. No se hacen preguntas innecesarias: se asume lo razonable y se anota.
 - **Paso 3:** tres archivos HTML, uno por alternativa, creados con `scripts/crear_bosquejos.py`. Cada uno trae solo la barra para ver desktop, mobile o ambas, y **ningún estilo**: se diseña con el aspecto que cada alternativa merezca.
 - **Paso 5:** una versión nueva del archivo elegido (`direccion-b-v2.html`, creada con `crear_bosquejos.py --evolucionar`), sin pisar la anterior.

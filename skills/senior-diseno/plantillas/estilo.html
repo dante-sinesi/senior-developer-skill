@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{proyecto}} · Estilo {{letra}}</title>
+{{visor_estilo}}
+<style data-tokens>
+/* Variables de diseño de este estilo, por rol y no por valor: --c-… colores, --f-… familias tipográficas,
+   --t-… tamaños, --e-… espacios, --d-… duraciones. Si se elige este estilo, pasan tal cual a sistema/tokens.css. */
+:root {
+}
+</style>
+<style data-componentes>
+/* El aspecto de las piezas firma, usando solo las variables de arriba. */
+</style>
+</head>
+<body>
+<!-- TARJETA DE ESTILO: la definición gráfica del proyecto, antes de diseñar pantallas.
+     Esta plantilla no impone ningún aspecto (ni secciones, ni disposición, ni estilo): la tarjeta se diseña con el
+     estilo que muestra, y cada alternativa A, B y C propone el suyo.
+     Qué conviene que muestre: lo que define el carácter (paleta con su porqué, tipografía, tono, textura o imaginería,
+     movimiento) y unas pocas piezas firma en todos sus estados. El resto de los componentes se agrega a medida que las
+     pantallas los piden; no se diseña un catálogo completo por adelantado.
+     Marcas que entiende scripts/tarjeta_estilo.py (para mantener la tarjeta al día):
+       data-componente="Nombre"  en cada pieza (el mismo nombre que en sistema/inventario-componentes.md)
+       data-variante="…" y data-estado="…"  en cada variante y estado que se muestra
+     Cada variable de color (--c-…) y de tipografía (--f-…) de arriba se nombra en algún lugar de la tarjeta.
+     La carta del estilo (idea, referencias, qué evita, qué riesgo asume) va en un <aside class="nota"> que se ve con «Ver notas». -->
+<main data-tarjeta>
+
+</main>
+{{visor_script}}
+</body>
+</html>

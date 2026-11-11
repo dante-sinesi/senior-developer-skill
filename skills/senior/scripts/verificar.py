@@ -380,6 +380,18 @@ def chequeo_diseno(raiz, args):
             ok = False
         else:
             lineas.append(f"Diseño: las etiquetas de {len(contratos)} contratos de campos aparecen en el código.")
+    tarjeta = Path(__file__).resolve().parents[2] / "senior-diseno" / "scripts" / "tarjeta_estilo.py"
+    if tarjeta.exists():
+        import importlib.util
+        espec = importlib.util.spec_from_file_location("tarjeta_estilo", tarjeta)
+        modulo = importlib.util.module_from_spec(espec)
+        try:
+            espec.loader.exec_module(modulo)
+            l_tarjeta, ok_tarjeta = modulo.evaluar(raiz)
+        except Exception as e:  # noqa: BLE001 motivo: un fallo de este chequeo se informa y no detiene a los demás
+            l_tarjeta, ok_tarjeta = [f"Tarjeta de estilo: el revisor falló: {str(e)[:150]}"], False
+        lineas += l_tarjeta
+        ok = ok and ok_tarjeta
     return lineas, ok
 
 

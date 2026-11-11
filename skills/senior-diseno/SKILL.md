@@ -17,7 +17,7 @@ Tiene dos partes, y la separación es deliberada:
 ## Dónde vive todo
 
 Los artefactos de diseño viven en `docs/diseno/`, junto al resto de la documentación viva:
-`rondas/` (bosquejos y notas de cada ronda), `notas/preferencias.md` y `decisiones.md`, `sistema/` (variables e inventario de componentes), `campos/` (contratos de campos) y `auditoria/`.
+`estilo/` (la tarjeta de estilo y sus alternativas), `rondas/` (bosquejos y notas de cada ronda), `notas/preferencias.md` y `decisiones.md`, `sistema/` (variables e inventario de componentes), `campos/` (contratos de campos) y `auditoria/`.
 
 - **Los bosquejos no llevan tests.** Son material de diseño, no comportamiento; el TDD de `senior-tdd` empieza cuando se **implementa** una pantalla.
 - **Al implementar:** usar las variables de diseño sin copiar sus valores, programar cada componente una sola vez y usar las etiquetas de los formularios **exactamente** como figuran en el contrato de campos.
@@ -34,6 +34,7 @@ El costo en tokens crece con el papeleo, no con el diseño. Por eso:
 ## El método (resumen)
 
 1. **Briefing** y **UX** (`references/briefing.md`, `ux.md`): para quién, qué tarea, en qué orden; inventario de campos de cada formulario.
+1b. **Estilo** (proyectos medianos y grandes con interfaz; opcional en los chicos): antes de las pantallas, tres alternativas de estilo A, B y C como tarjetas, feedback y ajuste. La elegida queda como **tarjeta de estilo viva** que usa las variables reales del sistema y crece con cada componente nuevo (`references/estilo.md`).
 2. **Tres alternativas que difieren en estructura** (disposición, jerarquía, navegación, recorrido). No se impone estilo ni ausencia de estilo: cada alternativa tiene el aspecto que se crea mejor para ella, con la ambición que el proyecto pida.
 3. **Esperar el feedback del usuario.** No se avanza solo.
 4. **Evolucionar o corregir** la elegida (o pedir tres nuevas): una versión nueva por cambio, con el estilo del proyecto y las correcciones aplicadas.
@@ -58,6 +59,10 @@ Comandos (todos en `<esta-skill>/scripts/`):
 ```
 python crear_bosquejos.py --nombre <proyecto> [--tipo sitio|app] [--completo]
 python crear_bosquejos.py --evolucionar docs/diseno/rondas/<ronda>/direccion-b.html
+python tarjeta_estilo.py nueva --nombre <proyecto>      # tres alternativas de estilo (A, B y C)
+python tarjeta_estilo.py elegir <estilo-x.html>         # la elegida pasa a ser la tarjeta viva
+python tarjeta_estilo.py componente "Nombre" --variantes a,b --estados x,y   # componente nuevo: inventario y tarjeta
+python tarjeta_estilo.py estado                         # ¿la tarjeta está al día?
 python revisar_diseno.py todo docs/diseno/rondas/<ronda>/*.html [--tipo sitio|app] [--sitio] --capturas
 python capturar.py <archivo.html>        # solo capturas, si hace falta por separado
 python colores.py "#1a1a1a" "#ffffff"
@@ -76,6 +81,7 @@ python colores.py "#1a1a1a" "#ffffff"
 - Aplicar una excepción a una regla estricta que el usuario no haya aceptado.
 - Importar preferencias de otro proyecto.
 - Pasar de los bosquejos a implementar: solo cuando el usuario aprueba la dirección.
+- Pasar de las alternativas de estilo a las de estructura: solo cuando el usuario elige el estilo.
 
 ## Imágenes del usuario
 
