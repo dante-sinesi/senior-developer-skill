@@ -252,7 +252,8 @@ def revisar(args):
 
 
 def siguiente_decision(texto):
-    ids = [int(x) for x in re.findall(r"\bD-(\d+)\b", texto)]
+    """Próximo ID de decisión. Solo cuentan los que abren una línea (viñeta o fila de tabla), no los nombrados en la prosa."""
+    ids = [int(x) for x in re.findall(r"(?m)^[\s|*>-]*D-(\d+)\b", texto)]
     return f"D-{(max(ids) + 1 if ids else 1):03d}"
 
 

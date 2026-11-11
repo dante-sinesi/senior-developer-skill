@@ -7,7 +7,8 @@ Uso:
 
 Escribe <nombre>-desktop.png y <nombre>-mobile.png (por defecto junto al archivo, en capturas/). Los navegadores sin
 interfaz no bajan de unos 500 px de ancho: en mobile la página se mide a 390 px dentro de un marco gris.
-Usa el Edge o el Chrome que ya estén instalados, en modo sin interfaz; no descarga nada. Si no encuentra ninguno,
+Usa el Edge o el Chrome que ya estén instalados, en modo sin interfaz; no descarga nada. Los archivos de paso (perfil del
+navegador, marco para medir mobile) se crean dentro de la carpeta de capturas, en el proyecto, y se borran al terminar. Si no encuentra ninguno,
 lo dice y sale con código 2: en ese caso se usa el navegador integrado de la herramienta o se declara que el
 diseño no se vio renderizado. Las capturas se leen con la herramienta de lectura de imágenes.
 Las capturas se reducen a un máximo de --max-px píxeles en el lado más largo (1024 por defecto: ahorra tokens al
@@ -54,7 +55,8 @@ def tamano(texto):
 
 
 def capturar(navegador, url, salida, ancho, alto):
-    perfil = tempfile.mkdtemp()
+    # el perfil del navegador vive junto a las capturas, dentro del proyecto: nada se crea fuera de él
+    perfil = tempfile.mkdtemp(dir=Path(salida).parent)
     try:
         cmd = [navegador, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run",
                f"--user-data-dir={perfil}", f"--window-size={ancho},{alto}", "--virtual-time-budget=3000",
@@ -100,10 +102,13 @@ def capturar_archivo(origen, carpeta=None, desktop="1280x800", mobile="390x844",
         destino = carpeta / f"{origen.stem}-{nombre}.png"
         objetivo, envuelto = url, False
         if ancho < 500:  # Edge y Chrome sin interfaz no bajan de unos 500 px: se mide el ancho real dentro de un marco
-            marco = Path(tempfile.mkdtemp()) / "marco.html"
+            marco = Path(tempfile.mkdtemp(dir=carpeta)) / "marco.html"
             marco.write_text(ENVOLTURA.format(url=url, ancho=ancho, alto=alto), encoding="utf-8")
             objetivo, envuelto = marco.as_uri(), True
-        if capturar(navegador, objetivo, str(destino), max(ancho, 500) if envuelto else ancho, alto):
+        capturada = capturar(navegador, objetivo, str(destino), max(ancho, 500) if envuelto else ancho, alto)
+        if envuelto:
+            shutil.rmtree(marco.parent, ignore_errors=True)
+        if capturada:
             if max_px:
                 reducir(destino, max_px)
             creados.append(destino)

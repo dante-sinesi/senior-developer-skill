@@ -256,7 +256,13 @@ def resolver(valor, doc):
 
 def chequeo_saturacion(doc, opciones):
     res = []
+    # la tarjeta de estilo (data-tarjeta) es un catálogo de componentes en todos sus estados, no una pantalla:
+    # la no saturación (acciones, campos, acción principal) no le corresponde; el resto de los chequeos sí
+    tarjeta = {id(n) for n in doc.raiz.iterar() if n.tiene("data-tarjeta") and not ignorado(n)}
     for p, excl, nombre in pantallas_con_resto(doc):
+        if id(p) in tarjeta or p.dentro_de(lambda a: id(a) in tarjeta):
+            continue
+        excl = excl | tarjeta
         etiqueta = f"pantalla «{nombre}»"
         hallazgos = []
         campos = campos_de(p, excl)
