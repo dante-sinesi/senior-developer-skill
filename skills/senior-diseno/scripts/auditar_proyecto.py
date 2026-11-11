@@ -30,6 +30,8 @@ PROPUESTAS = [
      "Reducir campos visibles (pasos cortos y opciones avanzadas), dejar una sola acción principal y recortar navegación y texto."),
     ("interaccion", "Reactividad y foco", "medio", "bajo",
      "Agregar estados hover, foco visible y presionado con transiciones breves; respetar prefers-reduced-motion."),
+    ("estados", "Estados y contenido real", "medio", "bajo",
+     "Diseñar el estado de error, vacío y de carga, resolver el texto largo y llevar a la paleta lo que el navegador deja por defecto (selección, casillas, barras de scroll, cifras de tablas)."),
     ("tipografia", "Tipografía (una familia ideal, dos como máximo)", "medio", "bajo",
      "Reducir a una o dos familias tipográficas para toda la web (más solo si el arte lo requiere, con excepción escrita)."),
     ("base", "Base técnica y contenido", "medio", "bajo",

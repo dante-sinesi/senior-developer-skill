@@ -13,6 +13,9 @@ Chequeos (sin indicar ninguno corre "todo"). Ninguno juzga el aspecto artístico
               acciones reconocibles (nada de solo íconos, etiquetas verbales)
   interaccion reactividad: hover, foco, presionado, transiciones, menús que se deslizan,
               prefers-reduced-motion, sin "transition: all"
+  estados     contenido real y partes que quedan por defecto (solo avisos): estilo de error en los campos,
+              estado vacío y de carga en una app, texto largo, color de selección, casillas, cifras de
+              tablas y barras de scroll
   etiquetas   formularios: etiqueta visible por campo, sin placeholder como etiqueta, etiquetas únicas
               y no confusas, sin etiquetas genéricas, tipos y autocompletado
   contraste   razón de contraste WCAG de cada par color/fondo (4,5:1 texto normal, 3:1 texto grande)
@@ -529,8 +532,49 @@ def chequeo_sistema(doc, opciones):
     return res
 
 
+RE_ESTADO_ERROR = re.compile(r"error|invalid|inv[aá]lid|danger|incorrect", re.IGNORECASE)
+RE_ESTADO_VACIO = re.compile(r"vac[ií]o|empty|sin resultados|no hay |todav[ií]a no|a[uú]n no ", re.IGNORECASE)
+RE_ESTADO_CARGA = re.compile(r"loading|cargando|spinner|skeleton|aria-busy|<progress|aria-live", re.IGNORECASE)
+PROPS_TEXTO_LARGO = {"overflow-wrap", "word-wrap", "word-break", "text-overflow", "-webkit-line-clamp", "line-clamp", "hyphens"}
+
+
+def chequeo_estados(doc, opciones):
+    """Contenido real y partes que el navegador deja por defecto. Solo AVISO: nada de esto juzga el aspecto."""
+    res = []
+    if not doc.reglas or not doc.es_pagina:
+        return res
+    sels = " ".join(r.selector.lower() for r in doc.reglas)
+    props = {p for r in doc.reglas for p in r.decl}
+    valores = " ".join(v.lower() for r in doc.reglas for v in r.decl.values())
+    nodos_ = [n for n in doc.raiz.iterar() if not ignorado(n)]
+    campos = [n for n in nodos_ if es_campo(n) and not oculto(n)]
+    botones = [n for n in nodos_ if n.tag == "button" or (n.tag == "input" and n.attr("type") in ("submit", "button"))]
+    tipos = {(n.attr("type") or "").lower() for n in nodos_ if n.tag == "input"}
+    hay_tabla = any(n.tag == "table" for n in nodos_)
+    hay_lista = any(n.tag in ("ul", "ol") for n in nodos_)
+    if campos and not (":invalid" in sels or "aria-invalid" in sels or RE_ESTADO_ERROR.search(sels)):
+        res.append(H("estados", "AVISO", doc, 1, "los campos no tienen estilo de error (:invalid, [aria-invalid] o una clase de error): ¿cómo se ve un dato mal cargado?"))
+    if opciones.get("tipo") == "app":
+        if (hay_tabla or hay_lista) and not RE_ESTADO_VACIO.search(doc.texto):
+            res.append(H("estados", "AVISO", doc, 1, "hay tablas o listas pero ningún estado vacío: ¿qué ve la persona cuando todavía no hay datos?"))
+        if (botones or campos) and not RE_ESTADO_CARGA.search(doc.texto):
+            res.append(H("estados", "AVISO", doc, 1, "ningún estado de carga (spinner, esqueleto, aria-busy): ¿cómo se ve una acción en curso?"))
+    if not (props & PROPS_TEXTO_LARGO):
+        res.append(H("estados", "AVISO", doc, 1, "ningún manejo de texto largo (overflow-wrap, text-overflow o line-clamp): un nombre o un correo largo puede romper la composición"))
+    if "::selection" not in sels:
+        res.append(H("estados", "AVISO", doc, 1, "el color de selección del texto es el del navegador (::selection): se puede tomar de la paleta"))
+    if tipos & {"checkbox", "radio", "range"} and "accent-color" not in props:
+        res.append(H("estados", "AVISO", doc, 1, "casillas, opciones o deslizadores con el color del navegador: accent-color los lleva a la paleta"))
+    if hay_tabla and "font-variant-numeric" not in props and "tabular-nums" not in valores:
+        res.append(H("estados", "AVISO", doc, 1, "hay una tabla sin cifras tabulares (font-variant-numeric: tabular-nums): los números no se alinean"))
+    if any(r.decl.get(p, "").strip().lower() in ("auto", "scroll") for r in doc.reglas for p in ("overflow", "overflow-x", "overflow-y")) \
+            and "scrollbar" not in sels and not any(p.startswith("scrollbar") for p in props):
+        res.append(H("estados", "AVISO", doc, 1, "hay zonas con scroll y la barra es la del navegador (scrollbar-color, scrollbar-width)"))
+    return res
+
+
 CHEQUEOS = {"base": chequeo_base, "tipografia": chequeo_tipografia, "saturacion": chequeo_saturacion, "interaccion": chequeo_interaccion,
-            "etiquetas": chequeo_etiquetas, "contraste": chequeo_contraste, "sistema": chequeo_sistema}
+            "estados": chequeo_estados, "etiquetas": chequeo_etiquetas, "contraste": chequeo_contraste, "sistema": chequeo_sistema}
 
 
 def archivos_de(rutas, incluir_css=False):

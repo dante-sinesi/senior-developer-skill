@@ -8,6 +8,7 @@
 - Necesidades de accesibilidad conocidas:
 
 ## Para qué
+- **Modo de cada pantalla** (decidir, hacer una tarea, entender o recorrer una obra):
 - **Acción principal** (una sola):
 - Cómo se sabrá que funcionó:
 

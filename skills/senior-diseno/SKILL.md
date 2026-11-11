@@ -63,7 +63,7 @@ python capturar.py <archivo.html>        # solo capturas, si hace falta por sepa
 python colores.py "#1a1a1a" "#ffffff"
 ```
 
-`revisar_diseno.py` acepta los chequeos `base`, `tipografia`, `saturacion`, `interaccion`, `etiquetas`, `contraste` y `sistema`; ninguno juzga el aspecto. FALLA incumple una regla estricta; una excepción se justifica por escrito dentro de la pantalla con `<!-- excepcion-saturacion: motivo -->` (o `excepcion-tipografia`). Son heurísticas: marcan qué mirar. `capturar.py` usa el Edge o Chrome instalados para sacar PNG de desktop y mobile, que se leen como imágenes.
+`revisar_diseno.py` acepta los chequeos `base`, `tipografia`, `saturacion`, `interaccion`, `estados`, `etiquetas`, `contraste` y `sistema`; ninguno juzga el aspecto. FALLA incumple una regla estricta; una excepción se justifica por escrito dentro de la pantalla con `<!-- excepcion-saturacion: motivo -->` (o `excepcion-tipografia`). Son heurísticas: marcan qué mirar. `capturar.py` usa el Edge o Chrome instalados para sacar PNG de desktop y mobile, que se leen como imágenes.
 
 ## Otros modos
 
