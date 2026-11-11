@@ -215,6 +215,8 @@ HOOKS_CLAUDE = (  # hooks globales de Claude Code que esta guardia mantiene acti
      "nombre": "de lectura de documentos externos"},
     {"script": "hook_fuera_del_proyecto.py", "skill": "senior", "matcher": "Write|Edit|NotebookEdit|Bash|PowerShell",
      "nombre": "de escritura fuera del proyecto"},
+    {"script": "hook_archivos_protegidos.py", "skill": "senior", "matcher": "Write|Edit|NotebookEdit",
+     "nombre": "de archivos protegidos"},
 )
 
 
