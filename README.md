@@ -44,23 +44,30 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 - Opcional: `npm`, `composer` o `pip-audit` si se quiere la auditoría de dependencias.
 - **Obligatorias para documentos e imágenes externos:** `markitdown` (`pip install "markitdown[all]"`) para los documentos y `Pillow` (`pip install pillow`) para las imágenes. Nunca se instalan solas: si falta una, se pide aprobación.
 
-## Instalación
+## Primeros pasos
 
-Copiar las carpetas de `skills/` a la carpeta de skills de Claude Code. Deben quedar **todas juntas en la misma carpeta**, porque algunos scripts localizan a sus hermanas por ruta relativa (perfiles de lenguaje, plantillas, indexador).
+Para dejar todo funcionando la primera vez, o en una máquina nueva, en este orden:
 
-```bash
-git clone https://github.com/dante-sinesi/senior-developer-skill.git
-cp -r senior-developer-skill/skills/* ~/.claude/skills/
-```
+1. **Instalar Python 3.8 o superior y Git.** Opcional: el CLI `gh` ([cli.github.com](https://cli.github.com)) para crear y fusionar Pull Requests.
+2. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/dante-sinesi/senior-developer-skill.git
+   cd senior-developer-skill
+   ```
+3. **Ejecutar el instalador:**
+   ```bash
+   python instalar.py --instalar-dependencias
+   ```
+   Copia las skills a `~/.claude/skills` (sin tocar las demás), registra en `~/.claude/settings.json` los dos hooks globales de Claude Code (autoría y lectura de documentos externos), instala `markitdown` y `Pillow` con pip y termina con un informe de qué quedó listo y qué falta. Sin `--instalar-dependencias` no instala nada con pip: solo avisa. Con `--verificar` solo informa, sin escribir.
+4. **Si se usa GitHub:** `gh auth login`.
+5. **En cada proyecto,** configurar la identidad de Git solo de forma local (`git config user.name <usuario>` y `git config user.email <correo noreply de GitHub>`) y abrir una sesión de Claude Code: la skill activa sola el hook de Git del repositorio y crea `documentos-externos/`.
+6. **Abrir una sesión nueva** de Claude Code para que se apliquen los hooks globales.
 
-En Windows (PowerShell):
+### Lo que no está en este repositorio
 
-```powershell
-git clone https://github.com/dante-sinesi/senior-developer-skill.git
-Copy-Item senior-developer-skill\skills\* $env:USERPROFILE\.claude\skills\ -Recurse
-```
+La memoria de Claude Code (`~/.claude/projects/…/memory`), el resto de `~/.claude/settings.json` y `~/.claude/CLAUDE.md` viven fuera del repositorio: conviene copiarlos antes de reinstalar el sistema. Las reglas del paquete (autoría, commits y Pull Requests solo con aprobación, documentos e imágenes externos, diseño) están escritas en las skills y no dependen de esa memoria.
 
-Las skills se cargan al abrir una sesión nueva de Claude Code. Estas skills viven en la carpeta local de Claude Code; normalmente no aparecen en los ajustes de skills de claude.ai, que gestionan otro conjunto.
+Instalación manual, si se prefiere: copiar las carpetas de `skills/` a `~/.claude/skills`, **todas juntas**, porque algunos scripts localizan a sus hermanas por ruta relativa. Estas skills viven en la carpeta local de Claude Code y normalmente no aparecen en los ajustes de skills de claude.ai.
 
 ## Cómo se usa
 

@@ -36,7 +36,7 @@ Un commit ya subido que viola la regla es un incidente: se avisa al usuario de i
    - Si corresponde, citar el requisito: `feat(carrito): aplicar descuento por volumen (RN-001)`.
    - Cambios incompatibles: `!` tras el tipo y explicación en el cuerpo.
 5. **Nada de reescribir historia compartida**: no `push --force` a ramas compartidas, no `--no-verify`, no `reset --hard` sin pedir permiso.
-6. **Commits y push solo cuando el usuario lo pide o lo aprueba**: se propone el mensaje y se espera el visto bueno.
+6. **Commits, push y Pull Requests solo cuando el usuario lo pide o lo aprueba (regla inviolable, principio 15 de `senior`)**: se propone el mensaje y se espera el visto bueno; para subir a GitHub, abrir o fusionar un PR se confirma siempre. Un paso de una ficha de cambio no es una autorización y la aprobación de una acción no se extiende a la siguiente.
 7. **Secretos**: antes de commitear, `verificar.py seguridad` (claves, tokens, contraseñas). Un secreto subido se considera comprometido aunque se borre después.
 8. **README al día en cada PR, sin excepción.** El PR no se abre con el README sin revisar: `verificar.py readme --base main` lo comprueba contra la rama base.
 9. **Tamaño**: si la rama crece demasiado (nivel "grande" en `verificar.py tamano`), plantear al usuario dividirla.
