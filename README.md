@@ -73,6 +73,7 @@ Instalación manual, si se prefiere: copiar las carpetas de `skills/` a `~/.clau
 ## Cómo se usa
 
 - **Proyecto nuevo o existente:** `/adoptar-proyecto`. Muestra un plan en solo lectura, espera tu aprobación y recién entonces crea `docs/`, el `README.md` y, si el proyecto ya existe, un relevamiento.
+- **Decisión importante:** antes de darla por buena, la skill la somete a una duda con contexto fresco: un subagente sin el hilo de la conversación intenta romperla, con tres ciclos como máximo y un freno ante el «teatro de duda» (dos ciclos con hallazgos y ninguno accionable). `senior/scripts/duda.py` arma el texto del revisor y decide qué sigue; el método está en `senior/references/duda.md`.
 - **Trabajo diario:** pedir cambios como siempre. La skill `senior` se activa sola ante cualquier tarea de código.
 - **Fin de la sesión:** `/cerrar-sesion` actualiza el estado, corre el verificador y propone el commit.
 
