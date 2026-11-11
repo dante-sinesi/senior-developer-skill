@@ -58,7 +58,6 @@ Si el proyecto no tiene `docs/ESTADO.md`, no se impone toda la metodología de g
 ## Puntos de control: siempre consultar antes de
 
 - Hacer commit, push o abrir un PR: solo cuando el usuario lo pidió o lo aprobó, aunque la ficha de cambio tenga ese paso. Un paso en la ficha no es una autorización. Y siempre bajo la regla de autoría: en lo que se sube figura únicamente el usuario, sin Claude ni coautores (no es negociable ni se consulta: simplemente se cumple).
-- Escribir dentro de `diseno/`: no se hace (es del diseñador); el pedido va a `docs/solicitudes-de-diseno.md`.
 - Cambiar documentos de arquitectura o contratos (se muestra el diff antes/después).
 - Borrar datos o archivos, o tomar decisiones difíciles de revertir.
 - Trabajar con agentes en paralelo (se explica el costo extra en tokens y se pide el visto bueno).
@@ -68,17 +67,13 @@ Si el proyecto no tiene `docs/ESTADO.md`, no se impone toda la metodología de g
 - Resolver una discrepancia entre una regla de negocio y el código.
 - Tomar o copiar algo de las skills antiguas del usuario: nada se incorpora sin su consulta.
 
-## Con un diseñador (opcional)
+## Interfaces y diseño
 
-Si el proyecto tiene una carpeta `diseno/` (la skill `disenador-frontend` u otro rol de diseño), `senior` **la lee y la respeta, pero no escribe en ella**: `diseno/` es del diseñador y todo lo demás es de producción. Se coordinan por archivos:
+Si el cambio toca una interfaz y **todavía no hay una dirección de diseño aprobada**, se diseña primero con `senior-diseno` (método de tres alternativas, feedback y reglas objetivas) y recién después se implementa. Los artefactos de diseño viven en `docs/diseno/`.
 
-- **Antes de implementar la interfaz:** leer `diseno/ENTREGA.md`, las variables, el inventario de componentes y los contratos de campos (`verificar.py diseno` resume el estado).
-- **Al implementar:** usar las variables de diseño sin copiar sus valores, programar cada componente una sola vez y usar las etiquetas de los formularios **exactamente** como figuran en el contrato.
-- **Si hace falta algo que el diseño no cubre:** pedirlo en `docs/solicitudes-de-diseno.md`, no inventarlo.
+- **Los bosquejos no llevan tests**; el TDD empieza al implementar la pantalla.
+- **Al implementar:** usar las variables de diseño sin copiar sus valores, programar cada componente una sola vez y usar las etiquetas de los formularios **exactamente** como figuran en el contrato de campos (`verificar.py diseno` lo comprueba).
 - **Al documentar:** los ADR citan las decisiones de diseño por su ID (`D-001`), sin copiarlas.
-- **Cada vez que el usuario proponga un cambio grande**, recomendar dividir el trabajo en dos sesiones (diseño y producción), remarcando que **podría ser importante para la estabilidad del proyecto**; el usuario decide. En proyectos chicos se alterna de rol en un solo chat.
-
-Sin diseñador, nada de esto aplica y los chequeos `fronteras` y `diseno` no dicen nada. Detalle, protocolo v1 y hook de aislamiento (opcional, con aprobación del usuario): `references/colaboracion-con-diseno.md`.
 
 ## Verificación automática
 
@@ -88,6 +83,7 @@ Sin diseñador, nada de esto aplica y los chequeos `fronteras` y `diseno` no dic
 
 - `senior-memoria`: estado, fichas, pendientes, índice y mapa de conceptos.
 - `senior-relevar`: entender un sistema antes de tocarlo.
+- `senior-diseno`: diseñar interfaces (método y reglas objetivas) antes de implementarlas; `auditar-diseno` revisa una existente.
 - `senior-tdd`: ciclo rojo-verde-refactor, código heredado, interfaz, base de prueba.
 - `senior-refactor`: duplicación y limpieza segura.
 - `senior-docs`: requisitos, diagramas legibles, decisiones, trazabilidad.

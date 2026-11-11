@@ -31,6 +31,8 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 | `senior-git` | Ramas por cambio, Conventional Commits en español neutro, Pull Requests |
 | `senior-seguridad` | Lista de revisión, chequeos automáticos y modo formal con registro de riesgos |
 | `senior-lenguajes` | Perfiles de PHP, JavaScript/TypeScript, CSS, SQL y HTML; alta de lenguajes nuevos |
+| `senior-diseno` | Diseño de interfaces: método (tres alternativas, feedback, evolución) y reglas objetivas con script; el estilo es libre |
+| `auditar-diseno` | Comando `/auditar-diseno`: revisa la interfaz de un proyecto existente sin modificarlo |
 | `adoptar-proyecto` | Comando `/adoptar-proyecto`: plan, aprobación y creación de la base documental |
 | `cerrar-sesion` | Comando `/cerrar-sesion`: cierre ordenado opcional |
 
@@ -81,21 +83,18 @@ python ~/.claude/skills/senior/scripts/verificar.py            # todo
 python ~/.claude/skills/senior/scripts/verificar.py readme     # un chequeo puntual
 ```
 
-Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `texto`, `diagramas`, `comentarios`, `autoria`, `fronteras`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `fronteras` y `diseno` solo dicen algo si el proyecto tiene una carpeta `diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
+Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `texto`, `diagramas`, `comentarios`, `autoria`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
 
 Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
 
-## Colaboración con un diseñador (opcional)
+## Diseño de interfaces
 
-El paquete funciona solo, pero sabe trabajar con un rol de diseño (por ejemplo, la skill `disenador-frontend`). Si el proyecto tiene una carpeta `diseno/`, `senior` la **lee y la respeta sin escribir en ella**: `diseno/` es del diseñador y todo lo demás es de producción. Se coordinan por archivos:
+La skill `senior-diseno` forma parte del paquete: un **método** (briefing, tres alternativas que difieren en estructura, feedback del usuario, evolución) y **reglas objetivas con control automático** que no tocan el aspecto artístico (una familia tipográfica ideal y dos como máximo, etiqueta visible en cada campo, hasta 4 campos visibles, una acción principal, contraste, foco). El estilo es libre. Es una sola sesión y un solo flujo: se diseña, se aprueba y se implementa con las reglas de `senior`.
 
-- Antes de implementar la interfaz lee `diseno/ENTREGA.md`, las variables de diseño, el inventario de componentes y los contratos de campos.
-- Usa las variables sin copiar sus valores, programa cada componente una sola vez y usa las etiquetas de los formularios exactamente como figuran en el contrato.
-- Lo que el diseño no cubre lo pide en `docs/solicitudes-de-diseno.md`; los ADR citan las decisiones de diseño por su ID.
-- Cada vez que se propone un cambio grande, recomienda dividir el trabajo en dos sesiones (diseño y producción), porque podría ser importante para la estabilidad del proyecto.
-- Opcional y con aprobación del usuario: un hook que bloquea las escrituras fuera de la carpeta de cada rol (`senior/scripts/hook_aislamiento.py`).
-
-Protocolo y detalles en `skills/senior/references/colaboracion-con-diseno.md`.
+- Los artefactos viven en `docs/diseno/` (rondas de bosquejos, preferencias, decisiones, variables de diseño, contratos de campos, auditorías).
+- Los bosquejos no llevan tests; el TDD empieza al implementar la pantalla.
+- Al implementar, `verificar.py diseno` comprueba que el código use las variables de diseño y las etiquetas del contrato de campos.
+- `/auditar-diseno` revisa un proyecto existente sin modificarlo.
 
 ## Regla de autoría
 
