@@ -12,6 +12,8 @@ Chequeos (sin argumento corre "todo"):
   alcance     archivos tocados que no figuran en el "Alcance" de la ficha
   deuda       TODO/FIXME/HACK en el código, atajos (`atajo: …; cuándo: …`) sin disparador y formato de docs/deuda-tecnica.md
   estado      ESTADO.md al día, cambios sin guardar, pasos abiertos en fichas
+  escala      la escala del proyecto (pequeño, mediano o grande) está declarada en docs/ESTADO.md y el proyecto
+              tiene lo que exige su nivel (ver escala.py)
   docs        marca requisitos sin test e IDs sin documento (solo lectura: el
               índice se regenera aparte con senior-memoria/scripts/indexar_docs.py indexar)
   fuentes     documentos e imágenes de documentos-externos/ sin procesar (convertir a Markdown o reducir a 1024 px)
@@ -48,6 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import atajos  # noqa: E402
 import comentarios  # noqa: E402
 import diagramas  # noqa: E402
+import escala  # noqa: E402 motivo: sys.path se ajusta antes, igual que los imports vecinos
 import guardia_listones  # noqa: E402 motivo: sys.path se ajusta antes, igual que los imports vecinos
 import seguridad  # noqa: E402
 import texto  # noqa: E402
@@ -292,6 +295,11 @@ def chequeo_listones(raiz, args):
     return guardia_listones.informe(hallazgos, justificados, 8), not hallazgos
 
 
+def chequeo_escala(raiz, args):
+    """La escala del proyecto está declarada y el proyecto tiene lo que exige su nivel (ver escala.py)."""
+    return escala.evaluar(raiz)
+
+
 EXT_FUENTE = {".html", ".htm", ".php", ".vue", ".svelte", ".jsx", ".tsx", ".js", ".ts", ".twig", ".ejs", ".css"}
 
 
@@ -466,7 +474,7 @@ def chequeo_seguridad(raiz, args):
 
 
 CHEQUEOS = {
-    "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado,
+    "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado, "escala": chequeo_escala,
     "docs": chequeo_docs, "fuentes": chequeo_fuentes, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
     "comentarios": chequeo_comentarios, "listones": chequeo_listones, "autoria": chequeo_autoria,
     "diseno": chequeo_diseno, "seguridad": chequeo_seguridad,

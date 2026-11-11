@@ -5,6 +5,8 @@
 
 **Última actualización:** AAAA-MM-DD
 
+**Escala del proyecto:** (sin declarar: la skill la pregunta al empezar; `senior/scripts/escala.py niveles`)
+
 ## Dónde estamos
 
 (Una o dos frases: qué se está haciendo ahora y en qué punto quedó.)
