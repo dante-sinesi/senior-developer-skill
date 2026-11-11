@@ -26,6 +26,8 @@ Chequeos (sin argumento corre "todo"):
   comentarios calidad de los comentarios del código modificado (ver comentarios.py)
   diseno      si el proyecto tiene docs/diseno/, comprueba que el código use las variables de diseño
               (sin copiar sus valores) y las etiquetas del contrato de campos; si no, no dice nada
+  listones    el cambio no afloja controles para pasar: umbrales, tests salteados o borrados, supresiones
+              de chequeos, trabajo a medias y atajos nuevos (ver guardia_listones.py)
   autoria     REGLA INVIOLABLE: en los commits nuevos solo figura el usuario; sin
               Claude, coautores ni pies de atribución (ver senior-git/scripts/guardia_autoria.py)
   seguridad   alertas por lenguaje, secretos, logs sensibles (ver seguridad.py)
@@ -45,6 +47,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import atajos  # noqa: E402
 import comentarios  # noqa: E402
 import diagramas  # noqa: E402
+import guardia_listones  # noqa: E402 motivo: sys.path se ajusta antes, igual que los imports vecinos
 import seguridad  # noqa: E402
 import texto  # noqa: E402
 
@@ -259,6 +262,14 @@ def chequeo_readme(raiz, args):
     return ["README: " + "; ".join(problemas) + "."], False
 
 
+def chequeo_listones(raiz, args):
+    """El cambio no afloja controles para pasar (umbrales, tests, supresiones, trabajo a medias; ver guardia_listones.py)."""
+    if not es_repo(raiz):
+        return ["Listones: la carpeta no es un repositorio git (se omite)."], True
+    hallazgos, justificados = guardia_listones.analizar(guardia_listones.leer_diff(raiz, args.base))
+    return guardia_listones.informe(hallazgos, justificados, 8), not hallazgos
+
+
 EXT_FUENTE = {".html", ".htm", ".php", ".vue", ".svelte", ".jsx", ".tsx", ".js", ".ts", ".twig", ".ejs", ".css"}
 
 
@@ -435,7 +446,7 @@ def chequeo_seguridad(raiz, args):
 CHEQUEOS = {
     "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado,
     "docs": chequeo_docs, "fuentes": chequeo_fuentes, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
-    "comentarios": chequeo_comentarios, "autoria": chequeo_autoria,
+    "comentarios": chequeo_comentarios, "listones": chequeo_listones, "autoria": chequeo_autoria,
     "diseno": chequeo_diseno, "seguridad": chequeo_seguridad,
 }
 

@@ -41,6 +41,7 @@ Un commit ya subido que viola la regla es un incidente: se avisa al usuario de i
 7. **Secretos**: antes de commitear, `verificar.py seguridad` (claves, tokens, contraseñas). Un secreto subido se considera comprometido aunque se borre después.
 8. **README al día en cada PR, sin excepción.** El PR no se abre con el README sin revisar: `verificar.py readme --base main` lo comprueba contra la rama base.
 9. **Tamaño**: si la rama crece demasiado (nivel "grande" en `verificar.py tamano`), plantear al usuario dividirla.
+10. **Listones**: antes del PR, `verificar.py listones --base main`. Si la rama aflojó un umbral, salteó o borró un test o silenció un chequeo, se corrige o se justifica por escrito con `motivo: …`; en la descripción del PR se nombra cada excepción.
 
 ## Flujo típico
 
