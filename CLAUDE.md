@@ -27,5 +27,6 @@ No se crea ningún archivo, carpeta, muestra, captura ni descarga fuera de la ra
 - **Ningún documento externo se lee directo:** se convierte con `senior-relevar/scripts/convertir_fuentes.py`, y las imágenes se reducen a 1024 px; lo que llegue por el chat se copia a `documentos-externos/` con `--importar`.
 - **La skill de diseño (`senior-diseno`) conserva su enfoque:** un método (tres alternativas que difieren en estructura, feedback, evolución) y reglas objetivas con script, y el aspecto es libre. No volver a agregar plantillas con estilo, límites de expresión ni chequeos estéticos; todo cambio se valida con una revisión a ciegas del usuario.
 - **El README siempre al día** y sin saludos ni relleno; los textos en español neutro.
+- **El README y todo lo que se sube es solo del proyecto.** Una respuesta a una consulta del usuario, su máquina, su memoria o configuración personal de Claude no se escriben en el README, en las skills ni en la documentación: se contestan en el chat. `verificar.py readme` avisa de las señales más comunes.
 
 Proyecto: skill senior.

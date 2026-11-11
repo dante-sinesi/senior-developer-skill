@@ -64,11 +64,7 @@ Para dejar todo funcionando la primera vez, o en una máquina nueva, en este ord
 5. **En cada proyecto,** abrir una sesión de Claude Code: la skill activa sola el hook de Git del repositorio, crea `documentos-externos/` y resuelve en nombre de quién se hacen los commits: usa la identidad local del repositorio o la sesión de GitHub (`gh`) y, **si no hay ninguna, Claude te pregunta** tu nombre de usuario de GitHub y tu correo. La skill no trae ningún nombre fijo.
 6. **Abrir una sesión nueva** de Claude Code para que se apliquen los hooks globales.
 
-### Lo que no está en este repositorio
-
-La memoria de Claude Code (`~/.claude/projects/…/memory`), el resto de `~/.claude/settings.json` y `~/.claude/CLAUDE.md` viven fuera del repositorio: conviene copiarlos antes de reinstalar el sistema. Las reglas del paquete (autoría, commits y Pull Requests solo con aprobación, documentos e imágenes externos, diseño) están escritas en las skills y no dependen de esa memoria.
-
-Instalación manual, si se prefiere: copiar las carpetas de `skills/` a `~/.claude/skills`, **todas juntas**, porque algunos scripts localizan a sus hermanas por ruta relativa. Estas skills viven en la carpeta local de Claude Code y normalmente no aparecen en los ajustes de skills de claude.ai.
+Instalación manual, si se prefiere: copiar las carpetas de `skills/` a `~/.claude/skills`, **todas juntas**, porque algunos scripts localizan a sus hermanas por ruta relativa.
 
 ## Cómo se usa
 

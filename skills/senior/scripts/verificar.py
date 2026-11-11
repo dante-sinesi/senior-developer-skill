@@ -19,7 +19,8 @@ Chequeos (sin argumento corre "todo"):
   requisitos  calidad del texto de docs/requisitos/: encabezado, IDs, enlaces, ejemplos verificables,
               palabras ambiguas y estado (ver senior-docs/scripts/revisar_requisitos.py)
   readme      el README.md de GitHub existe, está completo, enlaza a docs/,
-              menciona cada carpeta y se actualizó con el cambio (sin excepciones)
+              menciona cada carpeta, se actualizó con el cambio (sin excepciones)
+              y no contiene texto ajeno al proyecto (consultas, configuración personal)
   texto       límites de extensión, párrafos repetidos, secciones vacías e
               información perdida en docs/ (ver texto.py)
   diagramas   legibilidad de los diagramas Mermaid (ver diagramas.py)
@@ -228,6 +229,23 @@ def chequeo_diagramas(raiz, args):
     return [f"Diagramas: {len(problemas)} problemas en {total} diagramas:"] + [f"  {p}" for p in problemas[:10]], False
 
 
+# Señales de que el README (o un documento que se sube) responde a una consulta o habla de la máquina del
+# usuario en vez de describir el proyecto. Es una heurística: avisa, no decide.
+AJENO_AL_PROYECTO = [
+    (re.compile(r"^#{1,6}\s*(lo que )?no (está|esta) en (este|el) (repositorio|repo|proyecto)", re.I | re.M), "sección sobre lo que no está en el repositorio"),
+    (re.compile(r"reinstalar (el|tu|su) (sistema|equipo|computadora|pc|máquina)", re.I), "habla de reinstalar el sistema del usuario"),
+    (re.compile(r"(copiar|copiá|copia)(los|las|lo|la)? antes de", re.I), "consejo de copia de seguridad personal"),
+    (re.compile(r"memoria de claude|~/\.claude/projects|~/\.claude/claude\.md", re.I), "memoria o configuración personal de Claude"),
+    (re.compile(r"\b(como (te|me) (comenté|pediste|dijiste)|a pedido de|en (la|esta) consulta|en (la|esta) conversación)\b", re.I), "referencia a una conversación"),
+]
+
+
+def contenido_ajeno(texto):
+    """Señales de contenido que no es del proyecto (texto fuera de los bloques de código)."""
+    sin_codigo = re.sub(r"```.*?```", "", texto, flags=re.S)
+    return [msg for patron, msg in AJENO_AL_PROYECTO if patron.search(sin_codigo)]
+
+
 def chequeo_readme(raiz, args):
     """El README de GitHub se mantiene al día en cada cambio, sin excepciones."""
     readme = next((raiz / n for n in ("README.md", "readme.md", "Readme.md") if (raiz / n).exists()), None)
@@ -248,6 +266,10 @@ def chequeo_readme(raiz, args):
     hay_tests = any(n in {"test", "tests", "spec", "__tests__"} for n in (c.lower() for c in carpetas))
     if hay_tests and not re.search(r"test|prueba", bajo):
         problemas.append("hay tests pero no explica cómo ejecutarlos")
+    ajeno = contenido_ajeno(contenido)
+    if ajeno:
+        problemas.append("contiene texto que no es del proyecto (" + "; ".join(ajeno[:3]) + "): "
+                         "lo surgido en una consulta o la configuración personal del usuario se contesta en el chat, no se sube")
     if es_repo(raiz):
         cambiados = archivos_cambiados(raiz, args.base)
         codigo = [a for a in cambiados if not a.startswith("docs/") and a.lower() != readme.name.lower()]
