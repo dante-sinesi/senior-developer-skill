@@ -41,7 +41,7 @@ Decidir qué se **conserva, qué se mueve y qué se esconde** al pasar de deskto
 
 ## 4. Estados que se suelen olvidar
 
-Todo componente tiene más de un estado: **vacío, cargando, con error, éxito, deshabilitado, foco, con datos largos o ausentes**. El bosquejo no los resuelve todos, pero la propuesta fuerte sí.
+Todo componente tiene más de un estado: **vacío, cargando, con error, éxito, deshabilitado, foco, con datos largos o ausentes**. El bosquejo no los resuelve todos, pero la propuesta fuerte sí. `revisar_diseno.py estados` avisa de los que faltan (error, vacío y carga en una app, texto largo) y de lo que el navegador deja por defecto (color de selección, casillas, cifras de tablas, barras de scroll). Son solo avisos y se resuelven con diseño, no con una plantilla.
 
 ## 5. Sitio o aplicación
 
@@ -52,6 +52,15 @@ Todo componente tiene más de un estado: **vacío, cargando, con error, éxito, 
 | Densidad | Aireada, con énfasis | Mayor, con jerarquía muy clara |
 | Foco del diseño | Composición, tipografía, imagen, voz | Estados, tablas, formularios, atajos, consistencia |
 | Riesgo típico | Verse como cualquier otra landing | Tableros idénticos y formularios largos sin ayuda |
+
+Dentro de cada uno, el **modo de la pantalla** (ver `briefing.md`) decide cómo se gasta la ambición. No limita el arte: lo orienta.
+
+| Modo | Dónde se nota la ambición |
+|---|---|
+| **Decidir** (landing, precios, campaña) | Composición, voz y un punto de vista propio; es donde más se arriesga |
+| **Hacer una tarea** (panel, editor, ajustes) | Precisión: escaneo rápido, consistencia, los patrones que la persona ya conoce; la identidad vive en los detalles |
+| **Entender** (documentación, artículo, ayuda) | Estructura para comprender primero y después una lectura que valga la pena |
+| **Recorrer una obra** (portfolio, galería) | La obra manda desde la primera vista y la interfaz se corre |
 
 ## 6. Accesibilidad mínima (no negociable)
 

@@ -34,8 +34,9 @@ Un buen briefing cabe en una página y se hace en pocas preguntas. No se interro
 **Referencias**
 - Tres que gustan y tres que no, y **por qué** (la razón vale más que la imagen). Si son imágenes, se leen directamente.
 
-**Tipo de proyecto** (cambia los criterios, ver `ux.md`)
+**Tipo de proyecto y modo de cada superficie** (cambia los criterios, ver `ux.md`)
 - ¿Sitio o landing (persuadir, contar, identidad) o aplicación web (hacer tareas, densidad, estados)?
+- Para cada pantalla o sección importante: ¿qué busca quien llega? **Decidir** (landing, precios, campaña), **hacer una tarea** (panel, editor, ajustes), **entender** (documentación, artículo, ayuda) o **recorrer una obra** (portfolio, galería, muestra). El modo es de la pantalla, no del producto: la página de inicio de una herramienta de trabajo sigue siendo de decidir, y la documentación de una casa de moda sigue siendo de entender.
 
 ## 2. Cómo preguntar
 

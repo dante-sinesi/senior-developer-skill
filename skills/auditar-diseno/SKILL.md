@@ -15,7 +15,7 @@ Modo de revisión de un proyecto existente. Requiere la skill `senior-diseno` in
    ```
    Escribe `docs/diseno/auditoria/AAAA-MM-DD.md` con el resumen, los hallazgos y las propuestas por impacto y esfuerzo. **No modifica nada del proyecto.**
 2. **Leer el informe** (no los archivos del proyecto: el script ya los revisó) y presentarlo al usuario en pocas líneas: qué es lo más grave y qué rinde más por menos esfuerzo.
-3. **Complementar con lo que el script no ve**: si el proyecto corre, revisar la página renderizada; ante plantillas complejas (JSX, Vue), confirmar los hallazgos clave a mano. Lo subjetivo (identidad, tono, jerarquía) se conversa con el usuario.
+3. **Complementar con lo que el script no ve**: si el proyecto corre, revisar la página renderizada; ante plantillas complejas (JSX, Vue), confirmar los hallazgos clave a mano. Después agregar al mismo informe la sección `## Lectura de diseño` (especificidad, diez heurísticas de 0 a 4, carga cognitiva, fortalezas y problemas con caso concreto; formato en `senior-diseno/references/auditoria.md`). Lo subjetivo (identidad, tono, jerarquía) se conversa con el usuario.
 4. **Priorizar con el usuario** y proponer cómo seguir: para lo que necesita decisiones de diseño, abrir una ronda con `crear_bosquejos.py` (la dirección actual como punto de partida y dos alternativas); para lo mecánico (etiquetas, contraste), dejarlo escrito en `docs/pendientes.md` para implementarlo después con las reglas de `senior`.
 5. **Nada se aplica sin aprobación.** La auditoría solo escribe en `docs/diseno/auditoria/`; los cambios en el código son una tarea aparte, con las reglas de `senior`.
 
