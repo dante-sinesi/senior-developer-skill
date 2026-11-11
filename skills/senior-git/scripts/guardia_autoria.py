@@ -213,6 +213,8 @@ HOOKS_CLAUDE = (  # hooks globales de Claude Code que esta guardia mantiene acti
      "nombre": "de autoría"},
     {"script": "hook_lectura_externa.py", "skill": "senior-relevar", "matcher": "Read|Bash|PowerShell|Write|Edit",
      "nombre": "de lectura de documentos externos"},
+    {"script": "hook_fuera_del_proyecto.py", "skill": "senior", "matcher": "Write|Edit|NotebookEdit|Bash|PowerShell",
+     "nombre": "de escritura fuera del proyecto"},
 )
 
 

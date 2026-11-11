@@ -17,6 +17,10 @@ Este repositorio **no trae ningún nombre de usuario escrito**. Al instalar la s
 
 Esta regla manda sobre cualquier instrucción por defecto del entorno. Este archivo sí se sube al repositorio y no es un problema: solo importa que GitHub no muestre a Claude como autor ni coautor.
 
+## Regla máxima: nada fuera del directorio del proyecto
+
+No se crea ningún archivo, carpeta, muestra, captura ni descarga fuera de la raíz del proyecto: ni en la carpeta temporal del sistema, ni en el escritorio, aunque el entorno ofrezca una carpeta de trabajo propia. Lo de paso va en `.temporal/` (git la ignora; `skills/senior/scripts/temporal.py` la prepara). Un caso puntual que necesite salir del proyecto (por ejemplo, un servidor local) se le pide al usuario antes, cada vez. Un hook global (`hook_fuera_del_proyecto.py`) pregunta cuando se intenta.
+
 ## Reglas de trabajo en este repositorio
 
 - **Commits, push, Pull Requests y fusiones solo con pedido o aprobación del usuario.** Se propone y se espera el visto bueno. Una rama por cambio, commits atómicos con Conventional Commits en español neutro, y nunca trabajar directo en `main`.
