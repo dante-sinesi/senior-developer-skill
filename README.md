@@ -42,7 +42,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 - Python 3.8 o superior (los scripts usan solo la biblioteca estándar).
 - Git. El CLI `gh` es necesario solo para trabajar con GitHub.
 - Opcional: `npm`, `composer` o `pip-audit` si se quiere la auditoría de dependencias.
-- Opcional: la biblioteca `markitdown` (`pip install "markitdown[all]"`) para convertir documentos externos con `senior-relevar/scripts/convertir_fuentes.py`. Nunca se instala sola, y las imágenes no se convierten: se leen directamente.
+- **Obligatorias para documentos e imágenes externos:** `markitdown` (`pip install "markitdown[all]"`) para los documentos y `Pillow` (`pip install pillow`) para las imágenes. Nunca se instalan solas: si falta una, se pide aprobación.
 
 ## Instalación
 
@@ -83,9 +83,20 @@ python ~/.claude/skills/senior/scripts/verificar.py            # todo
 python ~/.claude/skills/senior/scripts/verificar.py readme     # un chequeo puntual
 ```
 
-Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `requisitos`, `texto`, `diagramas`, `comentarios`, `autoria`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
+Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `fuentes`, `requisitos`, `texto`, `diagramas`, `comentarios`, `autoria`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
 
 Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
+
+## Documentos e imágenes externos
+
+Está prohibido leer directamente un PDF, DOCX, XLSX, PPTX, HTML, JSON u otro documento externo, y una imagen sin reducirla: **siempre se procesan antes**. Es obligatorio.
+
+- La carpeta es **`documentos-externos/`**, en la raíz del proyecto. Se crea sola al iniciar y ahí se dejan los archivos.
+- Se ejecuta `senior-relevar/scripts/convertir_fuentes.py`: los documentos pasan a Markdown (se lee `docs/fuentes/`) y las imágenes se reducen a un máximo de **1024 px** en el lado más largo (se lee `docs/fuentes/imagenes/`).
+- Lo que se manda por el chat no se lee: se copia a la carpeta con `convertir_fuentes.py --importar <archivos>`, se procesa y se lee el resultado.
+- Un **hook global de Claude Code** lo hace obligatorio (lo registra `guardia_autoria.py asegurar`): bloquea la lectura directa y, en los casos de excepción, le pregunta al usuario.
+
+Ahorro aproximado frente al original: HTML o web, de 65 % a 87 %; PDF con diseño o tablas, de 40 % a 75 %; DOCX, XLSX o PPTX, de 30 % a 60 %; JSON y datos, de 15 % a 30 %; imágenes reducidas a 1024 px, de 50 % a 75 % de los tokens de visión. **No se aplica** a los PDF escaneados como imagen (sin texto embebido, haría falta OCR) ni a los documentos donde importa el diseño visual (ahí se usa el original o capturas); los SVG y las imágenes de 1024 px o menos se leen directo. `verificar.py fuentes` avisa si hay archivos sin procesar.
 
 ## Diseño de interfaces
 

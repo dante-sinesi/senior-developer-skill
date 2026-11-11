@@ -19,6 +19,7 @@ En todo lo que se sube a GitHub (commits, Pull Requests, Issues, releases, READM
 - **Hooks activos siempre (autorizado de forma permanente por el usuario).** Hay dos, y los dos se verifican y se activan solos al iniciar (`guardia_autoria.py asegurar`, paso 0 del flujo de `senior` y primera acción de `cargar_estado.py`):
   - **Hooks de Git** (`commit-msg` y `pre-push`): viven en `.git/hooks/` de **cada clon**, y Git no los sube, así que se instalan en cada proyecto cada vez que la skill se usa y falten. Bloquean cualquier commit o push que viole la regla.
   - **Hook global de Claude Code** (`hook_autoria_claude.py`, en `~/.claude/settings.json`): vale para todos los proyectos y bloquea los comandos `git commit`, `git tag` y `gh pr|issue|release|api` con `Co-Authored-By`, pies de generación o autores de Claude. Se aplica al abrir una sesión nueva. Si la máquina se reinstala, `asegurar` lo vuelve a poner.
+  - **Hook global de lectura de documentos e imágenes externos** (`senior-relevar/scripts/hook_lectura_externa.py`): lo registra la misma verificación. Bloquea la lectura directa de documentos externos y de imágenes de más de 1024 px, y pregunta al usuario en las excepciones (ver `senior-relevar`).
   - `guardia_autoria.py asegurar --solo-verificar` solo informa qué falta, sin escribir.
   - Que haya archivos de Claude en el repositorio (como `CLAUDE.md`) no es un problema: lo que no puede aparecer en GitHub es Claude como autor o coautor.
 

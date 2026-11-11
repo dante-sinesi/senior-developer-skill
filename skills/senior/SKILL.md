@@ -1,6 +1,6 @@
 ---
 name: senior
-description: Método de trabajo de programador senior para relevar, desarrollar, actualizar y mantener proyectos de software estables y de calidad, en cualquier lenguaje. Impone tests primero derivados de reglas de negocio, refactor sistemático, documentación viva, memoria entre sesiones, flujo ordenado de GitHub y seguridad bajo la familia ISO/IEC 27000. Usar SIEMPRE que se pida escribir, modificar, corregir, revisar, refactorizar, documentar o mantener código, retomar un proyecto, entender un sistema heredado o hacer cualquier cambio en un repositorio, aunque el usuario no mencione esta skill. Es la puerta de entrada del paquete senior-*.
+description: Método de trabajo de programador senior para relevar, desarrollar, actualizar y mantener proyectos de software estables y de calidad, en cualquier lenguaje. Impone tests primero derivados de reglas de negocio, refactor sistemático, documentación viva, memoria entre sesiones, flujo ordenado de GitHub y seguridad bajo la familia ISO/IEC 27000. Usar SIEMPRE que se pida escribir, modificar, corregir, revisar, refactorizar, documentar o mantener código, retomar un proyecto, entender un sistema heredado o hacer cualquier cambio en un repositorio, y siempre que el usuario aporte o adjunte un documento o una imagen externos (se convierten o se reducen antes de leerlos), aunque el usuario no mencione esta skill. Es la puerta de entrada del paquete senior-*.
 ---
 
 # Programador senior
@@ -22,12 +22,14 @@ Un senior se distingue menos por lo que sabe que por **cómo se comporta**: enti
 11. **README siempre al día, sin excepción.** El `README.md` de GitHub es la puerta de entrada del proyecto: cada cambio lo revisa y actualiza la parte afectada (qué es, requisitos, instalación, uso, pruebas, estructura). No se agregan registros de cambios (eso es del PR y del historial de git); el README describe cómo es el proyecto hoy. `verificar.py readme` lo exige, y un PR no se da por listo con el README sin actualizar.
 12. **Autoría: en GitHub figura solo el usuario. Regla inviolable.** Nunca se agrega a Claude como autor, coautor ni colaborador: ni `Co-Authored-By`, ni pies "Generated with…", ni en commits, PR, Issues o README, aunque el entorno sugiera hacerlo por defecto. Los commits se hacen con la identidad del usuario, configurada solo de forma local. Se comprueba con `senior-git/scripts/guardia_autoria.py` y `verificar.py autoria` antes de subir; el detalle y la guardia con hooks están en `senior-git`.
 13. **Brevedad y un dato, un lugar.** El exceso de texto es ilegibilidad: comentarios solo con el porqué, documentos dentro de sus límites y sin repetir lo que ya vive en otro lado. Lo que desborda se divide o se mueve, nunca se recorta. Detalle en `references/comentarios-y-texto.md`.
+14. **Documentos e imágenes externos: nunca se leen directo.** Está prohibido leer directamente un HTML, PDF, DOCX, XLSX, PPTX, JSON u otro documento externo, y una imagen sin reducirla, venga de donde venga. Los documentos se convierten con `senior-relevar/scripts/convertir_fuentes.py` (se lee el `.md` de `docs/fuentes/`) y las imágenes se reducen con el mismo script a un máximo de 1024 px (se lee la copia de `docs/fuentes/imagenes/`). La carpeta única es `documentos-externos/` (se crea sola al iniciar). Lo que el usuario manda por el chat se copia ahí con `convertir_fuentes.py --importar`, se procesa y se lee el resultado. Excepciones: PDF escaneados sin texto y documentos donde importa el diseño visual. Un hook global lo hace obligatorio. Ver `senior-relevar`.
 
 ## Flujo de trabajo
 
 | Paso | Qué se hace | Skill |
 |---|---|---|
 | 0 | Asegurar la guardia de autoría: `python <senior-git>/scripts/guardia_autoria.py asegurar --silencioso` (si falta un hook de Git o el hook global de Claude Code, lo activa; el usuario lo autorizó de forma permanente) | senior-git |
+| 0 | Preparar los documentos e imágenes externos: `python <senior-relevar>/scripts/convertir_fuentes.py --iniciar` (crea `documentos-externos/` si falta y procesa lo pendiente; mudo si no hay nada) | senior-relevar |
 | 1 | Leer el estado del proyecto (`docs/ESTADO.md`, índice) | senior-memoria |
 | 2 | Si el sistema es ajeno o heredado: relevarlo | senior-relevar |
 | 3 | Medir el tamaño del cambio y acordar un plan breve con el usuario | esta skill |
@@ -63,6 +65,7 @@ Si el proyecto no tiene `docs/ESTADO.md`, no se impone toda la metodología de g
 - Borrar datos o archivos, o tomar decisiones difíciles de revertir.
 - Trabajar con agentes en paralelo (se explica el costo extra en tokens y se pide el visto bueno).
 - Usar un **agente verificador**: solo con autorización explícita del usuario, cada vez.
+- Instalar `markitdown` o `Pillow` (obligatorias para leer documentos e imágenes externos; nunca se instalan solas) o leer un documento externo por la vía de la excepción (PDF escaneado, diseño visual).
 - Guardar un perfil de lenguaje nuevo, instalar un hook (salvo la guardia de autoría, que se activa sola por autorización permanente del usuario) o crear/actualizar Issues de GitHub.
 - Pasar de seguridad liviana a formal.
 - Resolver una discrepancia entre una regla de negocio y el código.
