@@ -20,6 +20,10 @@ Chequeos (sin argumento corre "todo"):
               información perdida en docs/ (ver texto.py)
   diagramas   legibilidad de los diagramas Mermaid (ver diagramas.py)
   comentarios calidad de los comentarios del código modificado (ver comentarios.py)
+  fronteras   con un diseñador: cada rol escribe solo en su carpeta (diseno/ es del diseñador);
+              no dice nada si el proyecto no tiene diseno/
+  diseno      lee la entrega del diseñador (diseno/ENTREGA.md), las solicitudes abiertas, y comprueba que
+              el código use las variables de diseño y las etiquetas del contrato de campos
   autoria     REGLA INVIOLABLE: en los commits nuevos solo figura el usuario; sin
               Claude, coautores ni pies de atribución (ver senior-git/scripts/guardia_autoria.py)
   seguridad   alertas por lenguaje, secretos, logs sensibles (ver seguridad.py)
@@ -247,6 +251,118 @@ def chequeo_readme(raiz, args):
     return ["README: " + "; ".join(problemas) + "."], False
 
 
+EXT_FUENTE = {".html", ".htm", ".php", ".vue", ".svelte", ".jsx", ".tsx", ".js", ".ts", ".twig", ".ejs", ".css"}
+
+
+def rol_marcado(raiz):
+    marcador = raiz / ".claude" / "rol-activo"
+    if marcador.exists():
+        valor = marcador.read_text(encoding="utf-8", errors="replace").strip().lower()
+        return valor if valor in ("diseno", "produccion") else None
+    return None
+
+
+def cambios_sin_guardar(raiz):
+    salida, _ = git(raiz, "status", "--porcelain")  # git() recorta espacios: se separa por el primer espacio, no por posición
+    rutas = []
+    for l in salida.splitlines():
+        m = re.match(r"^\s*\S+\s+(.*)$", l)
+        if m:
+            ruta = m.group(1).strip().strip('"').replace("\\", "/")
+            rutas.append(ruta.split(" -> ")[-1])
+    return rutas
+
+
+def chequeo_fronteras(raiz, args):
+    """Cada rol escribe solo en su carpeta: diseno/ es del diseñador; todo lo demás, de producción."""
+    if not (raiz / "diseno").is_dir() or not es_repo(raiz):
+        return [], True
+    rol = rol_marcado(raiz)
+    cambios = [c for c in cambios_sin_guardar(raiz) if c not in GENERADOS and not c.startswith(".claude/")]
+    en_diseno = [c for c in cambios if c.startswith("diseno/")]
+    fuera = [c for c in cambios if not c.startswith("diseno/")]
+    if rol == "diseno" and fuera:
+        return [f"Fronteras: el rol de diseño tiene {len(fuera)} cambios fuera de diseno/ (solo debe escribir ahí): "
+                + ", ".join(fuera[:4]) + "."], False
+    if rol == "produccion" and en_diseno:
+        return [f"Fronteras: producción tiene {len(en_diseno)} cambios dentro de diseno/ (es del diseñador): "
+                + ", ".join(en_diseno[:4]) + ". Dejar el pedido en docs/solicitudes-de-diseno.md."], False
+    if rol is None and en_diseno and fuera:
+        return ["Fronteras: hay cambios sin guardar en diseno/ y fuera de él; si son de roles distintos, "
+                "guardar (commit) cada parte por separado y fijar el rol con hook_aislamiento.py rol."], False
+    return [f"Fronteras: sin cruces entre diseno/ y el resto (rol: {rol or 'sin marcar'})."], True
+
+
+def tabla_columna(texto, columna):
+    """Valores de una columna de las tablas Markdown cuyo encabezado la contiene."""
+    valores, indice = [], None
+    for linea in texto.splitlines():
+        if not linea.strip().startswith("|"):
+            indice = None
+            continue
+        celdas = [c.strip() for c in linea.strip().strip("|").split("|")]
+        if indice is None:
+            nombres = [c.lower() for c in celdas]
+            indice = nombres.index(columna.lower()) if columna.lower() in nombres else -1
+        elif indice >= 0 and indice < len(celdas) and not set(celdas[indice]) <= set("-: "):
+            valores.append(celdas[indice])
+    return valores
+
+
+def chequeo_diseno(raiz, args):
+    """Lectura de la entrega del diseñador y fidelidad de la implementación (variables y etiquetas)."""
+    diseno = raiz / "diseno"
+    if not diseno.is_dir():
+        return [], True
+    lineas, ok = [], True
+    entrega = diseno / "ENTREGA.md"
+    if entrega.exists():
+        t = entrega.read_text(encoding="utf-8-sig", errors="replace")
+        version = re.search(r"\*\*Versión:\*\*\s*(\S+)", t)
+        fecha = re.search(r"\*\*Fecha:\*\*\s*(\d{4}-\d{2}-\d{2})", t)
+        lineas.append(f"Diseño: entrega versión {version.group(1) if version else '?'} del {fecha.group(1) if fecha else 'sin fecha'} "
+                      "(leer diseno/ENTREGA.md antes de implementar).")
+    else:
+        lineas.append("Diseño: existe diseno/ pero todavía no hay ENTREGA.md; no implementar sin una entrega del diseñador.")
+        ok = False
+    solicitudes = raiz / "docs" / "solicitudes-de-diseno.md"
+    if solicitudes.exists():
+        abiertas = len(re.findall(r"(?im)^\*\*Estado:\*\*\s*abierta", solicitudes.read_text(encoding="utf-8-sig", errors="replace")))
+        if abiertas:
+            lineas.append(f"Diseño: {abiertas} solicitudes de producción abiertas esperan respuesta del diseñador.")
+    fuentes = [f for f in raiz.rglob("*") if f.is_file() and f.suffix.lower() in EXT_FUENTE
+               and not (set(f.relative_to(raiz).parts) & {"diseno", "docs", "node_modules", "vendor", "dist", "build", ".git", ".claude"})]
+    textos = {f: f.read_text(encoding="utf-8", errors="replace") for f in fuentes}
+    tokens = diseno / "sistema" / "tokens.css"
+    if tokens.exists() and fuentes:
+        valores = {c.lower() for c in re.findall(r"#[0-9a-fA-F]{3,8}\b", tokens.read_text(encoding="utf-8", errors="replace"))}
+        copiados = {}
+        for f, t in textos.items():
+            if f.suffix.lower() in (".css", ".html", ".htm", ".vue", ".svelte"):
+                for c in {x.lower() for x in re.findall(r"#[0-9a-fA-F]{3,8}\b", t)} & valores:
+                    copiados.setdefault(c, f.name)
+        if copiados:
+            ejemplos = ", ".join(f"{c} en {n}" for c, n in list(copiados.items())[:3])
+            lineas.append(f"Diseño: {len(copiados)} colores de las variables de diseño están copiados como literales ({ejemplos}): "
+                          "usar var(--…) para no duplicar los valores.")
+            ok = False
+    contratos = sorted((diseno / "campos").glob("*.md")) if (diseno / "campos").is_dir() else []
+    if contratos and fuentes:
+        codigo = "\n".join(textos.values()).lower()
+        faltan = []
+        for f in contratos:
+            etiquetas = [e for e in tabla_columna(f.read_text(encoding="utf-8-sig", errors="replace"), "Etiqueta final")
+                         if e and not e.startswith("(")]
+            faltan += [(f.stem, e) for e in etiquetas if e.lower() not in codigo]
+        if faltan:
+            lineas.append("Diseño: etiquetas del contrato de campos que no aparecen en el código: "
+                          + "; ".join(f"«{e}» ({n})" for n, e in faltan[:4]) + ". Implementarlas exactamente como figuran.")
+            ok = False
+        else:
+            lineas.append(f"Diseño: las etiquetas de {len(contratos)} contratos de campos aparecen en el código.")
+    return lineas, ok
+
+
 def chequeo_autoria(raiz, args):
     """Regla inviolable: en lo que se sube a GitHub figura únicamente el usuario."""
     guardia = Path(__file__).resolve().parents[2] / "senior-git" / "scripts" / "guardia_autoria.py"
@@ -312,7 +428,8 @@ def chequeo_seguridad(raiz, args):
 CHEQUEOS = {
     "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado,
     "docs": chequeo_docs, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
-    "comentarios": chequeo_comentarios, "autoria": chequeo_autoria, "seguridad": chequeo_seguridad,
+    "comentarios": chequeo_comentarios, "autoria": chequeo_autoria, "fronteras": chequeo_fronteras,
+    "diseno": chequeo_diseno, "seguridad": chequeo_seguridad,
 }
 
 
@@ -332,7 +449,8 @@ def main():
     for nombre in elegidos:
         lineas, ok = CHEQUEOS[nombre](raiz, args)
         todo_bien = todo_bien and ok
-        print("\n".join(lineas))
+        if lineas:  # los chequeos de diseño no dicen nada si el proyecto no tiene diseno/
+            print("\n".join(lineas))
     if args.chequeo == "todo":
         print("Resultado: " + ("todo en orden." if todo_bien else "hay puntos para revisar."))
     sys.exit(0 if todo_bien else 1)

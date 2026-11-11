@@ -56,6 +56,10 @@ Un diagrama que existe pero no se entiende no sirve. Reglas completas y ejemplos
 
 Para decisiones importantes y difíciles de revertir: `docs/decisiones/ADR-001.md` con la plantilla `plantillas/adr.md` (contexto, decisión, alternativas, consecuencias). Evita rediscutir lo ya decidido.
 
+## Cuando hay un diseñador
+
+Las decisiones de diseño viven en `diseno/ENTREGA.md` (IDs `D-001`…), que es del diseñador. Los ADR las **citan** por ID, sin copiarlas. Los pedidos de producción al diseñador se dejan en `docs/solicitudes-de-diseno.md` con la plantilla `plantillas/solicitud-de-diseno.md`. Ver `senior/references/colaboracion-con-diseno.md`.
+
 ## Trazabilidad
 
 Cada test cita el ID del requisito que verifica (en un comentario o nombre). `senior-memoria/scripts/indexar_docs.py` arma la matriz requisito → test → código y marca requisitos sin test e IDs sin documento. Regenerar el índice tras cambiar documentación.

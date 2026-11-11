@@ -81,9 +81,21 @@ python ~/.claude/skills/senior/scripts/verificar.py            # todo
 python ~/.claude/skills/senior/scripts/verificar.py readme     # un chequeo puntual
 ```
 
-Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `texto`, `diagramas`, `comentarios` y `seguridad` (con `--auditar` suma las dependencias). Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
+Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `texto`, `diagramas`, `comentarios`, `autoria`, `fronteras`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `fronteras` y `diseno` solo dicen algo si el proyecto tiene una carpeta `diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
 
 Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
+
+## Colaboración con un diseñador (opcional)
+
+El paquete funciona solo, pero sabe trabajar con un rol de diseño (por ejemplo, la skill `disenador-frontend`). Si el proyecto tiene una carpeta `diseno/`, `senior` la **lee y la respeta sin escribir en ella**: `diseno/` es del diseñador y todo lo demás es de producción. Se coordinan por archivos:
+
+- Antes de implementar la interfaz lee `diseno/ENTREGA.md`, las variables de diseño, el inventario de componentes y los contratos de campos.
+- Usa las variables sin copiar sus valores, programa cada componente una sola vez y usa las etiquetas de los formularios exactamente como figuran en el contrato.
+- Lo que el diseño no cubre lo pide en `docs/solicitudes-de-diseno.md`; los ADR citan las decisiones de diseño por su ID.
+- Cada vez que se propone un cambio grande, recomienda dividir el trabajo en dos sesiones (diseño y producción), porque podría ser importante para la estabilidad del proyecto.
+- Opcional y con aprobación del usuario: un hook que bloquea las escrituras fuera de la carpeta de cada rol (`senior/scripts/hook_aislamiento.py`).
+
+Protocolo y detalles en `skills/senior/references/colaboracion-con-diseno.md`.
 
 ## Regla de autoría
 
