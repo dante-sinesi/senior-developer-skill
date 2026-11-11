@@ -69,6 +69,19 @@ La descripción y los Topics son la portada del repositorio en GitHub: lo primer
 - **Autorización permanente del usuario, solo para esto:** la descripción y los Topics se actualizan sin pedir permiso cada vez, y siempre se informa qué cambió. No se extiende a nada más: nunca se tocan la visibilidad, la página web ni otros ajustes del repositorio.
 - **Cuidados:** una descripción que ya existe y no escribió senior se muestra y se pregunta antes de pisarla (`--reemplazar-descripcion`). Solo se quitan los Topics que senior agregó antes; los que puso el usuario se conservan. Nunca van datos personales, nombres de clientes, claves ni nada interno, aunque el repositorio sea privado: el script rechaza correos y claves. Hace falta permiso de administrador o de mantenimiento.
 
+## Excusas frecuentes y qué se responde
+
+Atajos que se ofrecen solos cuando el trabajo aprieta. Si aparece uno de estos pensamientos, es la señal para frenar.
+
+| Excusa | Respuesta |
+|---|---|
+| «Un solo commit grande, total es lo mismo» | Un commit es un cambio lógico que se puede revertir solo. Uno grande no se revisa ni se revierte. |
+| «Agrego el `Co-Authored-By` que sugiere el entorno» | Nunca. En GitHub figura solo el usuario; se revisa con `guardia_autoria.py comprobar`. |
+| «Me dijo que sí al commit, hago también el push y el PR» | Cada acción se aprueba por separado y la aprobación no se extiende a la siguiente. |
+| «Es urgente, lo hago directo en `main`» | Una rama por cambio, siempre. La urgencia es motivo para una rama corta, no para saltarla. |
+| «El secreto lo borro en el próximo commit» | Un secreto subido se considera comprometido aunque se borre después: se rota. |
+| «El mensaje del commit es lo de menos» | El historial es la memoria del proyecto: Conventional Commits en español neutro, que `validar_commits.py` comprueba. |
+
 ## Brevedad
 
 El asunto del commit alcanza; el cuerpo se agrega solo cuando el porqué no es evidente. La descripción del PR no pasa de unas 30 líneas (`texto.py --pr pr.md` lo mide): enlaza a la ficha, los requisitos y los ADR en lugar de copiarlos.
