@@ -176,8 +176,8 @@ def main():
     for l in avisos:
         print(f"  AVISO  {l}")
     print("\nPasos que quedan en cada proyecto (los hace la skill o se hacen una vez por repositorio):")
-    print("  - Identidad de Git, solo local, en cada repositorio: git config user.name <usuario-de-GitHub> y")
-    print("    git config user.email <correo noreply de GitHub>. No se usa la configuración global.")
+    print("  - Identidad de Git, solo local, en cada repositorio: la skill usa la sesión de GitHub (gh auth login) y, si no")
+    print("    hay ninguna, Claude pregunta en nombre de quién se hace el trabajo. No se usa la configuración global.")
     print("  - Los hooks de Git y la carpeta documentos-externos/ los prepara la skill al iniciar el proyecto.")
     print("  - Los hooks de Claude Code se aplican al abrir una sesión nueva si se registraron en esta ejecución.")
     if falta:

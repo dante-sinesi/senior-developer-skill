@@ -9,9 +9,16 @@ Uso:
     python guardia_autoria.py mensaje <archivo>                    # revisa un texto: mensaje de commit, PR, Issue
     python guardia_autoria.py prepush                              # para el hook pre-push (lee stdin de git)
     python guardia_autoria.py instalar [--raiz .]                  # instala los hooks de Git de este repositorio
+    python guardia_autoria.py identidad [--raiz .] [--nombre <usuario> --correo <correo>]
+        # resuelve en nombre de quién se hacen los commits de este repositorio (ver más abajo)
     python guardia_autoria.py asegurar [--raiz .] [--silencioso] [--solo-verificar]
         # comprueba que estén activos los hooks de Git del repositorio y el hook global de Claude Code
         # (~/.claude/settings.json: autoría y lectura de documentos externos) y, si falta alguno, lo activa. El usuario lo autorizó de forma permanente.
+
+Identidad: NO viene fija con la skill. En nombre de quién se hace el trabajo se resuelve así, en orden: la
+identidad local del repositorio (git config --local), la sesión de GitHub que ya tenga el usuario (`gh`, con su
+correo noreply) y, si no hay ninguna, se le PREGUNTA al usuario (nombre de usuario de GitHub y correo) antes del
+primer commit. Nunca se asume ni se inventa una identidad, y nunca se toca la configuración global de git.
 
 Qué se prohíbe:
   - líneas Co-Authored-By (de cualquier persona o herramienta; el usuario puede
@@ -307,9 +314,66 @@ def asegurar_claude(solo_verificar):
     return lineas, falta
 
 
+def git_config_local(raiz, clave):
+    return git(raiz, "config", "--local", "--get", clave)[0].strip()
+
+
+def identidad_de_github():
+    """(login, correo noreply) de la sesión de `gh` si está iniciada; si no, (None, None)."""
+    gh = shutil.which("gh")
+    if not gh:
+        return None, None
+    try:
+        p = subprocess.run([gh, "api", "user", "--jq", '.login + " " + (.id|tostring)'], capture_output=True,
+                           encoding="utf-8", errors="replace", timeout=30)
+    except (OSError, subprocess.TimeoutExpired):
+        return None, None
+    partes = p.stdout.split()
+    if p.returncode != 0 or len(partes) != 2:
+        return None, None
+    return partes[0], f"{partes[1]}+{partes[0]}@users.noreply.github.com"
+
+
+def asegurar_identidad(raiz, solo_verificar):
+    """Garantiza en nombre de quién se hacen los commits del repositorio. Devuelve (lineas, falta)."""
+    if git(raiz, "rev-parse", "--is-inside-work-tree")[0].strip() != "true":
+        return [], False
+    nombre, correo = git_config_local(raiz, "user.name"), git_config_local(raiz, "user.email")
+    if nombre and correo:
+        return [f"identidad de Git del repositorio: {nombre}"], False
+    login, noreply = identidad_de_github()
+    if login and not solo_verificar:
+        git(raiz, "config", "--local", "user.name", login)
+        git(raiz, "config", "--local", "user.email", noreply)
+        return [f"configuré la identidad local de Git con la sesión de GitHub ({login})"], False
+    if login:
+        return [f"FALTA la identidad local de Git (la sesión de GitHub es {login}: `guardia_autoria.py asegurar` la configura)"], True
+    return ["FALTA la identidad de Git: no hay identidad local ni sesión de GitHub. PREGUNTAR al usuario en nombre de quién se "
+            "hace el trabajo (su nombre de usuario de GitHub y su correo, mejor el noreply) y configurarla con "
+            "`guardia_autoria.py identidad --nombre <usuario> --correo <correo>`; no asumir ninguna identidad"], True
+
+
+def cmd_identidad(raiz, nombre, correo):
+    if git(raiz, "rev-parse", "--is-inside-work-tree")[0].strip() != "true":
+        print("No es un repositorio git.")
+        return 1
+    if nombre or correo:
+        if not (nombre and correo):
+            print("Para fijar la identidad hacen falta --nombre y --correo.")
+            return 1
+        git(raiz, "config", "--local", "user.name", nombre)
+        git(raiz, "config", "--local", "user.email", correo)
+        print(f"Identidad local del repositorio: {nombre} <{correo}>.")
+        return 0
+    lineas, falta = asegurar_identidad(raiz, False)
+    for l in lineas:
+        print(f"Guardia de autoría: {l}.")
+    return 1 if falta else 0
+
+
 def cmd_asegurar(raiz, silencioso, solo_verificar):
     lineas, falta = [], False
-    for l, f in (asegurar_git(raiz, solo_verificar), asegurar_claude(solo_verificar)):
+    for l, f in (asegurar_git(raiz, solo_verificar), asegurar_identidad(raiz, solo_verificar), asegurar_claude(solo_verificar)):
         lineas += l
         falta = falta or f
     cambios = [l for l in lineas if l.startswith(("activé", "NO", "FALTA"))]
@@ -324,11 +388,13 @@ def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("accion", choices=["comprobar", "mensaje", "prepush", "instalar", "asegurar"])
+    ap.add_argument("accion", choices=["comprobar", "mensaje", "prepush", "instalar", "asegurar", "identidad"])
     ap.add_argument("archivo", nargs="*")  # pre-push recibe además el nombre y la URL del remoto: se ignoran
     ap.add_argument("--raiz", default=".")
     ap.add_argument("--base", default=None)
     ap.add_argument("--silencioso", action="store_true")
+    ap.add_argument("--nombre", default=None, help="identidad: nombre de usuario de GitHub")
+    ap.add_argument("--correo", default=None, help="identidad: correo (mejor el noreply de GitHub)")
     ap.add_argument("--solo-verificar", action="store_true")
     args = ap.parse_args()
     raiz = Path(args.raiz).resolve()
@@ -340,6 +406,8 @@ def main():
         sys.exit(cmd_mensaje(args.archivo[0]))
     if args.accion == "prepush":
         sys.exit(cmd_prepush(Path.cwd()))
+    if args.accion == "identidad":
+        sys.exit(cmd_identidad(raiz, args.nombre, args.correo))
     if args.accion == "asegurar":
         sys.exit(cmd_asegurar(raiz, args.silencioso, args.solo_verificar))
     sys.exit(cmd_instalar(raiz))

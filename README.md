@@ -60,7 +60,7 @@ Para dejar todo funcionando la primera vez, o en una máquina nueva, en este ord
    ```
    Copia las skills a `~/.claude/skills` (sin tocar las demás), registra en `~/.claude/settings.json` los dos hooks globales de Claude Code (autoría y lectura de documentos externos), instala `markitdown` y `Pillow` con pip y termina con un informe de qué quedó listo y qué falta. Sin `--instalar-dependencias` no instala nada con pip: solo avisa. Con `--verificar` solo informa, sin escribir.
 4. **Si se usa GitHub:** `gh auth login`.
-5. **En cada proyecto,** configurar la identidad de Git solo de forma local (`git config user.name <usuario>` y `git config user.email <correo noreply de GitHub>`) y abrir una sesión de Claude Code: la skill activa sola el hook de Git del repositorio y crea `documentos-externos/`.
+5. **En cada proyecto,** abrir una sesión de Claude Code: la skill activa sola el hook de Git del repositorio, crea `documentos-externos/` y resuelve en nombre de quién se hacen los commits: usa la identidad local del repositorio o la sesión de GitHub (`gh`) y, **si no hay ninguna, Claude te pregunta** tu nombre de usuario de GitHub y tu correo. La skill no trae ningún nombre fijo.
 6. **Abrir una sesión nueva** de Claude Code para que se apliquen los hooks globales.
 
 ### Lo que no está en este repositorio
@@ -143,7 +143,7 @@ En todo lo que se sube a GitHub figura **únicamente el usuario**: Claude no apa
   - **Hooks de Git** (`commit-msg` y `pre-push`) en `.git/hooks/` de cada clon. Git no los sube, así que se instalan en cada proyecto donde falten. Si no hay un Python que funcione, fallan cerrados y avisan.
   - **Hook global de Claude Code** (`hook_autoria_claude.py`, registrado en `~/.claude/settings.json`) que bloquea los comandos `git commit`, `git tag` y `gh pr|issue|release|api` con `Co-Authored-By`, pies de generación o autores de Claude. Si se reinstala la máquina, `asegurar` lo vuelve a registrar.
 - Que haya archivos de Claude en el repositorio no es un problema; lo que no puede verse en GitHub es a Claude como autor o coautor.
-- Los commits usan la identidad del usuario, configurada solo de forma local en el repositorio.
+- Los commits usan la identidad del usuario, configurada solo de forma local en el repositorio: la de la sesión de GitHub si ya hay una y, si no, la que el usuario indique cuando Claude le pregunta en nombre de quién se hace el trabajo. La skill no trae ninguna identidad fija.
 
 ## Seguridad y la familia ISO/IEC 27000
 

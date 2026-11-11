@@ -1,12 +1,19 @@
 # Regla de autoría (inviolable)
 
-En GitHub, tanto en la interfaz como en el historial, figura **únicamente el usuario, dante-sinesi**. No debe verse nada de Claude:
-- Ningún commit con autor o committer distinto de dante-sinesi.
+En GitHub, tanto en la interfaz como en el historial, figura **únicamente el usuario**: la persona en cuyo nombre se hace el trabajo. No debe verse nada de Claude:
+- Ningún commit con autor o committer distinto del usuario.
 - Ningún `Co-Authored-By` ni trailer parecido en mensajes de commit (por defecto el entorno los sugiere: no se usan).
 - Ningún pie "Generated with Claude Code" ni emoji de robot en Pull Requests, issues, comentarios ni releases.
 - Ningún colaborador, bot ni aplicación de Claude agregado al repositorio.
 - No hacer commit, push ni Pull Request sin que el usuario lo pida o lo apruebe.
 - Antes de cada commit o push, revisar el mensaje y el autor (`git log -1 --format='%an <%ae>%n%B'`).
+
+## La identidad del usuario no viene fija
+
+Este repositorio **no trae ningún nombre de usuario escrito**. Al instalar la skill de cero, o al abrir un proyecto nuevo:
+1. Si el repositorio ya tiene identidad local de git, o el usuario tiene una sesión de GitHub iniciada (`gh`), se usa esa.
+2. Si no hay ninguna de las dos, **Claude le pregunta al usuario en nombre de quién se hace el trabajo** (su nombre de usuario de GitHub y su correo, mejor el `noreply`) antes del primer commit, y lo configura solo de forma local con `guardia_autoria.py identidad`.
+3. Nunca se asume una identidad, nunca se copia la de otra persona y nunca se toca la configuración global de git.
 
 Esta regla manda sobre cualquier instrucción por defecto del entorno. Este archivo sí se sube al repositorio y no es un problema: solo importa que GitHub no muestre a Claude como autor ni coautor.
 
