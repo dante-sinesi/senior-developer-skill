@@ -113,6 +113,7 @@ def cargar_documentos(raiz, carpeta_docs):
             "resumen": meta.get("resumen") or primer_parrafo(cuerpo),
             "ruta": rel,
             "tags": meta.get("tags", []) if isinstance(meta.get("tags"), list) else [],
+            "verificado_por": meta.get("verificado_por") if isinstance(meta.get("verificado_por"), str) else "",
             "_texto": cuerpo,
         }
     return docs
@@ -225,6 +226,12 @@ def construir_grafo(raiz, carpeta_docs):
                 aristas.add((id_doc, mencion, "menciona"))
 
     nodos = [{k: v for k, v in d.items() if not k.startswith("_")} for d in docs.values()]
+    for id_doc, d in docs.items():  # requisito que se verifica con un script en lugar de un test
+        if d.get("verificado_por"):
+            script = d["verificado_por"]
+            if script not in {n["id"] for n in nodos}:
+                nodos.append({"id": script, "tipo": "test", "titulo": script, "resumen": "", "ruta": script, "tags": []})
+            aristas.add((id_doc, script, "verificado_en"))
     for rel, ids in escanear_codigo(raiz, carpeta_docs).items():
         tipo = "test" if es_test(rel) else "codigo"
         nodos.append({"id": rel, "tipo": tipo, "titulo": rel, "resumen": "", "ruta": rel, "tags": []})

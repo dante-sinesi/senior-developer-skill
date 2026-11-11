@@ -95,6 +95,7 @@ La skill `senior-diseno` forma parte del paquete: un **método** (briefing, tres
 - Los bosquejos no llevan tests; el TDD empieza al implementar la pantalla.
 - Al implementar, `verificar.py diseno` comprueba que el código use las variables de diseño y las etiquetas del contrato de campos.
 - `/auditar-diseno` revisa un proyecto existente sin modificarlo.
+- **Paquete de inicio:** las reglas de diseño se pueden escribir como 10 requisitos no funcionales provisorios (`senior-diseno/scripts/paquete_interfaz.py`), propuestos al adoptar un proyecto con interfaz. El usuario acepta, cambia o descarta cada uno, y la trazabilidad los reconoce como verificados por el chequeo que declaran.
 
 ## Regla de autoría
 

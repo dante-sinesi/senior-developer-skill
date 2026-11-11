@@ -95,6 +95,10 @@ def main():
             lineas.append(f"{n}. **{titulo}** (impacto {impacto}, esfuerzo {esfuerzo}): {texto}")
     if n == 0:
         lineas.append("Sin propuestas: los chequeos automáticos no encontraron nada.")
+    lineas += ["", "## Para que no se repita", "",
+               "Las reglas de diseño pueden quedar escritas como requisitos no funcionales provisorios del proyecto: "
+               "`python <senior-diseno>/scripts/paquete_interfaz.py` muestra qué crearía y, con `--aplicar`, los escribe; "
+               "el usuario decide cuáles acepta."]
     lineas += ["", "## Límites", "",
                "- Las plantillas PHP, Vue y JSX se leen de forma aproximada; si el proyecto corre, conviene revisar también la página renderizada.",
                "- Lo subjetivo (identidad, tono, jerarquía) no lo mide un script: se conversa con el usuario antes de convertir propuestas en bosquejos."]

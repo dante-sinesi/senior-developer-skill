@@ -81,6 +81,10 @@ def construir_plan(info, tipo):
     if info.get("interfaz") and not info.get("diseno") and (SKILLS / "senior-diseno").is_dir():
         plan.append(("propuesta", f"Auditoría de diseño de la interfaz existente ({info['interfaz']} archivos HTML, CSS o plantillas) "
                                   "con /auditar-diseno (solo lectura; el informe va a docs/diseno/auditoria/)"))
+    if (SKILLS / "senior-diseno").is_dir() and (info.get("interfaz") or tipo == "nuevo"):
+        plan.append(("propuesta", "Requisitos de interfaz iniciales (si el proyecto tendrá interfaz): 10 requisitos no funcionales "
+                                  "provisorios con las reglas de diseño (tipografía, etiquetas, campos, contraste, foco…) con "
+                                  "senior-diseno/scripts/paquete_interfaz.py; el usuario acepta, cambia o descarta cada uno"))
     if info.get("documentos"):
         plan.append(("propuesta", f"Convertir a texto {info['documentos']} documentos externos (PDF, Word, etc.) a docs/fuentes/ "
                                   "con senior-relevar/scripts/convertir_fuentes.py (opcional; las imágenes se leen directo)"))
