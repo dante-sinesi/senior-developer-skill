@@ -43,6 +43,8 @@ Lo que define el carácter del proyecto, en el orden y con la forma que el estil
 - unas pocas **piezas firma** (por ejemplo el botón principal y un campo) en **todos sus estados**: reposo, hover, foco, presionado, deshabilitado, cargando, error. Los estados se muestran lado a lado, no se imaginan;
 - lo que el estilo evita, en la carta.
 
+La tarjeta es un **catálogo de componentes en todos sus estados**, no una pantalla: `revisar_diseno.py` no le aplica la no saturación (cantidad de acciones, de campos y acción principal única), que mide lo que una persona decide a la vez, pero sí el contraste, las etiquetas, los estados, la tipografía y el sistema. Todo lo que está dentro del elemento con `data-tarjeta` queda fuera de ese chequeo.
+
 Cada pieza se marca con `data-componente="Nombre"` (el mismo nombre que en el inventario) y cada variante y estado con `data-variante="…"` y `data-estado="…"`. Son marcas, no estilo: permiten comprobar la tarjeta sin leerla.
 
 ## 5. Cómo se mantiene viva
