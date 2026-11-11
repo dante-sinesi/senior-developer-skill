@@ -308,7 +308,7 @@ def main():
         sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("accion", choices=["comprobar", "mensaje", "prepush", "instalar", "asegurar"])
-    ap.add_argument("archivo", nargs="?")
+    ap.add_argument("archivo", nargs="*")  # pre-push recibe además el nombre y la URL del remoto: se ignoran
     ap.add_argument("--raiz", default=".")
     ap.add_argument("--base", default=None)
     ap.add_argument("--silencioso", action="store_true")
@@ -320,7 +320,7 @@ def main():
     if args.accion == "mensaje":
         if not args.archivo:
             ap.error("'mensaje' necesita un archivo")
-        sys.exit(cmd_mensaje(args.archivo))
+        sys.exit(cmd_mensaje(args.archivo[0]))
     if args.accion == "prepush":
         sys.exit(cmd_prepush(Path.cwd()))
     if args.accion == "asegurar":
