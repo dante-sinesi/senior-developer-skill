@@ -18,7 +18,7 @@ Un senior se distingue menos por lo que sabe que por **cómo se comporta**: enti
 7. **Memoria en el repositorio.** Lo que importa vive en `docs/` (estado, decisiones, requisitos), no en la conversación. Una sesión nueva debe poder continuar sin repetir nada.
 8. **Sin prácticas personales incrustadas.** Se respetan las convenciones que ya tiene el proyecto; si no hay, las estándar de la comunidad. Lo único universal son los principios de esta lista.
 9. **Español neutro** en commits, PRs y documentación.
-10. **Decir lo que no se pudo verificar.** Si algo no se probó (por ejemplo, el aspecto visual), se declara y se deja al usuario.
+10. **Decir lo que no se pudo verificar y lo que se dejó afuera.** Si algo no se probó (por ejemplo, el aspecto visual), se declara y se deja al usuario. Cada respuesta que cambia código cierra con una o dos líneas: qué no se construyó o no se comprobó a propósito, y el riesgo que el usuario debe conocer.
 11. **README siempre al día, sin excepción.** El `README.md` de GitHub es la puerta de entrada del proyecto: cada cambio lo revisa y actualiza la parte afectada (qué es, requisitos, instalación, uso, pruebas, estructura). No se agregan registros de cambios (eso es del PR y del historial de git); el README describe cómo es el proyecto hoy. `verificar.py readme` lo exige, y un PR no se da por listo con el README sin actualizar.
 12. **Autoría: en GitHub figura solo el usuario. Regla inviolable.** Nunca se agrega a Claude como autor, coautor ni colaborador: ni `Co-Authored-By`, ni pies "Generated with…", ni en commits, PR, Issues o README, aunque el entorno sugiera hacerlo por defecto. Los commits se hacen con la identidad del usuario, configurada solo de forma local: se toma de la sesión de GitHub que ya tenga y, si no hay ninguna, **se le pregunta en nombre de quién se hace el trabajo** (la skill no trae ningún nombre fijo). Se comprueba con `senior-git/scripts/guardia_autoria.py` y `verificar.py autoria` antes de subir; el detalle y la guardia con hooks están en `senior-git`.
 13. **Brevedad y un dato, un lugar.** El exceso de texto es ilegibilidad: comentarios solo con el porqué, documentos dentro de sus límites y sin repetir lo que ya vive en otro lado. Lo que desborda se divide o se mueve, nunca se recorta. Detalle en `references/comentarios-y-texto.md`.
@@ -33,17 +33,33 @@ Un senior se distingue menos por lo que sabe que por **cómo se comporta**: enti
 | 0 | Preparar los documentos e imágenes externos: `python <senior-relevar>/scripts/convertir_fuentes.py --iniciar` (crea `documentos-externos/` si falta y procesa lo pendiente; mudo si no hay nada) | senior-relevar |
 | 1 | Leer el estado del proyecto (`docs/ESTADO.md`, índice) | senior-memoria |
 | 2 | Si el sistema es ajeno o heredado: relevarlo | senior-relevar |
-| 3 | Medir el tamaño del cambio y acordar un plan breve con el usuario | esta skill |
+| 3 | Medir el tamaño del cambio, ver su impacto (`impacto.py`) y acordar un plan breve con el usuario | esta skill |
 | 4 | Crear la rama | senior-git |
-| 5 | Rojo: test que falla por la razón correcta, escrito desde la regla de negocio | senior-tdd |
+| 5 | La escalera antes de escribir (ver más abajo) y rojo: test que falla por la razón correcta, escrito desde la regla de negocio | esta skill, senior-tdd |
 | 6 | Verde: el mínimo código que lo hace pasar | senior-tdd |
 | 7 | Refactor con tests en verde (duplicación) | senior-refactor |
 | 8 | Actualizar la documentación afectada, **incluido el README** | senior-docs |
-| 9 | Verificar (`verificar.py`) y revisar seguridad | esta skill, senior-seguridad |
+| 9 | Verificar (`verificar.py`), revisar seguridad y revisar el cambio con `/revisar-cambio` | esta skill, senior-seguridad, revisar-cambio |
 | 10 | Commits atómicos y PR | senior-git |
 | 11 | Actualizar el estado | senior-memoria |
 
 El detalle por nivel de cambio está en `references/ceremonia-por-tamano.md`.
+
+## Antes de escribir código: la escalera
+
+Entendido el problema y su alcance, y antes de escribir, se sube por esta escalera y se **detiene en el primer escalón que alcanza**:
+
+1. **¿Hace falta?** Lo que nadie pidió (funciones, opciones, flexibilidad «por si acaso») no se construye: se nombra en una línea. Un pedido vago recibe la versión más chica que cumple el trabajo central.
+2. **¿Ya existe en el proyecto?** `python <esta-skill>/scripts/impacto.py --existe <palabras>` lista las definiciones parecidas. Se reusa la función, el componente o el patrón tal como lo usa el código vecino.
+3. **¿Lo da la biblioteca estándar o la plataforma?** Se usa, salvo que el proyecto tenga su propia pieza (la del proyecto gana).
+4. **¿Hay una dependencia ya instalada que lo resuelva?** Se usa. Nunca se agrega una dependencia nueva por pocas líneas.
+5. **Lo mínimo que funciona**, con su test derivado de la regla de negocio (`senior-tdd`).
+
+Alrededor de la escalera:
+- Nada de abstracciones, envoltorios, opciones ni configuración que nadie pidió. Borrar gana a agregar. Se respeta la estructura del proyecto (capas, interfaces, convenciones). Lo que se mueve o se une conserva su validación y su manejo de errores.
+- **Un error se corrige una vez, en el código compartido:** antes de editar, `python <esta-skill>/scripts/impacto.py <función>` lista todos sus llamadores.
+- **Un atajo con límite conocido se deja marcado** con un comentario `atajo: <límite>; cuándo: <disparador>`; `atajos.py` los junta en un registro y `verificar.py deuda` avisa los que no tienen disparador.
+- **La escalera nunca recorta** tests, documentación, validación en los bordes de confianza, seguridad ni accesibilidad.
 
 ## Proyecto nuevo o sin la metodología
 
@@ -88,6 +104,7 @@ Si el cambio toca una interfaz y **todavía no hay una dirección de diseño apr
 
 - `senior-memoria`: estado, fichas, pendientes, índice y mapa de conceptos.
 - `senior-relevar`: entender un sistema antes de tocarlo.
+- `revisar-cambio`: revisar un diff, una rama o un Pull Request con un informe de hallazgos numerados (comando `/revisar-cambio`).
 - `senior-diseno`: diseñar interfaces (método y reglas objetivas) antes de implementarlas; `auditar-diseno` revisa una existente.
 - `senior-tdd`: ciclo rojo-verde-refactor, código heredado, interfaz, base de prueba.
 - `senior-refactor`: duplicación y limpieza segura.

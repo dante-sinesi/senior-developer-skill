@@ -47,7 +47,7 @@ BLOQUE_C = ("/*", "*/")  # por defecto para lenguajes de la familia C
 IGNORAR = {".git", "node_modules", "vendor", "dist", "build", "__pycache__", ".venv", "venv", ".idea",
            ".vscode", "coverage", ".next", "docs"}
 EXENTO = re.compile(r"(?i)(^#!|coding[:=]|eslint|prettier|noqa|pylint|@ts-|istanbul|phpcs|phpstan|psalm|"
-                    r"type:\s*ignore|senior-ignore|license|licencia|copyright|spdx|@var\b|@param|@return|@throws)")
+                    r"type:\s*ignore|senior-ignore|atajo\s*:|license|licencia|copyright|spdx|@var\b|@param|@return|@throws)")
 PORQUE = re.compile(r"(?i)\b(porque|ya que|para evitar|debido|because|why|nota|ojo|cuidado|atenci[oó]n|warning|"
                     r"importante|workaround|requisito|regla|ver )\b|\b(RN|RF|RNF|RU|RD|RT|RI|ADR)-\d+")
 BANNER = re.compile(r"([=\-*#_~+/])\1{4,}")

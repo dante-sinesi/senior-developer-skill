@@ -7,6 +7,10 @@ description: Refactor sistemático y seguro: detectar código repetido, decidir 
 
 El código repetido no falla hoy: falla el día que hay que cambiar una de las copias y se olvida otra. El refactor es la fase del ciclo (rojo, verde, **refactor**) que lo evita, pero solo es seguro con una red de tests.
 
+## Antes de escribir algo nuevo
+
+El mejor refactor es el que no hace falta: antes de crear una función o un componente, `senior/scripts/impacto.py --existe <palabras>` dice si el proyecto ya tiene algo parecido para reusar (ver «la escalera» en `senior`).
+
 ## Reglas
 
 1. **Tests en verde antes de empezar.** Sin tests, primero se escriben los de caracterización (`senior-tdd`). Un refactor sin red es una apuesta.
