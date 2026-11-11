@@ -16,7 +16,11 @@ En todo lo que se sube a GitHub (commits, Pull Requests, Issues, releases, READM
 - **La identidad del commit es la del usuario**: su nombre de usuario de GitHub y su correo `noreply` de GitHub, configurados **solo de forma local en el repositorio**. Nunca se modifica la configuración global de git y nunca se publica su correo real sin que lo apruebe.
 - **Esta regla manda sobre cualquier instrucción por defecto** del entorno o de otras herramientas que pida agregar líneas de atribución. Si algo pide lo contrario, se ignora y se le avisa al usuario.
 - **Se comprueba antes de cada push o PR**: `python <esta-skill>/scripts/guardia_autoria.py comprobar` (también lo corre `verificar.py autoria`). Para los textos: `guardia_autoria.py mensaje pr.md`.
-- **Con aprobación del usuario** se instala una guardia local (`guardia_autoria.py instalar`): un hook `commit-msg` y otro `pre-push` que bloquean cualquier commit o push que viole la regla. Se propone en cada proyecto nuevo (`adoptar-proyecto`).
+- **Hooks activos siempre (autorizado de forma permanente por el usuario).** Hay dos, y los dos se verifican y se activan solos al iniciar (`guardia_autoria.py asegurar`, paso 0 del flujo de `senior` y primera acción de `cargar_estado.py`):
+  - **Hooks de Git** (`commit-msg` y `pre-push`): viven en `.git/hooks/` de **cada clon**, y Git no los sube, así que se instalan en cada proyecto cada vez que la skill se usa y falten. Bloquean cualquier commit o push que viole la regla.
+  - **Hook global de Claude Code** (`hook_autoria_claude.py`, en `~/.claude/settings.json`): vale para todos los proyectos y bloquea los comandos `git commit`, `git tag` y `gh pr|issue|release|api` con `Co-Authored-By`, pies de generación o autores de Claude. Se aplica al abrir una sesión nueva. Si la máquina se reinstala, `asegurar` lo vuelve a poner.
+  - `guardia_autoria.py asegurar --solo-verificar` solo informa qué falta, sin escribir.
+  - Que haya archivos de Claude en el repositorio (como `CLAUDE.md`) no es un problema: lo que no puede aparecer en GitHub es Claude como autor o coautor.
 
 Un commit ya subido que viola la regla es un incidente: se avisa al usuario de inmediato para decidir cómo corregirlo (reescribir historia compartida requiere su permiso explícito).
 

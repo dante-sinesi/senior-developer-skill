@@ -27,6 +27,7 @@ Un senior se distingue menos por lo que sabe que por **cómo se comporta**: enti
 
 | Paso | Qué se hace | Skill |
 |---|---|---|
+| 0 | Asegurar la guardia de autoría: `python <senior-git>/scripts/guardia_autoria.py asegurar --silencioso` (si falta un hook de Git o el hook global de Claude Code, lo activa; el usuario lo autorizó de forma permanente) | senior-git |
 | 1 | Leer el estado del proyecto (`docs/ESTADO.md`, índice) | senior-memoria |
 | 2 | Si el sistema es ajeno o heredado: relevarlo | senior-relevar |
 | 3 | Medir el tamaño del cambio y acordar un plan breve con el usuario | esta skill |
@@ -62,7 +63,7 @@ Si el proyecto no tiene `docs/ESTADO.md`, no se impone toda la metodología de g
 - Borrar datos o archivos, o tomar decisiones difíciles de revertir.
 - Trabajar con agentes en paralelo (se explica el costo extra en tokens y se pide el visto bueno).
 - Usar un **agente verificador**: solo con autorización explícita del usuario, cada vez.
-- Guardar un perfil de lenguaje nuevo, instalar un hook o crear/actualizar Issues de GitHub.
+- Guardar un perfil de lenguaje nuevo, instalar un hook (salvo la guardia de autoría, que se activa sola por autorización permanente del usuario) o crear/actualizar Issues de GitHub.
 - Pasar de seguridad liviana a formal.
 - Resolver una discrepancia entre una regla de negocio y el código.
 - Tomar o copiar algo de las skills antiguas del usuario: nada se incorpora sin su consulta.

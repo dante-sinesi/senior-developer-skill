@@ -88,7 +88,8 @@ def construir_plan(info, tipo):
     if info.get("documentos"):
         plan.append(("propuesta", f"Convertir a texto {info['documentos']} documentos externos (PDF, Word, etc.) a docs/fuentes/ "
                                   "con senior-relevar/scripts/convertir_fuentes.py (opcional; las imágenes se leen directo)"))
-    plan.append(("propuesta", "Guardia de autoría (hooks locales): impide subir commits con Claude o coautores; en GitHub figura solo el usuario"))
+    plan.append(("auto", "Activar la guardia de autoría (hooks de Git del repositorio y hook global de Claude Code, si faltan): "
+                         "impide subir commits con Claude o coautores; en GitHub figura solo el usuario"))
     plan.append(("propuesta", "Hook de apertura que carga ESTADO.md (requiere aprobación aparte)"))
     plan.append(("propuesta", "Plantilla de Pull Request de GitHub (.github/pull_request_template.md)"))
     if not info["git"]:
@@ -113,6 +114,9 @@ def aplicar(raiz, info, tipo):
         if relevar.exists() and not destino.exists():
             salidas.append(correr([sys.executable, "-I", str(relevar), "--raiz", str(raiz),
                                    "--salida", "docs/relevamiento.md"], raiz))
+    guardia = SKILLS / "senior-git" / "scripts" / "guardia_autoria.py"
+    if guardia.exists() and (raiz / ".git").exists():
+        salidas.append(correr([sys.executable, "-I", str(guardia), "asegurar", "--raiz", str(raiz)], raiz))
     indexador = SKILLS / "senior-memoria" / "scripts" / "indexar_docs.py"
     if indexador.exists() and (raiz / "docs").is_dir():
         salidas.append(correr([sys.executable, "-I", str(indexador), "indexar", "--raiz", str(raiz)], raiz))

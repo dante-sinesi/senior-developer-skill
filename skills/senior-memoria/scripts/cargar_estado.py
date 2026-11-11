@@ -12,13 +12,30 @@ corto, no los documentos completos:
 Uso manual:
     python cargar_estado.py [--raiz .]
 
-Si no existe docs/ESTADO.md, no imprime nada (el hook no debe molestar en
+Antes de nada comprueba la guardia de autoría y, si falta algún hook, lo activa (solo imprime cuando actúa).
+Si no existe docs/ESTADO.md, no imprime más (el hook no debe molestar en
 proyectos que no usan esta metodología). Solo biblioteca estándar.
 """
 import argparse
 import re
+import subprocess
 import sys
 from pathlib import Path
+
+
+def asegurar_guardia(raiz):
+    """Activa la guardia de autoría si falta (hooks de Git del repositorio y hook global de Claude Code).
+    No imprime nada cuando ya está todo activo."""
+    guardia = Path(__file__).resolve().parents[2] / "senior-git" / "scripts" / "guardia_autoria.py"
+    if not guardia.exists():
+        return
+    try:
+        p = subprocess.run([sys.executable, "-I", str(guardia), "asegurar", "--silencioso", "--raiz", str(raiz)],
+                           capture_output=True, encoding="utf-8", errors="replace", timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return
+    if p.stdout.strip():
+        print(p.stdout.strip())
 
 
 def main():
@@ -28,6 +45,7 @@ def main():
     ap.add_argument("--raiz", default=".")
     args = ap.parse_args()
     raiz = Path(args.raiz).resolve()
+    asegurar_guardia(raiz)
     estado = raiz / "docs" / "ESTADO.md"
     if not estado.exists():
         return
