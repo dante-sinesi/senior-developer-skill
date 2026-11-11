@@ -34,6 +34,7 @@
   | 11 unidades a 5,00 | 44,00 (20% de descuento) |
 
   Esos ejemplos son la materia prima de los tests (`senior-tdd`).
+  Si un requisito se verifica con un script en lugar de un test (por ejemplo, las reglas de interfaz), lo declara en el encabezado con `verificado_por: <ruta del script y su chequeo>` y cuenta como verificado en la trazabilidad.
 - **Con origen**: quién lo dijo o dónde está definido (el usuario, un contrato, una norma).
 - **Enlazado**: citar otros requisitos con `[[RN-001]]` para que el mapa de conceptos arme la red.
 

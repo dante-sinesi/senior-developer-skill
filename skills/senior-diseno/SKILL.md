@@ -22,7 +22,7 @@ Los artefactos de diseño viven en `docs/diseno/`, junto al resto de la document
 - **Los bosquejos no llevan tests.** Son material de diseño, no comportamiento; el TDD de `senior-tdd` empieza cuando se **implementa** una pantalla.
 - **Al implementar:** usar las variables de diseño sin copiar sus valores, programar cada componente una sola vez y usar las etiquetas de los formularios **exactamente** como figuran en el contrato de campos.
 - **Decisiones de arquitectura** (por ejemplo, el framework de interfaz): van a un ADR de `senior-docs`. Las decisiones de diseño (D-001…) viven en `docs/diseno/notas/decisiones.md` y los ADR las citan por ID.
-- **Requisitos de interfaz** (los de usabilidad y accesibilidad): se documentan como requisitos no funcionales con `senior-docs`.
+- **Requisitos de interfaz:** las reglas de abajo se pueden escribir como un **paquete de inicio** de requisitos no funcionales provisorios con `python scripts/paquete_interfaz.py` (sin `--aplicar` solo muestra qué crearía). Se proponen al adoptar un proyecto y desde `/auditar-diseno`; el usuario acepta, cambia o descarta cada uno, y cada requisito declara el chequeo que lo verifica.
 
 ## Escala del trabajo: liviano por defecto
 
