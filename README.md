@@ -74,6 +74,7 @@ Instalación manual, si se prefiere: copiar las carpetas de `skills/` a `~/.clau
 
 - **Proyecto nuevo o existente:** `/adoptar-proyecto`. Muestra un plan en solo lectura, espera tu aprobación y recién entonces crea `docs/`, el `README.md` y, si el proyecto ya existe, un relevamiento.
 - **Trabajo diario:** pedir cambios como siempre. La skill `senior` se activa sola ante cualquier tarea de código.
+- **Pedido vago:** `senior-docs` elicita requisitos por lotes en un Markdown que se responde cuando se puede, o, si el usuario está presente, con una entrevista corta: una pregunta a la vez con su suposición, una intención reformulada y una confirmación que tiene que ser un sí explícito (un «dale, lo que te parezca» no cuenta).
 - **Fin de la sesión:** `/cerrar-sesion` actualiza el estado, corre el verificador y propone el commit.
 
 ### Flujo de trabajo
