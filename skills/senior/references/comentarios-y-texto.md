@@ -33,6 +33,8 @@ contador++;
 contador++;
 ```
 
+**Excepción: el atajo.** Una simplificación deliberada con un límite conocido se marca en una línea, `atajo: <límite>; cuándo: <qué la haría insuficiente>`. Dice un límite y un disparador, no repite el código, y `atajos.py` los junta en un registro (`docs/atajos.md`). Un atajo sin «cuándo:» se avisa como SIN DISPARADOR en `verificar.py deuda`.
+
 ## 2. Límites de extensión
 
 Por defecto (líneas con contenido, sin encabezado ni vacías); se ajustan en `docs/.texto.json`:

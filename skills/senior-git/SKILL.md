@@ -59,6 +59,8 @@ gh pr create --title "..." --body-file pr.md             # solo con aprobación
 
 El asunto del commit alcanza; el cuerpo se agrega solo cuando el porqué no es evidente. La descripción del PR no pasa de unas 30 líneas (`texto.py --pr pr.md` lo mide): enlaza a la ficha, los requisitos y los ADR en lugar de copiarlos.
 
+Antes de abrir el PR conviene correr `/revisar-cambio rama`: el informe de hallazgos numerados ayuda a completar la sección de seguridad y de riesgos de la descripción.
+
 ## Plantilla de Pull Request (español neutro)
 
 ```markdown

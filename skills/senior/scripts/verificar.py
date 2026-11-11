@@ -10,7 +10,7 @@ Uso:
 Chequeos (sin argumento corre "todo"):
   tamano      tamaño del cambio actual y nivel de ceremonia recomendado
   alcance     archivos tocados que no figuran en el "Alcance" de la ficha
-  deuda       TODO/FIXME/HACK en el código y formato de docs/deuda-tecnica.md
+  deuda       TODO/FIXME/HACK en el código, atajos (`atajo: …; cuándo: …`) sin disparador y formato de docs/deuda-tecnica.md
   estado      ESTADO.md al día, cambios sin guardar, pasos abiertos en fichas
   docs        marca requisitos sin test e IDs sin documento (solo lectura: el
               índice se regenera aparte con senior-memoria/scripts/indexar_docs.py indexar)
@@ -42,6 +42,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import atajos  # noqa: E402
 import comentarios  # noqa: E402
 import diagramas  # noqa: E402
 import seguridad  # noqa: E402
@@ -150,6 +151,11 @@ def chequeo_deuda(raiz, args):
     salida, ok = [], True
     if marcas:
         salida.append(f"Deuda: {len(marcas)} marcas TODO/FIXME/HACK en el código (ej.: {', '.join(marcas[:5])}).")
+    registro = atajos.recolectar(raiz)
+    if registro:
+        sin_disparador = [a for a in registro if not a["cuando"]]
+        salida.append(f"Deuda: {len(registro)} atajos marcados, {len(sin_disparador)} sin disparador (`atajo: …; cuándo: …`; ver atajos.py).")
+        ok = ok and not sin_disparador
     archivo = raiz / "docs" / "deuda-tecnica.md"
     if archivo.exists():
         sin_motivo = [l.strip()[:70] for l in archivo.read_text(encoding="utf-8-sig").splitlines()
