@@ -33,6 +33,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 | `senior-seguridad` | Lista de revisión, chequeos automáticos y modo formal con registro de riesgos |
 | `senior-lenguajes` | Perfiles de PHP, JavaScript/TypeScript, CSS, SQL y HTML; alta de lenguajes nuevos |
 | `senior-diseno` | Diseño de interfaces: método (tres alternativas, feedback, evolución) y reglas objetivas con script; el estilo es libre |
+| `auditar-consumo` | Comando `/auditar-consumo`: mide cuánto contexto consumen las skills, `CLAUDE.md` y la memoria, y propone qué recortar |
 | `auditar-diseno` | Comando `/auditar-diseno`: revisa la interfaz de un proyecto existente sin modificarlo |
 | `adoptar-proyecto` | Comando `/adoptar-proyecto`: plan, aprobación y creación de la base documental |
 | `cerrar-sesion` | Comando `/cerrar-sesion`: cierre ordenado opcional |
@@ -59,7 +60,7 @@ Para dejar todo funcionando la primera vez, o en una máquina nueva, en este ord
    ```bash
    python instalar.py --instalar-dependencias
    ```
-   Copia las skills a `~/.claude/skills` (sin tocar las demás), registra en `~/.claude/settings.json` los tres hooks globales de Claude Code (autoría, lectura de documentos externos y escritura fuera del proyecto), instala `markitdown` y `Pillow` con pip y termina con un informe de qué quedó listo y qué falta. Sin `--instalar-dependencias` no instala nada con pip: solo avisa. Con `--verificar` solo informa, sin escribir.
+   Copia las skills a `~/.claude/skills` (sin tocar las demás), registra en `~/.claude/settings.json` los cuatro hooks globales de Claude Code (autoría, lectura de documentos externos, escritura fuera del proyecto y archivos protegidos), instala `markitdown` y `Pillow` con pip y termina con un informe de qué quedó listo y qué falta. Sin `--instalar-dependencias` no instala nada con pip: solo avisa. Con `--verificar` solo informa, sin escribir.
 4. **Si se usa GitHub:** `gh auth login`.
 5. **En cada proyecto,** abrir una sesión de Claude Code: la skill activa sola el hook de Git del repositorio, crea `documentos-externos/` y resuelve en nombre de quién se hacen los commits: usa la identidad local del repositorio o la sesión de GitHub (`gh`) y, **si no hay ninguna, Claude te pregunta** tu nombre de usuario de GitHub y tu correo. La skill no trae ningún nombre fijo.
 6. **Abrir una sesión nueva** de Claude Code para que se apliquen los hooks globales.
@@ -102,7 +103,7 @@ python ~/.claude/skills/senior/scripts/verificar.py            # todo
 python ~/.claude/skills/senior/scripts/verificar.py readme     # un chequeo puntual
 ```
 
-Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `fuentes`, `requisitos`, `texto`, `diagramas`, `comentarios`, `listones`, `escala`, `autoria`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
+Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `fuentes`, `requisitos`, `texto`, `diagramas`, `comentarios`, `listones`, `escala`, `autoria`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `hook_archivos_protegidos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
 
 Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
 
@@ -137,6 +138,7 @@ La skill `senior-diseno` forma parte del paquete: un **método** (briefing, tres
 - Los artefactos viven en `docs/diseno/` (rondas de bosquejos, preferencias, decisiones, variables de diseño, contratos de campos, auditorías).
 - Los bosquejos no llevan tests; el TDD empieza al implementar la pantalla.
 - Al implementar, `verificar.py diseno` comprueba que el código use las variables de diseño y las etiquetas del contrato de campos.
+- `/auditar-consumo` mide, sin modificar nada, cuánto contexto se paga en cada sesión (descripciones de skills, `CLAUDE.md`, índice de la memoria, `ESTADO.md`), cuánto al activarse una skill y qué conviene recortar primero. Las reglas para cuidar el contexto día a día están en `senior/references/tokens.md`.
 - `/auditar-diseno` revisa un proyecto existente sin modificarlo: informe automático más una lectura de diseño (especificidad, diez heurísticas de 0 a 4, carga cognitiva).
 - **Paquete de inicio:** las reglas de diseño se pueden escribir como 10 requisitos no funcionales provisorios (`senior-diseno/scripts/paquete_interfaz.py`), propuestos al adoptar un proyecto con interfaz. El usuario acepta, cambia o descarta cada uno, y la trazabilidad los reconoce como verificados por el chequeo que declaran.
 
@@ -149,6 +151,7 @@ En todo lo que se sube a GitHub figura **únicamente el usuario**: Claude no apa
   - **Hooks de Git** (`commit-msg` y `pre-push`) en `.git/hooks/` de cada clon. Git no los sube, así que se instalan en cada proyecto donde falten. Si no hay un Python que funcione, fallan cerrados y avisan.
   - **Hook global de Claude Code** (`hook_autoria_claude.py`, registrado en `~/.claude/settings.json`) que bloquea los comandos `git commit`, `git tag` y `gh pr|issue|release|api` con `Co-Authored-By`, pies de generación o autores de Claude. Si se reinstala la máquina, `asegurar` lo vuelve a registrar.
   - **Hook global de escritura fuera del proyecto** (`senior/scripts/hook_fuera_del_proyecto.py`): pregunta al usuario cuando Claude intenta crear algo fuera de la raíz del proyecto. Lo de paso va en `.temporal/`, que `temporal.py` crea y git ignora.
+  - **Hook global de archivos protegidos** (`senior/scripts/hook_archivos_protegidos.py`): pregunta al usuario antes de que Claude edite secretos (`.env`, claves y certificados), el interior de `.git/` o los archivos de bloqueo de dependencias (`package-lock.json`, `composer.lock`, `poetry.lock`...), que se generan con el gestor de paquetes. Nunca bloquea del todo.
 - Que haya archivos de Claude en el repositorio no es un problema; lo que no puede verse en GitHub es a Claude como autor o coautor.
 - Los commits usan la identidad del usuario, configurada solo de forma local en el repositorio: la de la sesión de GitHub si ya hay una y, si no, la que el usuario indique cuando Claude le pregunta en nombre de quién se hace el trabajo. La skill no trae ninguna identidad fija.
 
@@ -159,6 +162,10 @@ Al empezar en un repositorio de GitHub, nuevo o existente, la skill completa la 
 - Solo toca la descripción y los Topics, nunca la visibilidad ni otros ajustes. El usuario lo autoriza de forma permanente, y la skill siempre informa qué cambió.
 - No pisa una descripción que escribió el usuario sin preguntar, y solo quita los Topics que ella misma agregó (los registra en `.git/senior-repo-meta.json`, que no se sube).
 - Rechaza correos, claves y textos de más de 350 caracteres; exige permiso de administrador o de mantenimiento.
+
+## Cuando una regla falla dos veces
+
+Si una regla escrita se incumple por segunda vez, reescribir el texto no la arregla. Claude se lo comunica al usuario (qué regla, cómo falló) y propone una barrera estructural: un chequeo en el verificador, un hook o un cambio en un script. La barrera solo se arma si el usuario dice que sí; si dice que no, queda anotada la decisión en `docs/pendientes.md`. Se revisa al cerrar la sesión.
 
 ## Seguridad y la familia ISO/IEC 27000
 

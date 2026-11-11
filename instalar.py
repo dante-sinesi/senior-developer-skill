@@ -10,8 +10,8 @@ Qué hace:
   1. Comprueba Python 3.8 o superior, Git, el CLI `gh` (opcional, para GitHub) y `pip`.
   2. Copia las skills de este repositorio a ~/.claude/skills, reemplazando las del paquete (no toca ninguna otra
      skill) y pasando los archivos de texto a fin de línea de Unix.
-  3. Registra en ~/.claude/settings.json los tres hooks globales de Claude Code (autoría, lectura de documentos
-     externos y escritura fuera del proyecto), conservando los ajustes que ya haya y con una copia de seguridad.
+  3. Registra en ~/.claude/settings.json los cuatro hooks globales de Claude Code (autoría, lectura de documentos
+     externos, escritura fuera del proyecto y archivos protegidos), conservando los ajustes que ya haya y con una copia de seguridad.
   4. Comprueba las dos bibliotecas de Python obligatorias para documentos e imágenes externos: `markitdown` y
      `Pillow`. Solo las instala con --instalar-dependencias: nunca lo hace por su cuenta.
   5. Imprime un informe con lo que quedó listo y los pasos que faltan (por ejemplo `gh auth login` y la identidad

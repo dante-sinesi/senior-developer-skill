@@ -328,9 +328,25 @@ def vecinos_de(grafo, id_nodo):
     return res
 
 
-def mostrar(grafo, nodo):
+def tokens_al_abrir(raiz, nodo):
+    """Tokens aproximados (caracteres / 4) de abrir el archivo del nodo, o None si no se puede medir.
+
+    Sirve para decidir qué abrir: un resultado chico se lee entero; uno grande se lee por partes. Un símbolo
+    no se mide: abrirlo es leer unas líneas del archivo, no el archivo entero."""
+    if raiz is None or nodo["tipo"] == "simbolo":
+        return None
+    ruta = Path(raiz) / nodo["ruta"]
+    try:
+        return max(1, len(ruta.read_text(encoding="utf-8", errors="replace")) // 4) if ruta.is_file() else None
+    except OSError:
+        return None
+
+
+def mostrar(grafo, nodo, raiz=None):
     print(f"{nodo['id']} [{nodo['tipo']}] {nodo['titulo']}")
-    print(f"  ruta: {nodo['ruta']}")
+    tokens = tokens_al_abrir(raiz, nodo)
+    # senior-ignore: SEC-LOG-SENSIBLE (es una cantidad de tokens de texto, no una credencial)
+    print(f"  ruta: {nodo['ruta']}" + (f" (~{tokens} tokens al abrirlo)" if tokens else ""))
     if nodo["resumen"]:
         print(f"  resumen: {nodo['resumen']}")
     for tipo, otro, sentido in vecinos_de(grafo, nodo["id"]):
@@ -359,7 +375,7 @@ def cmd_consultar(carpeta_docs, termino):
         print("Sin resultados.")
         return
     for _, _, n in sorted(puntuados, key=lambda x: (x[0], x[1]))[:5]:
-        mostrar(grafo, n)
+        mostrar(grafo, n, carpeta_docs.parent)
         print()
 
 
@@ -368,7 +384,7 @@ def cmd_vecinos(carpeta_docs, id_nodo):
     nodo = next((n for n in grafo["nodos"] if n["id"] == id_nodo), None)
     if not nodo:
         sys.exit(f"No existe el nodo: {id_nodo}")
-    mostrar(grafo, nodo)
+    mostrar(grafo, nodo, carpeta_docs.parent)
 
 
 def main():

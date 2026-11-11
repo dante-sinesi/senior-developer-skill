@@ -24,7 +24,7 @@ Las plantillas están en `plantillas/`. Si el proyecto no tiene `docs/`, `senior
 
 1. Leer `docs/ESTADO.md`. Si está instalado el hook de apertura, ya llegó como contexto.
 2. Si hay una ficha "en curso", leer solo sus pasos abiertos.
-3. Para ubicar un concepto, **no leer documentos completos**: consultar el mapa.
+3. Para ubicar un concepto, **no leer documentos completos**: consultar el mapa. Cada resultado indica los tokens aproximados de abrirlo: lo chico se lee entero, lo grande por partes.
    ```
    python <esta-skill>/scripts/indexar_docs.py consultar <término>
    python <esta-skill>/scripts/indexar_docs.py vecinos <id>
@@ -40,6 +40,10 @@ Un cierre brusco (Alt+F4, apagón) no ejecuta ningún hook, así que el estado n
 - aparece un bloqueo o una pregunta para el usuario.
 
 Cada actualización es breve (una o dos líneas); no se reescribe el documento.
+
+## Qué entra en el estado: lo costoso de redescubrir
+
+En `ESTADO.md` y en las fichas va lo que costaría volver a averiguar (una decisión y su motivo, un callejón sin salida ya recorrido, el comando exacto que funciona), no lo que se ve en el código o en el historial de git. Un estado corto se lee en cada sesión; uno largo se paga siempre.
 
 ## Fuera de alcance: a la bandeja, no al olvido
 
