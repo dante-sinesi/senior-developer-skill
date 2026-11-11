@@ -33,6 +33,7 @@ Es un informe que el usuario pidió, así que se entrega completo. **No cambia c
    - fusionar copias casi iguales que deben cambiar juntas;
    - dividir una función que hace trabajos sin relación, por trabajo y nunca por cantidad de líneas.
 8. **Documentación:** README, requisitos y diagramas afectados sin actualizar.
+9. **Control aflojado:** el cambio baja un umbral, saltea o borra un test, quita verificaciones o silencia un chequeo (`# noqa`, `@ts-ignore`) para pasar en verde. Correr `python <senior>/scripts/guardia_listones.py --base <rama-base>` y confirmar cada aviso; sin `motivo:` escrito es un hallazgo.
 
 ## 3. Comprobar antes de informar
 

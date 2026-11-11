@@ -17,6 +17,10 @@ El orden importa: el test fija **qué debe pasar** antes de decidir **cómo**. S
 
 Si regla y código discrepan (la regla dice 0,2 y el código da 0,1), el test **debe fallar**. Se informa al usuario la discrepancia y él decide qué manda.
 
+## Un test en rojo no se arregla aflojándolo
+
+Cuando un test falla, se corrige el código o, si la regla cambió, el requisito y después el test, con el usuario. No se salta, no se borra, no se le quitan verificaciones, no se baja el umbral de cobertura ni se silencia el chequeo para que pase. `verificar.py listones` lo detecta en el diff; lo que de verdad debe quedar como excepción lleva `motivo: …` escrito.
+
 ## Cuándo no hay test nuevo
 
 - Cambios que no alteran comportamiento (texto, comentario, nombre de variable, formato): no hay qué probar. Pero antes de **cualquier refactor** los tests existentes deben estar en verde; si no existen, se escriben primero los de caracterización.

@@ -102,7 +102,7 @@ Si el cambio toca una interfaz y **todavía no hay una dirección de diseño apr
 
 ## Verificación automática
 
-`scripts/verificar.py` (sin argumento corre todo) revisa tamaño, alcance, deuda, estado, documentación, calidad de los requisitos, README, texto (límites, repetición, información perdida), diagramas, comentarios del código modificado y seguridad, y devuelve pocas líneas. Con `--auditar` suma el chequeo de dependencias (usa la red). Ejecutarlo antes de cada PR y al cerrar la sesión.
+`scripts/verificar.py` (sin argumento corre todo) revisa tamaño, alcance, deuda, estado, documentación, calidad de los requisitos, README, texto (límites, repetición, información perdida), diagramas, comentarios del código modificado, **listones** (que el cambio no afloje umbrales, tests ni chequeos para pasar; `guardia_listones.py`) y seguridad, y devuelve pocas líneas. Con `--auditar` suma el chequeo de dependencias (usa la red). Ejecutarlo antes de cada PR y al cerrar la sesión.
 
 ## Mapa del paquete
 

@@ -97,9 +97,13 @@ python ~/.claude/skills/senior/scripts/verificar.py            # todo
 python ~/.claude/skills/senior/scripts/verificar.py readme     # un chequeo puntual
 ```
 
-Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `fuentes`, `requisitos`, `texto`, `diagramas`, `comentarios`, `autoria`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
+Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `fuentes`, `requisitos`, `texto`, `diagramas`, `comentarios`, `listones`, `autoria`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
 
 Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
+
+### Guardia de listones
+
+`listones` (`senior/scripts/guardia_listones.py`) mira el diff y avisa cuando un cambio **afloja un control para pasar en verde**: umbrales de cobertura o de largo de línea movidos, `strict` apagado, `continue-on-error` o `|| true` en la integración continua, tests salteados, borrados o con menos verificaciones, supresiones nuevas (`# noqa`, `# type: ignore`, `eslint-disable`, `@ts-ignore`, `# nosec`), trabajo a medias (`NotImplementedError`, `except: pass`, `TODO` nuevos) y atajos nuevos. Endurecer un control es silencioso: solo se informa lo que afloja. Una excepción pasa si lleva su `motivo: …` escrito en la misma línea o en la anterior. Antes de un PR se corre con `--base main` para mirar toda la rama.
 
 ## Documentos e imágenes externos
 
