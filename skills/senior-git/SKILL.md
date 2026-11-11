@@ -56,6 +56,18 @@ gh pr create --title "..." --body-file pr.md             # solo con aprobación
 
 `validar_commits.py` revisa el formato de los commits de la rama respecto de `main`/`master` y el nombre de la rama. No puede comprobar el idioma: eso lo revisa quien escribe.
 
+## Descripción y Topics del repositorio
+
+La descripción y los Topics son la portada del repositorio en GitHub: lo primero que se lee y lo que usan las búsquedas. Se completan al empezar en un repositorio de GitHub, nuevo o existente, y se **mantienen al día** conforme el proyecto cambia.
+
+- **Cuándo:** al adoptar o abrir un proyecto; al cerrar un hito; antes de abrir un PR que cambie el README, el stack o lo que el proyecto hace; y en `/cerrar-sesion`. Si el proyecto todavía no está en GitHub, se hace cuando se cree el repositorio.
+- **Cómo:**
+  1. `python <esta-skill>/scripts/repo_meta.py` muestra lo que se detecta (lenguajes, bibliotecas), lo que dice GitHub hoy, un borrador sacado del README y si el proyecto cambió desde la última vez.
+  2. Se decide la descripción (una línea, hasta 350 caracteres, en lenguaje simple, a partir del README) y de dos a cinco Topics de dominio; los de tecnología los agrega el script.
+  3. `python <esta-skill>/scripts/repo_meta.py --descripcion "..." --topics a,b,c` muestra el cambio; con `--aplicar` se aplica y se comprueba en GitHub. Al terminar se le dice al usuario qué quedó escrito.
+- **Autorización permanente del usuario, solo para esto:** la descripción y los Topics se actualizan sin pedir permiso cada vez, y siempre se informa qué cambió. No se extiende a nada más: nunca se tocan la visibilidad, la página web ni otros ajustes del repositorio.
+- **Cuidados:** una descripción que ya existe y no escribió senior se muestra y se pregunta antes de pisarla (`--reemplazar-descripcion`). Solo se quitan los Topics que senior agregó antes; los que puso el usuario se conservan. Nunca van datos personales, nombres de clientes, claves ni nada interno, aunque el repositorio sea privado: el script rechaza correos y claves. Hace falta permiso de administrador o de mantenimiento.
+
 ## Brevedad
 
 El asunto del commit alcanza; el cuerpo se agrega solo cuando el porqué no es evidente. La descripción del PR no pasa de unas 30 líneas (`texto.py --pr pr.md` lo mide): enlaza a la ficha, los requisitos y los ADR en lugar de copiarlos.

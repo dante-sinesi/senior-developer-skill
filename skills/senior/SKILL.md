@@ -76,6 +76,8 @@ python <esta-skill>/scripts/verificar.py tamano
 
 Si el proyecto no tiene `docs/ESTADO.md`, no se impone toda la metodología de golpe: se trabaja con lo que haya y se **propone** crear la base documental (`senior-docs`) cuando el usuario quiera.
 
+Si el proyecto está en GitHub (o lo estará), se completa la descripción y los Topics del repositorio y después se mantienen al día; ver «Descripción y Topics del repositorio» en `senior-git`.
+
 ## Puntos de control: siempre consultar antes de
 
 - Hacer commit, push o abrir un PR: solo cuando el usuario lo pidió o lo aprobó, aunque la ficha de cambio tenga ese paso. Un paso en la ficha no es una autorización. Y siempre bajo la regla de autoría: en lo que se sube figura únicamente el usuario, sin Claude ni coautores (no es negociable ni se consulta: simplemente se cumple).
@@ -85,7 +87,7 @@ Si el proyecto no tiene `docs/ESTADO.md`, no se impone toda la metodología de g
 - Usar un **agente verificador**: solo con autorización explícita del usuario, cada vez.
 - **Crear o escribir algo fuera del directorio del proyecto** (principio 16): siempre se pide antes, con la ruta y el motivo.
 - Instalar `markitdown` o `Pillow` (obligatorias para leer documentos e imágenes externos; nunca se instalan solas) o leer un documento externo por la vía de la excepción (PDF escaneado, diseño visual).
-- Guardar un perfil de lenguaje nuevo, instalar un hook (salvo la guardia de autoría, que se activa sola por autorización permanente del usuario) o crear/actualizar Issues de GitHub.
+- Guardar un perfil de lenguaje nuevo, instalar un hook (salvo la guardia de autoría, que se activa sola por autorización permanente del usuario) o crear/actualizar Issues de GitHub. La descripción y los Topics del repositorio son la excepción: se actualizan solos, por autorización permanente del usuario, y se le informa qué cambió.
 - Pasar de seguridad liviana a formal.
 - Resolver una discrepancia entre una regla de negocio y el código.
 - Tomar o copiar algo de las skills antiguas del usuario: nada se incorpora sin su consulta.
