@@ -24,13 +24,15 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 |---|---|
 | `senior` | Puerta de entrada: principios, flujo de trabajo, puntos de control y el verificador (`verificar.py`) |
 | `senior-memoria` | Estado del proyecto, fichas de cambio, pendientes, índice y mapa de conceptos |
-| `senior-relevar` | Entender un sistema ajeno o heredado antes de modificarlo |
+| `senior-relevar` | Entender un sistema ajeno o heredado antes de modificarlo; ingesta opcional de documentos externos (PDF, Word, PowerPoint, Excel) a Markdown |
 | `senior-tdd` | Ciclo rojo-verde-refactor, código heredado, pruebas de interfaz y guardia de base de prueba |
 | `senior-refactor` | Detección de duplicación y refactor seguro |
-| `senior-docs` | Requisitos, diagramas legibles, decisiones de arquitectura y README |
+| `senior-docs` | Requisitos (elicitación por lotes en un Markdown que el usuario responde, y revisión automática de su redacción), diagramas legibles, decisiones de arquitectura y README |
 | `senior-git` | Ramas por cambio, Conventional Commits en español neutro, Pull Requests |
 | `senior-seguridad` | Lista de revisión, chequeos automáticos y modo formal con registro de riesgos |
 | `senior-lenguajes` | Perfiles de PHP, JavaScript/TypeScript, CSS, SQL y HTML; alta de lenguajes nuevos |
+| `senior-diseno` | Diseño de interfaces: método (tres alternativas, feedback, evolución) y reglas objetivas con script; el estilo es libre |
+| `auditar-diseno` | Comando `/auditar-diseno`: revisa la interfaz de un proyecto existente sin modificarlo |
 | `adoptar-proyecto` | Comando `/adoptar-proyecto`: plan, aprobación y creación de la base documental |
 | `cerrar-sesion` | Comando `/cerrar-sesion`: cierre ordenado opcional |
 
@@ -40,6 +42,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 - Python 3.8 o superior (los scripts usan solo la biblioteca estándar).
 - Git. El CLI `gh` es necesario solo para trabajar con GitHub.
 - Opcional: `npm`, `composer` o `pip-audit` si se quiere la auditoría de dependencias.
+- Opcional: la biblioteca `markitdown` (`pip install "markitdown[all]"`) para convertir documentos externos con `senior-relevar/scripts/convertir_fuentes.py`. Nunca se instala sola, y las imágenes no se convierten: se leen directamente.
 
 ## Instalación
 
@@ -80,9 +83,18 @@ python ~/.claude/skills/senior/scripts/verificar.py            # todo
 python ~/.claude/skills/senior/scripts/verificar.py readme     # un chequeo puntual
 ```
 
-Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `texto`, `diagramas`, `comentarios` y `seguridad` (con `--auditar` suma las dependencias). Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
+Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `requisitos`, `texto`, `diagramas`, `comentarios`, `autoria`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
 
 Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
+
+## Diseño de interfaces
+
+La skill `senior-diseno` forma parte del paquete: un **método** (briefing, tres alternativas que difieren en estructura, feedback del usuario, evolución) y **reglas objetivas con control automático** que no tocan el aspecto artístico (una familia tipográfica ideal y dos como máximo, etiqueta visible en cada campo, hasta 4 campos visibles, una acción principal, contraste, foco). El estilo es libre. Es una sola sesión y un solo flujo: se diseña, se aprueba y se implementa con las reglas de `senior`.
+
+- Los artefactos viven en `docs/diseno/` (rondas de bosquejos, preferencias, decisiones, variables de diseño, contratos de campos, auditorías).
+- Los bosquejos no llevan tests; el TDD empieza al implementar la pantalla.
+- Al implementar, `verificar.py diseno` comprueba que el código use las variables de diseño y las etiquetas del contrato de campos.
+- `/auditar-diseno` revisa un proyecto existente sin modificarlo.
 
 ## Regla de autoría
 

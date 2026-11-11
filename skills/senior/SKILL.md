@@ -67,14 +67,23 @@ Si el proyecto no tiene `docs/ESTADO.md`, no se impone toda la metodología de g
 - Resolver una discrepancia entre una regla de negocio y el código.
 - Tomar o copiar algo de las skills antiguas del usuario: nada se incorpora sin su consulta.
 
+## Interfaces y diseño
+
+Si el cambio toca una interfaz y **todavía no hay una dirección de diseño aprobada**, se diseña primero con `senior-diseno` (método de tres alternativas, feedback y reglas objetivas) y recién después se implementa. Los artefactos de diseño viven en `docs/diseno/`.
+
+- **Los bosquejos no llevan tests**; el TDD empieza al implementar la pantalla.
+- **Al implementar:** usar las variables de diseño sin copiar sus valores, programar cada componente una sola vez y usar las etiquetas de los formularios **exactamente** como figuran en el contrato de campos (`verificar.py diseno` lo comprueba).
+- **Al documentar:** los ADR citan las decisiones de diseño por su ID (`D-001`), sin copiarlas.
+
 ## Verificación automática
 
-`scripts/verificar.py` (sin argumento corre todo) revisa tamaño, alcance, deuda, estado, documentación, README, texto (límites, repetición, información perdida), diagramas, comentarios del código modificado y seguridad, y devuelve pocas líneas. Con `--auditar` suma el chequeo de dependencias (usa la red). Ejecutarlo antes de cada PR y al cerrar la sesión.
+`scripts/verificar.py` (sin argumento corre todo) revisa tamaño, alcance, deuda, estado, documentación, calidad de los requisitos, README, texto (límites, repetición, información perdida), diagramas, comentarios del código modificado y seguridad, y devuelve pocas líneas. Con `--auditar` suma el chequeo de dependencias (usa la red). Ejecutarlo antes de cada PR y al cerrar la sesión.
 
 ## Mapa del paquete
 
 - `senior-memoria`: estado, fichas, pendientes, índice y mapa de conceptos.
 - `senior-relevar`: entender un sistema antes de tocarlo.
+- `senior-diseno`: diseñar interfaces (método y reglas objetivas) antes de implementarlas; `auditar-diseno` revisa una existente.
 - `senior-tdd`: ciclo rojo-verde-refactor, código heredado, interfaz, base de prueba.
 - `senior-refactor`: duplicación y limpieza segura.
 - `senior-docs`: requisitos, diagramas legibles, decisiones, trazabilidad.

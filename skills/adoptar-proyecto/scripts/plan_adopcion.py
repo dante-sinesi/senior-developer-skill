@@ -34,17 +34,22 @@ def correr(cmd, cwd):
 
 
 def inspeccionar(raiz):
-    codigo, tests = 0, False
+    codigo, tests, documentos, interfaz = 0, False, 0, 0
     for actual, carpetas, nombres in os.walk(raiz):
-        carpetas[:] = [c for c in carpetas if c not in IGNORAR]
+        carpetas[:] = [c for c in carpetas if c not in IGNORAR and c != "docs"]
         for n in nombres:
+            if Path(n).suffix.lower() in {".html", ".htm", ".css", ".vue", ".svelte", ".jsx", ".tsx"}:
+                interfaz += 1
+            if Path(n).suffix.lower() in {".pdf", ".docx", ".pptx", ".xlsx", ".xls"}:
+                documentos += 1
             if Path(n).suffix.lower() in EXT_CODIGO:
                 codigo += 1
                 if "test" in n.lower() or "spec" in n.lower() or "test" in Path(actual).name.lower():
                     tests = True
     readme = next((n for n in ("README.md", "readme.md", "Readme.md") if (raiz / n).exists()), None)
     return {
-        "codigo": codigo, "tests": tests, "readme": readme,
+        "codigo": codigo, "tests": tests, "readme": readme, "documentos": documentos, "interfaz": interfaz,
+        "diseno": (raiz / "docs" / "diseno").is_dir(),
         "git": (raiz / ".git").exists(),
         "docs": (raiz / "docs").is_dir(),
         "estado": (raiz / "docs" / "ESTADO.md").exists(),
@@ -73,6 +78,12 @@ def construir_plan(info, tipo):
     else:
         plan.append(("manual", "Preguntar el stack y la herramienta de tests; registrar el primer ADR"))
     plan.append(("auto", "Generar el índice de documentación (docs/INDEX.md)"))
+    if info.get("interfaz") and not info.get("diseno") and (SKILLS / "senior-diseno").is_dir():
+        plan.append(("propuesta", f"Auditoría de diseño de la interfaz existente ({info['interfaz']} archivos HTML, CSS o plantillas) "
+                                  "con /auditar-diseno (solo lectura; el informe va a docs/diseno/auditoria/)"))
+    if info.get("documentos"):
+        plan.append(("propuesta", f"Convertir a texto {info['documentos']} documentos externos (PDF, Word, etc.) a docs/fuentes/ "
+                                  "con senior-relevar/scripts/convertir_fuentes.py (opcional; las imágenes se leen directo)"))
     plan.append(("propuesta", "Guardia de autoría (hooks locales): impide subir commits con Claude o coautores; en GitHub figura solo el usuario"))
     plan.append(("propuesta", "Hook de apertura que carga ESTADO.md (requiere aprobación aparte)"))
     plan.append(("propuesta", "Plantilla de Pull Request de GitHub (.github/pull_request_template.md)"))

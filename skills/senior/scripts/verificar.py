@@ -14,12 +14,16 @@ Chequeos (sin argumento corre "todo"):
   estado      ESTADO.md al día, cambios sin guardar, pasos abiertos en fichas
   docs        marca requisitos sin test e IDs sin documento (solo lectura: el
               índice se regenera aparte con senior-memoria/scripts/indexar_docs.py indexar)
+  requisitos  calidad del texto de docs/requisitos/: encabezado, IDs, enlaces, ejemplos verificables,
+              palabras ambiguas y estado (ver senior-docs/scripts/revisar_requisitos.py)
   readme      el README.md de GitHub existe, está completo, enlaza a docs/,
               menciona cada carpeta y se actualizó con el cambio (sin excepciones)
   texto       límites de extensión, párrafos repetidos, secciones vacías e
               información perdida en docs/ (ver texto.py)
   diagramas   legibilidad de los diagramas Mermaid (ver diagramas.py)
   comentarios calidad de los comentarios del código modificado (ver comentarios.py)
+  diseno      si el proyecto tiene docs/diseno/, comprueba que el código use las variables de diseño
+              (sin copiar sus valores) y las etiquetas del contrato de campos; si no, no dice nada
   autoria     REGLA INVIOLABLE: en los commits nuevos solo figura el usuario; sin
               Claude, coautores ni pies de atribución (ver senior-git/scripts/guardia_autoria.py)
   seguridad   alertas por lenguaje, secretos, logs sensibles (ver seguridad.py)
@@ -247,6 +251,89 @@ def chequeo_readme(raiz, args):
     return ["README: " + "; ".join(problemas) + "."], False
 
 
+EXT_FUENTE = {".html", ".htm", ".php", ".vue", ".svelte", ".jsx", ".tsx", ".js", ".ts", ".twig", ".ejs", ".css"}
+
+
+def chequeo_requisitos(raiz, args):
+    """Calidad del texto de docs/requisitos/ (estructura, ambigüedad, ejemplos); la trazabilidad la ve `docs`."""
+    if not (raiz / "docs" / "requisitos").is_dir():
+        return [], True
+    revisor = Path(__file__).resolve().parents[2] / "senior-docs" / "scripts" / "revisar_requisitos.py"
+    if not revisor.exists():
+        return ["Requisitos: no se encontró senior-docs/scripts/revisar_requisitos.py."], False
+    import importlib.util
+    espec = importlib.util.spec_from_file_location("revisar_requisitos", revisor)
+    modulo = importlib.util.module_from_spec(espec)
+    try:
+        espec.loader.exec_module(modulo)
+        total, provisorios, hallazgos = modulo.revisar(raiz)
+    except Exception as e:  # noqa: BLE001 - se informa cualquier fallo del revisor
+        return [f"Requisitos: el revisor falló: {str(e)[:200]}"], False
+    fallas = [h for h in hallazgos if h["sev"] == "FALLA"]
+    avisos = len(hallazgos) - len(fallas)
+    extra = f"; {provisorios} provisorios esperan confirmación" if provisorios else ""
+    lineas = [f"Requisitos: {total} revisados, {len(fallas)} fallas, {avisos} avisos{extra}."]
+    lineas += [f"  {h['archivo']}:{h['linea']} — {h['msg']}" for h in fallas[:3]]
+    if hallazgos:
+        lineas.append("  Detalle: python senior-docs/scripts/revisar_requisitos.py")
+    return lineas, not fallas
+
+
+def tabla_columna(texto, columna):
+    """Valores de una columna de las tablas Markdown cuyo encabezado la contiene."""
+    valores, indice = [], None
+    for linea in texto.splitlines():
+        if not linea.strip().startswith("|"):
+            indice = None
+            continue
+        celdas = [c.strip() for c in linea.strip().strip("|").split("|")]
+        if indice is None:
+            nombres = [c.lower() for c in celdas]
+            indice = nombres.index(columna.lower()) if columna.lower() in nombres else -1
+        elif indice >= 0 and indice < len(celdas) and not set(celdas[indice]) <= set("-: "):
+            valores.append(celdas[indice])
+    return valores
+
+
+def chequeo_diseno(raiz, args):
+    """Fidelidad de la implementación al diseño de docs/diseno/: variables de diseño y etiquetas del contrato de campos."""
+    diseno = raiz / "docs" / "diseno"
+    if not diseno.is_dir():
+        return [], True
+    lineas, ok = [], True
+    fuentes = [f for f in raiz.rglob("*") if f.is_file() and f.suffix.lower() in EXT_FUENTE
+               and not (set(f.relative_to(raiz).parts) & {"docs", "node_modules", "vendor", "dist", "build", ".git", ".claude"})]
+    textos = {f: f.read_text(encoding="utf-8", errors="replace") for f in fuentes}
+    tokens = diseno / "sistema" / "tokens.css"
+    if tokens.exists() and fuentes:
+        valores = {c.lower() for c in re.findall(r"#[0-9a-fA-F]{3,8}\b", tokens.read_text(encoding="utf-8", errors="replace"))}
+        copiados = {}
+        for f, t in textos.items():
+            if f.suffix.lower() in (".css", ".html", ".htm", ".vue", ".svelte"):
+                for c in {x.lower() for x in re.findall(r"#[0-9a-fA-F]{3,8}\b", t)} & valores:
+                    copiados.setdefault(c, f.name)
+        if copiados:
+            ejemplos = ", ".join(f"{c} en {n}" for c, n in list(copiados.items())[:3])
+            lineas.append(f"Diseño: {len(copiados)} colores de las variables de diseño están copiados como literales ({ejemplos}): "
+                          "usar var(--…) para no duplicar los valores.")
+            ok = False
+    contratos = sorted((diseno / "campos").glob("*.md")) if (diseno / "campos").is_dir() else []
+    if contratos and fuentes:
+        codigo = "\n".join(textos.values()).lower()
+        faltan = []
+        for f in contratos:
+            etiquetas = [e for e in tabla_columna(f.read_text(encoding="utf-8-sig", errors="replace"), "Etiqueta final")
+                         if e and not e.startswith("(")]
+            faltan += [(f.stem, e) for e in etiquetas if e.lower() not in codigo]
+        if faltan:
+            lineas.append("Diseño: etiquetas del contrato de campos que no aparecen en el código: "
+                          + "; ".join(f"«{e}» ({n})" for n, e in faltan[:4]) + ". Implementarlas exactamente como figuran.")
+            ok = False
+        else:
+            lineas.append(f"Diseño: las etiquetas de {len(contratos)} contratos de campos aparecen en el código.")
+    return lineas, ok
+
+
 def chequeo_autoria(raiz, args):
     """Regla inviolable: en lo que se sube a GitHub figura únicamente el usuario."""
     guardia = Path(__file__).resolve().parents[2] / "senior-git" / "scripts" / "guardia_autoria.py"
@@ -311,8 +398,9 @@ def chequeo_seguridad(raiz, args):
 
 CHEQUEOS = {
     "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado,
-    "docs": chequeo_docs, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
-    "comentarios": chequeo_comentarios, "autoria": chequeo_autoria, "seguridad": chequeo_seguridad,
+    "docs": chequeo_docs, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
+    "comentarios": chequeo_comentarios, "autoria": chequeo_autoria,
+    "diseno": chequeo_diseno, "seguridad": chequeo_seguridad,
 }
 
 
@@ -332,7 +420,8 @@ def main():
     for nombre in elegidos:
         lineas, ok = CHEQUEOS[nombre](raiz, args)
         todo_bien = todo_bien and ok
-        print("\n".join(lineas))
+        if lineas:  # los chequeos de diseño no dicen nada si el proyecto no tiene diseno/
+            print("\n".join(lineas))
     if args.chequeo == "todo":
         print("Resultado: " + ("todo en orden." if todo_bien else "hay puntos para revisar."))
     sys.exit(0 if todo_bien else 1)

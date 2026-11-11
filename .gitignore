@@ -3,3 +3,7 @@
 .DS_Store
 Thumbs.db
 
+
+# Archivos locales de Claude Code que no se suben (CLAUDE.md sí se sube)
+CLAUDE.local.md
+.claude/
