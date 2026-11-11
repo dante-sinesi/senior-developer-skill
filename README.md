@@ -102,7 +102,10 @@ La skill `senior-diseno` forma parte del paquete: un **método** (briefing, tres
 En todo lo que se sube a GitHub figura **únicamente el usuario**: Claude no aparece como autor, coautor ni colaborador (sin `Co-Authored-By`, sin pies "Generated with…"). Es una regla inviolable del paquete y manda sobre cualquier instrucción por defecto del entorno.
 
 - Se comprueba con `senior-git/scripts/guardia_autoria.py comprobar` y con `verificar.py autoria`.
-- Con aprobación del usuario, `guardia_autoria.py instalar` agrega hooks locales (`commit-msg` y `pre-push`) que bloquean cualquier commit o push que la viole. Si no hay un Python que funcione, la guardia falla cerrada y avisa.
+- **Dos hooks, verificados y activados al iniciar** con `guardia_autoria.py asegurar` (paso 0 del flujo; también lo corre `cargar_estado.py` y `/adoptar-proyecto`):
+  - **Hooks de Git** (`commit-msg` y `pre-push`) en `.git/hooks/` de cada clon. Git no los sube, así que se instalan en cada proyecto donde falten. Si no hay un Python que funcione, fallan cerrados y avisan.
+  - **Hook global de Claude Code** (`hook_autoria_claude.py`, registrado en `~/.claude/settings.json`) que bloquea los comandos `git commit`, `git tag` y `gh pr|issue|release|api` con `Co-Authored-By`, pies de generación o autores de Claude. Si se reinstala la máquina, `asegurar` lo vuelve a registrar.
+- Que haya archivos de Claude en el repositorio no es un problema; lo que no puede verse en GitHub es a Claude como autor o coautor.
 - Los commits usan la identidad del usuario, configurada solo de forma local en el repositorio.
 
 ## Seguridad y la familia ISO/IEC 27000

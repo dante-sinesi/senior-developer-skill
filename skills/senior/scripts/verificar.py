@@ -350,7 +350,12 @@ def chequeo_autoria(raiz, args):
     if problemas:
         return [f"Autoría: {len(problemas)} problemas (solo debe figurar el usuario):"] + \
                [f"  {p}" for p in problemas[:10]], False
-    return [f"Autoría: {len(lista)} commits revisados, sin rastro de Claude ni coautores."], True
+    faltan = [l for l in modulo.asegurar_git(raiz, True)[0] + modulo.asegurar_claude(True)[0] if l.startswith(("FALTA", "NO"))]
+    if faltan:
+        return ([f"Autoría: {len(lista)} commits revisados, sin rastro de Claude ni coautores, pero la guardia no está completa:"]
+                + [f"  {l}" for l in faltan]
+                + ["  Activarla: python senior-git/scripts/guardia_autoria.py asegurar"]), False
+    return [f"Autoría: {len(lista)} commits revisados, sin rastro de Claude ni coautores; guardia activa."], True
 
 
 def chequeo_comentarios(raiz, args):

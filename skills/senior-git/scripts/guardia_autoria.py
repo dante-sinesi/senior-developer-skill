@@ -8,7 +8,10 @@ Uso:
     python guardia_autoria.py comprobar [--raiz .] [--base main]   # revisa los commits nuevos de la rama
     python guardia_autoria.py mensaje <archivo>                    # revisa un texto: mensaje de commit, PR, Issue
     python guardia_autoria.py prepush                              # para el hook pre-push (lee stdin de git)
-    python guardia_autoria.py instalar [--raiz .]                  # instala los hooks locales (pedir aprobación antes)
+    python guardia_autoria.py instalar [--raiz .]                  # instala los hooks de Git de este repositorio
+    python guardia_autoria.py asegurar [--raiz .] [--silencioso] [--solo-verificar]
+        # comprueba que estén activos los hooks de Git del repositorio y el hook global de Claude Code
+        # (~/.claude/settings.json) y, si falta alguno, lo activa. El usuario lo autorizó de forma permanente.
 
 Qué se prohíbe:
   - líneas Co-Authored-By (de cualquier persona o herramienta; el usuario puede
@@ -21,8 +24,12 @@ Aviso (no bloquea): autor distinto de la identidad configurada en git.
 Códigos de salida: 0 sin problemas, 1 con problemas. Solo biblioteca estándar.
 """
 import argparse
+import contextlib
+import io
+import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -194,14 +201,118 @@ def cmd_instalar(raiz):
     return 0
 
 
+CLAUDE_HOOK = "hook_autoria_claude.py"
+
+
+def python_que_funciona():
+    """Primer intérprete que de verdad ejecuta (en Windows `python3` puede ser un acceso directo roto)."""
+    for c in ("python", "python3", "py"):
+        try:
+            if subprocess.run([c, "-c", "import sys"], capture_output=True, timeout=20).returncode == 0:
+                return c
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+    return None
+
+
+def ruta_hook_claude():
+    """Ruta estable del hook de Claude Code: la instalada en ~/.claude/skills si existe; si no, la de este repositorio."""
+    instalada = Path.home() / ".claude" / "skills" / "senior-git" / "scripts" / CLAUDE_HOOK
+    return instalada if instalada.exists() else Path(__file__).resolve().with_name(CLAUDE_HOOK)
+
+
+def hooks_git_al_dia(raiz):
+    ruta = Path(git(raiz, "rev-parse", "--git-path", "hooks")[0].strip())
+    if not ruta.is_absolute():
+        ruta = (raiz / ruta).resolve()
+    copia = ruta / "senior_guardia_autoria.py"
+    for nombre in ("commit-msg", "pre-push"):
+        f = ruta / nombre
+        if not f.exists() or MARCA_HOOK not in f.read_text(encoding="utf-8", errors="replace"):
+            return False
+    return copia.exists() and copia.read_text(encoding="utf-8", errors="replace") == Path(__file__).read_text(encoding="utf-8")
+
+
+def asegurar_git(raiz, solo_verificar):
+    """Devuelve (lineas, falta). `falta` es True si algo no está activo."""
+    if git(raiz, "rev-parse", "--is-inside-work-tree")[0].strip() != "true":
+        return [], False
+    if hooks_git_al_dia(raiz):
+        return ["hook de Git activo en este repositorio"], False
+    if solo_verificar:
+        return ["FALTA el hook de Git de este repositorio (commit-msg y pre-push)"], True
+    salida = io.StringIO()
+    with contextlib.redirect_stdout(salida):
+        codigo = cmd_instalar(raiz)
+    if codigo == 0 and hooks_git_al_dia(raiz):
+        return ["activé el hook de Git de este repositorio (commit-msg y pre-push)"], False
+    return ["NO se pudo activar el hook de Git: " + salida.getvalue().strip()[:160]], True
+
+
+def asegurar_claude(solo_verificar):
+    """Garantiza el hook global de Claude Code en ~/.claude/settings.json. Devuelve (lineas, falta)."""
+    destino = Path.home() / ".claude" / "settings.json"
+    ajustes = {}
+    if destino.exists():
+        try:
+            ajustes = json.loads(destino.read_text(encoding="utf-8-sig"))
+        except ValueError:
+            return ["NO se tocó ~/.claude/settings.json porque no es un JSON válido; corregirlo y repetir"], True
+    if not isinstance(ajustes, dict):
+        return ["NO se tocó ~/.claude/settings.json: tiene una estructura inesperada"], True
+    script = ruta_hook_claude()
+    previos = ajustes.setdefault("hooks", {}).setdefault("PreToolUse", [])
+    entrada = None
+    for grupo in previos:
+        for h in grupo.get("hooks", []) if isinstance(grupo, dict) else []:
+            if CLAUDE_HOOK in str(h.get("command", "")):
+                entrada = h
+    if entrada is not None:
+        m = re.search(r'"([^"]*' + re.escape(CLAUDE_HOOK) + r')"', entrada["command"])
+        if m and Path(m.group(1)).exists():
+            return ["hook global de Claude Code activo"], False
+    if solo_verificar:
+        return ["FALTA el hook global de Claude Code (~/.claude/settings.json)"], True
+    py = python_que_funciona()
+    if not py or not script.exists():
+        return ["NO se pudo activar el hook global de Claude Code: " +
+                ("no hay un Python que funcione" if not py else f"no existe {script}")], True
+    comando = f'{py} "{script.as_posix()}"'
+    if entrada is not None:
+        entrada["command"] = comando
+    else:
+        previos.append({"matcher": "Bash|PowerShell", "hooks": [{"type": "command", "command": comando}]})
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    respaldo = destino.with_name("settings.json.bak-senior")
+    if destino.exists() and not respaldo.exists():
+        shutil.copyfile(destino, respaldo)
+    destino.write_text(json.dumps(ajustes, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+    return ["activé el hook global de Claude Code (se aplica al abrir una sesión nueva)"], False
+
+
+def cmd_asegurar(raiz, silencioso, solo_verificar):
+    lineas, falta = [], False
+    for l, f in (asegurar_git(raiz, solo_verificar), asegurar_claude(solo_verificar)):
+        lineas += l
+        falta = falta or f
+    cambios = [l for l in lineas if l.startswith(("activé", "NO", "FALTA"))]
+    if silencioso and not cambios:
+        return 0
+    for l in (cambios if silencioso else lineas):
+        print(f"Guardia de autoría: {l}.")
+    return 1 if falta and solo_verificar else 0
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("accion", choices=["comprobar", "mensaje", "prepush", "instalar"])
+    ap.add_argument("accion", choices=["comprobar", "mensaje", "prepush", "instalar", "asegurar"])
     ap.add_argument("archivo", nargs="?")
     ap.add_argument("--raiz", default=".")
     ap.add_argument("--base", default=None)
+    ap.add_argument("--silencioso", action="store_true")
+    ap.add_argument("--solo-verificar", action="store_true")
     args = ap.parse_args()
     raiz = Path(args.raiz).resolve()
     if args.accion == "comprobar":
@@ -212,6 +323,8 @@ def main():
         sys.exit(cmd_mensaje(args.archivo))
     if args.accion == "prepush":
         sys.exit(cmd_prepush(Path.cwd()))
+    if args.accion == "asegurar":
+        sys.exit(cmd_asegurar(raiz, args.silencioso, args.solo_verificar))
     sys.exit(cmd_instalar(raiz))
 
 
