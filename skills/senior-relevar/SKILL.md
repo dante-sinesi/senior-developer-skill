@@ -41,6 +41,7 @@ Deja `docs/fuentes/<nombre>.md` con el origen y el hash, no reconvierte lo que n
 
 - Leer todo el código "para tener el panorama": cuesta mucho y diluye la atención. El inventario y el mapa existen para evitarlo.
 - Documentar como requisito algo que solo es una hipótesis.
+- Relevar a ciegas cuando no hay sistema que leer: si lo que falta es saber qué necesita la gente, se elicita con una consulta por lotes (`senior-docs/references/elicitacion.md`) en lugar de inferir.
 - Proponer rediseños: el relevamiento describe, no corrige. Las mejoras van a `docs/pendientes.md` o a una ficha acordada con el usuario.
 
 ## Cuánto cuesta (orientativo)

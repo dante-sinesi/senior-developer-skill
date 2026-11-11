@@ -34,6 +34,7 @@ Documentación viva: se actualiza con cada cambio y se indexa automáticamente.
 - `cambios/`: fichas de cambios medianos y grandes.
 - `historial/`: lo que sale de ESTADO.md por antigüedad (un archivo por mes) y fichas cerradas.
 - `fuentes/`: documentos externos convertidos a Markdown (opcional, se crea al convertir).
+- `consultas/`: cuestionarios de elicitación que el usuario responde en el propio archivo (opcional, se crea con `consultas.py`).
 """
 
 

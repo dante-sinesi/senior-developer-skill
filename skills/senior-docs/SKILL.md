@@ -1,6 +1,6 @@
 ---
 name: senior-docs
-description: Documentación viva en el repositorio (docs/) con requisitos de negocio, de usuario, de dominio, funcionales, no funcionales, de transición y de interfaces externas, más diagramas Mermaid legibles (clases, secuencia, entidad-relación, estados), decisiones de arquitectura (ADR) y trazabilidad requisito-test-código. Usar al crear la base documental de un proyecto, al agregar o cambiar un requisito, al dibujar un diagrama UML o de secuencia, al registrar una decisión de arquitectura, o cuando falte documentación clara. Usar también cuando un cambio afecte comportamiento y haya que actualizar lo documentado.
+description: Documentación viva en el repositorio (docs/) con requisitos de negocio, de usuario, de dominio, funcionales, no funcionales, de transición y de interfaces externas, más diagramas Mermaid legibles (clases, secuencia, entidad-relación, estados), decisiones de arquitectura (ADR) y trazabilidad requisito-test-código. Usar al crear la base documental de un proyecto, al agregar o cambiar un requisito, al dibujar un diagrama UML o de secuencia, al registrar una decisión de arquitectura, o cuando falte documentación clara. Usar también para elicitar requisitos de una idea o un pedido nuevo (consultas por lotes que el usuario responde en un Markdown) y para revisar la calidad de los requisitos escritos. Usar también cuando un cambio afecte comportamiento y haya que actualizar lo documentado.
 ---
 
 # Documentación viva
@@ -34,6 +34,10 @@ Cada dato vive en **un solo lugar** (regla → requisito, decisión → ADR, est
 | Interfaces externas | RI | `docs/requisitos/interfaces/` | APIs, archivos y sistemas con los que se conecta |
 
 Detalle, ejemplos y cómo extraer reglas de código heredado: `references/requisitos.md`.
+
+**Cuando los requisitos no existen todavía** (una idea nueva, un pedido vago, alguien que no sabe qué pedir): se elicitan **por lotes, no pregunta a pregunta**. El modelo prepara un archivo `docs/consultas/NN-tema.md` con lo que entendió, los supuestos y una batería de preguntas agrupadas, cada una con su propuesta; el usuario responde en el mismo archivo cuando pueda (con un `ok` alcanza), y eso queda como documentación y como origen de los requisitos. Lo que no se responde no bloquea: se avanza con la propuesta y el requisito queda provisorio. Método completo en `references/elicitacion.md`; el archivo se crea con `python <esta-skill>/scripts/consultas.py nueva "tema"` y `consultas.py estado` resume qué quedó sin responder.
+
+**Revisión de la forma:** `python <esta-skill>/scripts/revisar_requisitos.py` (también como `verificar.py requisitos`) controla, sin gastar tokens, el encabezado, los IDs, los enlaces `[[ID]]`, los ejemplos verificables, las palabras ambiguas («rápido», «fácil», «etc.»), el estado y el origen. No juzga si el requisito es correcto ni detecta contradicciones: eso se decide con el usuario. Se corre antes de mostrar requisitos nuevos.
 
 Reglas de oro:
 - **Un archivo por requisito**, con su ID (`RN-001.md`) y el encabezado de la plantilla `plantillas/requisito.md`.

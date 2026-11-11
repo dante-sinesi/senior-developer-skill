@@ -14,6 +14,8 @@ Chequeos (sin argumento corre "todo"):
   estado      ESTADO.md al día, cambios sin guardar, pasos abiertos en fichas
   docs        marca requisitos sin test e IDs sin documento (solo lectura: el
               índice se regenera aparte con senior-memoria/scripts/indexar_docs.py indexar)
+  requisitos  calidad del texto de docs/requisitos/: encabezado, IDs, enlaces, ejemplos verificables,
+              palabras ambiguas y estado (ver senior-docs/scripts/revisar_requisitos.py)
   readme      el README.md de GitHub existe, está completo, enlaza a docs/,
               menciona cada carpeta y se actualizó con el cambio (sin excepciones)
   texto       límites de extensión, párrafos repetidos, secciones vacías e
@@ -252,6 +254,31 @@ def chequeo_readme(raiz, args):
 EXT_FUENTE = {".html", ".htm", ".php", ".vue", ".svelte", ".jsx", ".tsx", ".js", ".ts", ".twig", ".ejs", ".css"}
 
 
+def chequeo_requisitos(raiz, args):
+    """Calidad del texto de docs/requisitos/ (estructura, ambigüedad, ejemplos); la trazabilidad la ve `docs`."""
+    if not (raiz / "docs" / "requisitos").is_dir():
+        return [], True
+    revisor = Path(__file__).resolve().parents[2] / "senior-docs" / "scripts" / "revisar_requisitos.py"
+    if not revisor.exists():
+        return ["Requisitos: no se encontró senior-docs/scripts/revisar_requisitos.py."], False
+    import importlib.util
+    espec = importlib.util.spec_from_file_location("revisar_requisitos", revisor)
+    modulo = importlib.util.module_from_spec(espec)
+    try:
+        espec.loader.exec_module(modulo)
+        total, provisorios, hallazgos = modulo.revisar(raiz)
+    except Exception as e:  # noqa: BLE001 - se informa cualquier fallo del revisor
+        return [f"Requisitos: el revisor falló: {str(e)[:200]}"], False
+    fallas = [h for h in hallazgos if h["sev"] == "FALLA"]
+    avisos = len(hallazgos) - len(fallas)
+    extra = f"; {provisorios} provisorios esperan confirmación" if provisorios else ""
+    lineas = [f"Requisitos: {total} revisados, {len(fallas)} fallas, {avisos} avisos{extra}."]
+    lineas += [f"  {h['archivo']}:{h['linea']} — {h['msg']}" for h in fallas[:3]]
+    if hallazgos:
+        lineas.append("  Detalle: python senior-docs/scripts/revisar_requisitos.py")
+    return lineas, not fallas
+
+
 def tabla_columna(texto, columna):
     """Valores de una columna de las tablas Markdown cuyo encabezado la contiene."""
     valores, indice = [], None
@@ -371,7 +398,7 @@ def chequeo_seguridad(raiz, args):
 
 CHEQUEOS = {
     "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado,
-    "docs": chequeo_docs, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
+    "docs": chequeo_docs, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
     "comentarios": chequeo_comentarios, "autoria": chequeo_autoria,
     "diseno": chequeo_diseno, "seguridad": chequeo_seguridad,
 }
