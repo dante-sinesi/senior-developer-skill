@@ -52,6 +52,7 @@ INCLUYE = {
         ("Documentación", "`docs/` completa: estado, fichas de cambio desde el nivel mediano, pendientes y deuda técnica"),
         ("Revisión", "`/revisar-cambio` antes de cada PR; la guardia de listones vigila que no se aflojen controles"),
         ("Tests", "suite que corre sola, contra una base de prueba separada"),
+        ("Estilo", "si hay interfaz, tarjeta de estilo viva antes de las pantallas (tres alternativas A, B y C), recomendada"),
     ],
     "grande": [
         ("Arquitectura primero", "antes del primer código, un ADR de capas, límites entre módulos y estructura, con diagramas de clases y de entidad-relación"),
@@ -59,6 +60,7 @@ INCLUYE = {
         ("Seguridad", "modo formal: registro de riesgos (`docs/seguridad/riesgos.md`) y requisitos de seguridad escritos antes de construir"),
         ("Calidad", "cobertura mínima de tests fijada desde el comienzo y vigilada; `verificar.py` completo en cada PR"),
         ("Decisiones", "duda con contexto fresco en las decisiones de arquitectura y en todo lo difícil de revertir (base de datos, interfaces públicas)"),
+        ("Estilo", "la tarjeta de estilo es obligatoria si hay interfaz y se mantiene al día con cada componente nuevo"),
         ("Planificación", "plan acordado con el usuario antes de cada cambio grande; deuda técnica revisada en cada hito"),
         ("Costo", "es más lento a propósito: se avisa antes de elegirlo"),
     ],
@@ -122,6 +124,20 @@ def sugerir(codigo):
     return "pequeño" if codigo < 20 else "mediano" if codigo < 150 else "grande"
 
 
+EXT_INTERFAZ = {".html", ".htm", ".css", ".vue", ".svelte", ".jsx", ".tsx", ".tscn", ".xaml", ".storyboard", ".kv"}
+
+
+def hay_interfaz(raiz):
+    """True si el proyecto tiene interfaz: páginas, hojas de estilo, componentes o un proyecto de Godot."""
+    if (Path(raiz) / "project.godot").exists():
+        return True
+    for actual, carpetas, nombres in os.walk(raiz):
+        carpetas[:] = [c for c in carpetas if c not in IGNORAR]
+        if any(Path(n).suffix.lower() in EXT_INTERFAZ for n in nombres):
+            return True
+    return False
+
+
 def hay(raiz, patron_carpeta, ext=".md"):
     base = Path(raiz) / patron_carpeta
     return base.is_dir() and any(f.suffix == ext for f in base.rglob("*") if f.is_file() and f.name.lower() != "readme.md")
@@ -157,6 +173,9 @@ def faltantes(raiz, nivel):
             falta.append("registro de riesgos en docs/seguridad/riesgos.md")
         if not umbral_de_cobertura(raiz):
             falta.append("umbral de cobertura de tests configurado")
+        estilo = Path(raiz) / "docs" / "diseno" / "estilo"
+        if hay_interfaz(raiz) and not ((estilo / "tarjeta.html").exists() or (estilo / "tarjeta.md").exists()):
+            falta.append("tarjeta de estilo en docs/diseno/estilo/ (el proyecto tiene interfaz)")
     return falta
 
 

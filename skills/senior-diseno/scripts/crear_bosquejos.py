@@ -107,13 +107,20 @@ def main():
         escribir_si_falta(ronda / "inventario-campos.md", rellenar(leer("inventario-campos.md"), valores), creados)
     else:
         escribir_si_falta(ronda / "NOTAS.md", rellenar(leer("notas-ronda.md"), valores), creados)
+    con_estilo = (diseno / "estilo" / "tarjeta.html").exists() or (diseno / "estilo" / "tarjeta.md").exists()
     for letra in "abc":
         contenido = con_visor(rellenar(leer("bosquejo.html"), {**valores, "letra": letra.upper()}),
                               f"Dirección {letra.upper()}")
+        if con_estilo:  # el estilo ya está decidido: las tres alternativas difieren solo en estructura
+            contenido = contenido.replace("</head>", '<link rel="stylesheet" href="../../sistema/tokens.css">\n'
+                                          '<!-- El estilo del proyecto ya está definido (docs/diseno/estilo/): usar las variables de '
+                                          'sistema/tokens.css y las piezas de la tarjeta. Esta dirección solo cambia la estructura. -->\n</head>', 1)
         escribir_si_falta(ronda / f"direccion-{letra}.html", contenido, creados)
     if args.completo:
         escribir_si_falta(ronda / "comparar.html", rellenar(leer("comparar.html"), valores), creados)
     print(f"Ronda lista en {ronda.relative_to(raiz).as_posix()}/ ({len(creados)} archivos creados; lo existente no se tocó).")
+    if con_estilo:
+        print("Hay una tarjeta de estilo: las tres direcciones usan sus variables y difieren solo en estructura.")
     print("Siguiente paso: completar las notas/briefing con el usuario y diseñar tres direcciones que difieran en estructura. "
           "El aspecto (estilo, arte) lo decide el diseñador; las reglas objetivas las controla revisar_diseno.py.")
 

@@ -32,7 +32,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 | `senior-git` | Ramas por cambio, Conventional Commits en español neutro, Pull Requests, y la descripción y los Topics del repositorio al día |
 | `senior-seguridad` | Lista de revisión, chequeos automáticos y modo formal con registro de riesgos |
 | `senior-lenguajes` | Perfiles de PHP, JavaScript/TypeScript, CSS, SQL y HTML; alta de lenguajes nuevos |
-| `senior-diseno` | Diseño de interfaces: método (tres alternativas, feedback, evolución) y reglas objetivas con script; el estilo es libre |
+| `senior-diseno` | Diseño de interfaces: tarjeta de estilo, método (tres alternativas, feedback, evolución) y reglas objetivas con script; el estilo es libre |
 | `auditar-consumo` | Comando `/auditar-consumo`: mide cuánto contexto consumen las skills, `CLAUDE.md` y la memoria, y propone qué recortar |
 | `auditar-diseno` | Comando `/auditar-diseno`: revisa la interfaz de un proyecto existente sin modificarlo |
 | `adoptar-proyecto` | Comando `/adoptar-proyecto`: plan, aprobación y creación de la base documental |
@@ -135,7 +135,8 @@ Los SVG y las imágenes de 1024 px o menos se leen directo. `verificar.py fuente
 
 La skill `senior-diseno` forma parte del paquete: un **método** (briefing, tres alternativas que difieren en estructura, feedback del usuario, evolución) y **reglas objetivas con control automático** que no tocan el aspecto artístico (una familia tipográfica ideal y dos como máximo, etiqueta visible en cada campo, hasta 4 campos visibles, una acción principal, contraste, foco, estados y contenido real). Cada pantalla se diseña según su modo (decidir, hacer una tarea, entender o recorrer una obra). El estilo es libre. Es una sola sesión y un solo flujo: se diseña, se aprueba y se implementa con las reglas de `senior`.
 
-- Los artefactos viven en `docs/diseno/` (rondas de bosquejos, preferencias, decisiones, variables de diseño, contratos de campos, auditorías).
+- Los artefactos viven en `docs/diseno/` (tarjeta de estilo, rondas de bosquejos, preferencias, decisiones, variables de diseño, contratos de campos, auditorías).
+- **Tarjeta de estilo (antes de las pantallas):** en proyectos medianos y grandes con interfaz, primero se define la identidad gráfica con tres alternativas de estilo (A, B y C) y feedback del usuario; la elegida queda como **tarjeta viva** (`senior-diseno/scripts/tarjeta_estilo.py`): una página que usa las variables reales del sistema y muestra la paleta, la tipografía y las piezas firma en todos sus estados. Las tres alternativas de estructura se diseñan después con ese estilo. Cada componente nuevo se agrega a la tarjeta en el mismo cambio, y `verificar.py diseno` falla si queda vieja. En un juego o programa que no es una página, la tarjeta es una muestra dentro del propio programa (por ejemplo una escena de Godot con su tema); esa muestra la construye quien implementa y no se verifica por script, solo su tabla de componentes.
 - Los bosquejos no llevan tests; el TDD empieza al implementar la pantalla.
 - Al implementar, `verificar.py diseno` comprueba que el código use las variables de diseño y las etiquetas del contrato de campos.
 - `/auditar-consumo` mide, sin modificar nada, cuánto contexto se paga en cada sesión (descripciones de skills, `CLAUDE.md`, índice de la memoria, `ESTADO.md`), cuánto al activarse una skill y qué conviene recortar primero. Las reglas para cuidar el contexto día a día están en `senior/references/tokens.md`.
