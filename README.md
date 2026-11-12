@@ -338,3 +338,5 @@ Son pocas corridas y parte de la corrección usa los propios scripts del paquete
 ## Estado
 
 Primera versión. Las instrucciones y los scripts están en español.
+
+La revisión crítica del paquete (nota por parte, puntos ciegos con su estado e historial de cambios) vive en [docs/revision-completa.md](docs/revision-completa.md) y se actualiza en cada Pull Request que toca una parte puntuada.
