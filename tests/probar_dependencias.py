@@ -45,7 +45,7 @@ exacto_img = f'"{sys.executable}" -m pip install "pillow"'
 hook.modulo_instalado = lambda nombre: False
 accion, msg = hook.decidir(pdf, str(P))
 chequear("un documento: el primer bloqueo avisa que falta markitdown con el comando exacto", accion == "negar" and "ANTES DE CONVERTIR" in msg and exacto_doc in msg, msg)
-chequear("aclara que necesita la aprobación del usuario y que se anota si no la da", "aprobación del usuario" in msg and "nunca se instala sola" in msg and "docs/pendientes.md" in msg, msg)
+chequear("aclara que necesita la aprobación del usuario, que se anota para cuando vuelva y que se sigue sin esperar", "aprobación del usuario" in msg and "nunca se instala sola" in msg and "docs/pendientes.md" in msg and "sin esperar" in msg, msg)
 chequear("y conserva la instrucción de convertir", "convertir_fuentes.py" in msg and "--importar" in msg, msg)
 hook.dimensiones = lambda ruta: (3000, 2000)
 grande = P / "otros" / "plano.png"
@@ -72,7 +72,7 @@ def convertir(*args):
 
 rc, s = convertir()
 chequear("sin markitdown el conversor sale con 2 y repite el comando exacto", rc == 2 and exacto_doc in s and "Falta `markitdown`" in s, (rc, s))
-chequear("dice que pida la aprobación al usuario, que no lea el original y que anote el pendiente", "apruebe la instalación" in s and "NO leer los originales" in s and "docs/pendientes.md" in s, s)
+chequear("dice que la instalación necesita la aprobación del usuario, que no lea el original y que anote el pendiente y siga", "aprobación del usuario" in s and "NO leer los originales" in s and "docs/pendientes.md" in s and "sin esperar" in s, s)
 chequear("sin Pillow el de imágenes también da el comando exacto", exacto_img in convertir("documentos-externos/foto.png")[1] or exacto_img in s, convertir("documentos-externos/foto.png")[1])
 chequear("el conversor no instaló nada", not (P / "docs" / "fuentes" / "manual.md").exists())
 

@@ -23,6 +23,7 @@ from pathlib import Path
 MODOS = ("denegar", "preguntar")
 NOMBRE = "senior-hooks.json"
 MAX_BLOQUEOS = 60
+ESCALA = 3  # a la tercera vez que se repite el mismo bloqueo, el mensaje deja de ser una explicación y pasa a ser una orden con la alternativa primero
 REGLAS = (  # (nombre en el registro, qué frena, cómo se autoriza)
     ("escritura fuera del proyecto", "crear archivos o carpetas fuera de la raíz del proyecto (lo de paso va en `.temporal/`)", "`/permitir <ruta>`"),
     ("archivos protegidos", "editar `.env`, claves, el interior de `.git/` y los archivos de bloqueo de dependencias", "`/permitir <ruta>`"),
@@ -124,18 +125,32 @@ def ahora():
 
 
 def registrar_bloqueo(raiz, hook, detalle):
-    """Deja constancia de lo bloqueado (sin repetir) para que el usuario lo revise cuando vuelva."""
+    """Deja constancia de lo bloqueado para que el usuario lo revise cuando vuelva y cuenta las veces que se repite. Devuelve cuántas van."""
     try:
         datos = cargar(raiz)
         for b in datos["bloqueos"]:
             if b.get("hook") == hook and b.get("detalle") == detalle:
+                b["veces"] = int(b.get("veces", 1)) + 1
                 b["ultima"] = ahora()
                 guardar(raiz, datos)
-                return
-        datos["bloqueos"] = (datos["bloqueos"] + [{"hook": hook, "detalle": detalle, "primera": ahora(), "ultima": ahora()}])[-MAX_BLOQUEOS:]
+                return b["veces"]
+        datos["bloqueos"] = (datos["bloqueos"] + [{"hook": hook, "detalle": detalle, "veces": 1, "primera": ahora(), "ultima": ahora()}])[-MAX_BLOQUEOS:]
         guardar(raiz, datos)
-    except OSError:
-        pass
+        return 1
+    except (OSError, ValueError):
+        return 1
+
+
+def razon_de_bloqueo(hook, detalle, instruccion, veces):
+    """El mensaje que recibe Claude cuando se bloquea algo. Pensado para sesiones largas sin supervisión: NUNCA pide parar, avisar ni esperar al
+    usuario. Hasta la segunda vez explica y da la alternativa; desde la tercera, que es cuando el modelo está insistiendo, pone la alternativa
+    primero, dice que repetir no sirve y manda a seguir con la tarea. El aviso para el usuario va al registro, que se resume al cerrar la sesión."""
+    if veces < ESCALA:
+        return (f"BLOQUEADO por senior ({hook}): {detalle}. No es una pregunta ni hay que esperar al usuario: {instruccion} "
+                "Seguí con el resto del trabajo; lo bloqueado quedó registrado para que el usuario lo revise cuando vuelva.")
+    return (f"BLOQUEADO por senior ({hook}), por {veces}ª vez: {detalle}. Este intento no va a funcionar por más que lo repitas, ni haciendo lo mismo de otra forma. "
+            f"Hacé esto en su lugar: {instruccion} Seguí con la tarea sin detenerte y sin esperar a nadie: este bloqueo ya quedó registrado como reincidente "
+            "para que el usuario lo revise cuando vuelva.")
 
 
 def resumen_bloqueos(raiz, desde=None):
@@ -146,10 +161,13 @@ def resumen_bloqueos(raiz, desde=None):
     por_hook = {}
     for b in bloqueos:
         por_hook.setdefault(b["hook"], []).append(b)
-    lineas = [f"Bloqueos: {len(bloqueos)} distintos."]
+    reincidentes = [b for b in bloqueos if int(b.get("veces", 1)) >= ESCALA]
+    lineas = [f"Bloqueos: {len(bloqueos)} distintos" + (f", {len(reincidentes)} que reinciden (Claude insistió {ESCALA} veces o más)" if reincidentes else "") + "."]
     for hook, lista in por_hook.items():
-        lineas.append(f"  [{hook}] {len(lista)}: " + "; ".join(b["detalle"] for b in lista[-3:]) + (f" y {len(lista) - 3} más" if len(lista) > 3 else ""))
-    lineas.append("  Si alguno se repite, autorizarlo de antemano (`/permitir <ruta>`) evita que Claude lo vuelva a intentar.")
+        lineas.append(f"  [{hook}] {len(lista)}: " + "; ".join(b["detalle"] + (f" (×{b['veces']})" if int(b.get("veces", 1)) > 1 else "") for b in lista[-3:])
+                      + (f" y {len(lista) - 3} más" if len(lista) > 3 else ""))
+    lineas.append("  Si alguno se repite, autorizarlo de antemano (`/permitir <ruta>`) evita que Claude lo vuelva a intentar."
+                  + (" Los que reinciden son la señal de que la indicación no alcanzó: conviene una barrera (principio 17 de senior)." if reincidentes else ""))
     return lineas
 
 
@@ -177,10 +195,9 @@ def respuesta(raiz, hook, detalle, pregunta, instruccion):
     if cargar(raiz)["modo"] == "preguntar":
         decision, razon = "ask", pregunta
     else:
-        registrar_bloqueo(raiz, hook, detalle)
+        veces = registrar_bloqueo(raiz, hook, detalle)
         decision = "deny"
-        razon = (f"BLOQUEADO por senior ({hook}): {detalle}. No es una pregunta ni hay que esperar al usuario: {instruccion} "
-                 "Seguí con el resto del trabajo; lo bloqueado quedó registrado para que el usuario lo revise cuando vuelva.")
+        razon = razon_de_bloqueo(hook, detalle, instruccion, veces)
     return json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": decision,
                                               "permissionDecisionReason": razon}}, ensure_ascii=False)
 
