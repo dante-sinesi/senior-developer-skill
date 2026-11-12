@@ -195,7 +195,7 @@ python ~/.claude/skills/senior/scripts/verificar.py            # todo
 python ~/.claude/skills/senior/scripts/verificar.py readme     # un chequeo puntual
 ```
 
-Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `fuentes`, `requisitos`, `texto`, `diagramas`, `comentarios`, `listones`, `escala`, `evidencia`, `autoria`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `abrir_en_navegador.py` (abre un archivo o una página en una sola pestaña, con la dirección codificada), `hook_archivos_protegidos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
+Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `fuentes`, `requisitos`, `texto`, `diagramas`, `comentarios`, `listones`, `escala`, `evidencia`, `autoria`, `diseno`, `secretos` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `abrir_en_navegador.py` (abre un archivo o una página en una sola pestaña, con la dirección codificada), `hook_archivos_protegidos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
 
 Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
 
@@ -241,7 +241,7 @@ En todo lo que se sube a GitHub figura **únicamente el usuario**: Claude no apa
 
 - Se comprueba con `senior-git/scripts/guardia_autoria.py comprobar` y con `verificar.py autoria`.
 - **Hooks, verificados y activados al iniciar** con `guardia_autoria.py asegurar` (paso 0 del flujo; también lo corre `cargar_estado.py` y `/adoptar-proyecto`):
-  - **Hooks de Git** (`commit-msg` y `pre-push`) en `.git/hooks/` de cada clon. Git no los sube, así que se instalan en cada proyecto donde falten. Si no hay un Python que funcione, fallan cerrados y avisan.
+  - **Hooks de Git** (`commit-msg`, `pre-commit` y `pre-push`) en `.git/hooks/` de cada clon. Git no los sube, así que se instalan en cada proyecto donde falten. Si no hay un Python que funcione, fallan cerrados y avisan.
   - **Hook global de Claude Code** (`hook_autoria_claude.py`, registrado en `~/.claude/settings.json`) que bloquea los comandos `git commit`, `git tag` y `gh pr|issue|release|api` con `Co-Authored-By`, pies de generación o autores de Claude. Si se reinstala la máquina, `asegurar` lo vuelve a registrar.
   - **Hook global de escritura fuera del proyecto** (`senior/scripts/hook_fuera_del_proyecto.py`): lo frena sin interrumpir (o pregunta al usuario, según el modo) cuando Claude intenta crear algo fuera de la raíz del proyecto. Lo de paso va en `.temporal/`, que `temporal.py` crea y git ignora.
   - **Hook global de archivos protegidos** (`senior/scripts/hook_archivos_protegidos.py`): frena sin interrumpir (o pregunta al usuario, según el modo) antes de que Claude edite secretos (`.env`, claves y certificados), el interior de `.git/` o los archivos de bloqueo de dependencias (`package-lock.json`, `composer.lock`, `poetry.lock`...), que se generan con el gestor de paquetes. Nunca bloquea del todo.
@@ -265,6 +265,19 @@ El README muestra la arquitectura y los flujos principales como **diagramas con 
 - **Pensados para el ancho de la página:** los flujos van en vertical, con etiquetas cortas y agrupando en fases cuando hay muchos pasos, y los que genera la skill salen así. `diagramas.py` estima el ancho de cada flujo y secuencia (error de alrededor del 15 % contra Mermaid) y avisa los que se achicarían por debajo del 85 % al ancho de un README; en el README, por debajo del 60 % no entran.
 - **Pocos y chicos:** hasta 4 (arquitectura, de uno a tres flujos de secuencia y, si hay datos, el entidad-relación); el diagrama de clases suele ser ruido.
 - **Provisorios con aviso:** un diagrama inferido del código (`/documentar-proyecto`) entra con la nota «sin confirmar» hasta que se confirme con `documentar.py confirmar-diagrama`.
+
+## Secretos y datos sensibles
+
+Ninguna clave, contraseña, token, certificado ni dato personal (tarjetas, documentos de identidad, listas de clientes) llega a GitHub. Los secretos viven en `.env`, que `.gitignore` excluye; el código los lee de variables de entorno y `.env.example` documenta cuáles hay, con valores falsos. Lo hacen cumplir cuatro capas, de la más temprana a la que no se saltea:
+
+1. **`.gitignore`:** `secretos.py gitignore --aplicar` completa los patrones (`.env`, claves, certificados, bases locales) y `verificar.py secretos` avisa si faltan o si un archivo así ya está versionado.
+2. **Hook de Claude** (`hook_secretos_claude.py`): frena escribir una clave en el código, leer `.env`, `git add -f` y una clave en un mensaje de commit o de Pull Request.
+3. **Hooks de git** (`pre-commit` y `pre-push`): revisan lo que se commitea y **todo el historial que se sube**, commit por commit, aunque la clave se haya borrado después. Se saltean con `--no-verify`.
+4. **GitHub:** escaneo de secretos y protección de subida, que no se saltean (`secretos.py github` comprueba si están activos).
+
+**`.env` se puede leer y modificar con permiso del usuario, y Claude lo propone.** Sin permiso trabaja con `env_gestion.py`: `estructura` muestra los nombres de las variables con los valores ocultos y `declarar NOMBRE` las agrega a `.env.example`. Cuando hace falta tocar `.env`, le plantea al usuario qué variables y para qué, y él lo autoriza escribiendo en el chat `/permitir .env`; el valor real de un secreto siempre lo completa el usuario.
+
+Se detectan formatos conocidos (AWS, GitHub, Anthropic, OpenAI, Stripe, Slack, Google y otros), credenciales dentro de una dirección o asignadas como texto, tarjetas (con control Luhn), documentos, archivos de claves y volcados de datos. Un falso positivo se descarta con `senior-ignore: <ID> motivo` en la línea. Límites: una clave partida o codificada puede pasar, en un frontend las variables de entorno quedan a la vista del navegador y una clave que ya se subió se rota, no alcanza con borrarla. Detalle en `skills/senior/references/secretos.md`.
 
 ## Documentar un proyecto existente
 

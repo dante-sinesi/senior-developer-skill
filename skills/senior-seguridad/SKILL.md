@@ -46,7 +46,7 @@ El mapeo completo, con qué mirar en cada control, está en `references/mapa-iso
 4. Acciones de servidor sin chequeo de sesión o CSRF.
 5. Ejecución dinámica sin lista blanca.
 
-Además: secretos escritos en el código, datos sensibles en logs y dependencias vulnerables. Las reglas viven en los perfiles de `senior-lenguajes`.
+Además: secretos escritos en el código, datos sensibles en logs y dependencias vulnerables. Las reglas viven en los perfiles de `senior-lenguajes`. Los secretos y los datos personales **no se limitan a avisar**: `senior/scripts/secretos.py` los frena al commitear y al subir, y el hook de Claude antes de escribirlos (principio 18 de `senior`, `senior/references/secretos.md`).
 
 ## Modo formal con riesgos
 
