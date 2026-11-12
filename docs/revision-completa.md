@@ -60,7 +60,7 @@ Si una nota baja (algo se rompió o se descubrió un problema), se anota igual: 
 | 9 | Mermaid solo se vio dibujado en la versión 10.9.1 de la comparación. | GitHub puede dibujar distinto (ancho, flechas de retorno). | Mirar el README en GitHub y ajustar los diagramas con lo que se vea. | Abierto |
 | 10 | Un hook que falla **abre en silencio**. | Pasó dos veces: con una versión de Python vieja y con un error de expresión regular; todo «pasaba» porque el hook no frenaba nada. | `SENIOR_HOOK_DEPURAR=1` hace visible la caída. Está en el hook de escritura y en el de secretos; falta extenderlo a los demás y vigilarlo con una prueba. | Parcial |
 | 11 | Lo instalado y el repositorio se desalinean. | Los hooks usan las copias de `~/.claude/skills`: si no se reinstala, protege la versión vieja. | `instalar.py --verificar` y un aviso en `asegurar` cuando difieren. | Abierto |
-| 12 | `auditar-consumo` mide lo instalado, no el repositorio. | Tras recortar una skill, la medición no cambia hasta reinstalar. | Un modo `--repo` que mida las skills de la carpeta actual. | Abierto |
+| 12 | `auditar-consumo` mide lo instalado, no el repositorio. | Tras recortar una skill, la medición no cambia hasta reinstalar. | ~~Un modo `--repo` que mida las skills de la carpeta actual.~~ Hecho: `consumo.py --repo` mide `skills/` del proyecto (solo las skills; lo de la máquina, como `CLAUDE.md` y la memoria, no entra). | Resuelto (rama `mejora/ciego-12-consumo-repo`) |
 | 13 | Las heurísticas son aproximadas (reglas candidatas, estimador de ancho ±15 %, análisis por patrones). | Pueden proponer reglas que no son o no ver relaciones dinámicas. | Mantener todo como provisorio con evidencia, medir la precisión en los pilotos del punto 4 y ajustar. | Abierto |
 | 14 | `markitdown` y `Pillow` son obligatorias y no se instalan solas. | En una máquina nueva el primer documento externo se frena hasta que el usuario las instale. | `instalar.py` ya las comprueba; sumar un mensaje con el comando exacto al primer bloqueo. | Abierto |
 | 15 | La protección de subida de GitHub no está activada y los secretos se detectan por patrones. | Es la única barrera que no se saltea con `--no-verify`; una clave partida, codificada o con un formato desconocido puede pasar los hooks locales. | Activarla en Settings → Code security (acción del usuario; `secretos.py github` comprueba el estado) y ampliar los formatos con lo que aparezca. | Abierto |
@@ -72,6 +72,7 @@ Si una nota baja (algo se rompió o se descubrió un problema), se anota igual: 
 | 2026-11-12 | PR #28, revisión completa: hook de escritura sin fugas, 19 baterías en `tests/`, CI y mínimo de Python 3.10. | Hooks 6→7, pruebas y CI 4→7, instalación 6,5→7,5, `/documentar-proyecto` 6,5→7, `senior-git` 8,5→9; puntos 3 resuelto y 10 parcial. |
 | 2026-11-12 | PR #29, secretos y datos personales: detector, hooks de git y de Claude, `.env` con permiso del usuario. | Parte nueva «Secretos» (7,5), `senior-seguridad` 7→7,5; punto 15 nuevo. |
 | 2026-11-12 | Este documento pasa a ser un documento vivo, con estado por punto ciego, historial y reglas de mantenimiento. | Ninguna nota. |
+| 2026-11-12 | Punto 12: `consumo.py --repo` mide las skills del repositorio sin reinstalar. | Punto 12 resuelto; ninguna nota. |
 
 ### Detalle del PR #28 (revisión completa)
 
