@@ -142,11 +142,43 @@ def a_ruta(token, cwd):
     return Path(os.path.abspath(str(p)))
 
 
+HEREDOC = re.compile(r"<<-?\s*([\"']?)([A-Za-z_][A-Za-z0-9_]*)\1")
+CADENA = re.compile(r"\"[^\"]*\"|'[^']*'")
+
+
+def partir_heredocs(comando):
+    """(comando sin los cuerpos de heredoc que son solo texto, cuerpos que alimentan a un intérprete).
+
+    Lo que va dentro de `cat > nota.md <<'EOF' … EOF` o de un cuerpo de Pull Request es texto: puede mencionar rutas, redirecciones o el nombre de
+    un archivo sin que el comando haga nada con ellas. Lo que va dentro de `python - <<'E' … E` es código y se sigue analizando."""
+    lineas, salida, codigos, i = comando.split("\n"), [], [], 0
+    while i < len(lineas):
+        linea = lineas[i]
+        salida.append(linea)
+        i += 1
+        for delimitador in [m.group(2) for m in HEREDOC.finditer(linea)]:
+            cuerpo = []
+            while i < len(lineas) and lineas[i].strip() != delimitador:
+                cuerpo.append(lineas[i])
+                i += 1
+            i += 1  # el delimitador de cierre
+            if INTERPRETE_EN_LINEA.search(linea):
+                codigos.append("\n".join(cuerpo))
+    return "\n".join(salida), codigos
+
+
+def blanquear_comillas(seg):
+    """El segmento sin el texto entre comillas, salvo lo que es el destino de una redirección (`> "ruta"`): `-m "a > b"` no redirige nada."""
+    def reemplazo(m):
+        return m.group(0) if seg[:m.start()].rstrip().endswith(">") else '""'
+    return CADENA.sub(reemplazo, seg)
+
+
 def objetivos_de_shell(comando):
     """Textos que el comando usa como destino de una escritura (aproximado)."""
     res = []
     for seg in SEPARADORES.split(comando):
-        res.extend(REDIRECCION.findall(seg))
+        res.extend(REDIRECCION.findall(blanquear_comillas(seg)))
         tokens = [t.strip("\"'") for t in TOKEN.findall(seg)]
         if not tokens:
             continue
@@ -216,22 +248,51 @@ def fuera_del_proyecto(textos, cwd, raices, hermano=None):
     return fuera
 
 
+CAMBIAN = CREAN | {"rm", "del", "erase", "remove-item", "ri", "rmdir", "unlink", "truncate", "shred", "clear-content", "clc",
+                   "mv", "move", "move-item", "ren", "rename-item", "rename", "install", "ln"}  # todos sus argumentos son archivos que cambian
+SUBCOMANDOS_QUE_CAMBIAN = {"modo", "permitir", "quitar", "limpiar", "hermanos"}
+ESCRIBE_ALGO = re.compile(r"write|unlink|remove|rename|truncate|rmtree|[.]dump\(|open\s*\([^)]*,\s*[\"'][^\"']*[wax+]")
+
+
+def es_la_configuracion(ruta, nombre):
+    return ruta.strip("\"'").replace("\\", "/").rstrip("/").split("/")[-1] == nombre
+
+
 def toca_configuracion(herramienta, entrada, comando, nombre):
-    """True si se intenta CAMBIAR la configuración de los hooks. Leerla (cat, type, Get-Content…) está permitido."""
+    """True si se intenta CAMBIAR la configuración de los hooks. Leerla (cat, type, Get-Content…) está permitido, y mencionarla en un texto
+    (un cuerpo de heredoc, un mensaje de commit o de Pull Request) tampoco la cambia: solo cuenta cuando es el DESTINO de un cambio."""
     if herramienta in ("Write", "Edit", "NotebookEdit"):
         return Path(str(entrada.get("file_path") or entrada.get("notebook_path") or "")).name == nombre
-    for seg in SEPARADORES.split(comando):
-        if re.search(r"permisos_hooks\.py[\"']?\s+(?:--raiz\s+\S+\s+)?(modo|permitir|quitar|limpiar|hermanos)\b", seg):
+    sin_cuerpos, codigos = partir_heredocs(comando)
+    for seg in SEPARADORES.split(sin_cuerpos):
+        tokens = [t.strip("\"'") for t in TOKEN.findall(seg)]
+        while tokens and tokens[0].lower() in ("sudo", "env", "command", "time"):
+            tokens = tokens[1:]
+        if not tokens:
+            continue
+        verbo = sin_exe(Path(tokens[0].replace("\\", "/")).name.lower())
+        for i, t in enumerate(tokens):  # el script de permisos con un subcomando que cambia algo (su nombre es un argumento, no texto suelto)
+            if Path(t.replace("\\", "/")).name == "permisos_hooks.py":
+                resto = tokens[i + 1:]
+                if resto[:1] == ["--raiz"]:
+                    resto = resto[2:]
+                if resto[:1] and resto[0] in SUBCOMANDOS_QUE_CAMBIAN:
+                    return True
+        args = [t for t in tokens[1:] if not t.startswith("-") or t.startswith("-/")]
+        destinos = list(REDIRECCION.findall(blanquear_comillas(seg)))
+        if verbo in CAMBIAN:
+            destinos += args
+        elif verbo in COPIAN and len(args) >= 2:
+            destinos.append(args[-1])
+        elif verbo == "sed" and any(re.match(r"^-[a-zA-Z]*i", t) or t.startswith("--in-place") for t in tokens[1:]):
+            destinos += args[1:]
+        elif verbo == "dd":
+            destinos += [t[3:] for t in tokens[1:] if t.startswith("of=")]
+        if any(es_la_configuracion(d, nombre) for d in destinos):
             return True
-        if nombre in seg:
-            tokens = [t.strip("\"'") for t in TOKEN.findall(seg)]
-            while tokens and tokens[0].lower() in ("sudo", "env", "command", "time"):
-                tokens = tokens[1:]
-            verbo = sin_exe(Path(tokens[0].replace("\\", "/")).name.lower()) if tokens else ""
-            if verbo in LECTURA and ">" not in seg:
-                continue
+        if INTERPRETE_EN_LINEA.search(seg) and nombre in seg and ESCRIBE_ALGO.search(seg):  # python -c "open('…','w')…"
             return True
-    return False
+    return any(nombre in c and ESCRIBE_ALGO.search(c) for c in codigos)
 
 
 def main():
@@ -250,7 +311,8 @@ def main():
         elif herramienta in ("Bash", "PowerShell"):
             comando = str(entrada.get("command", ""))
             variables = variables_del_comando(comando)
-            textos = [sustituir(t, variables) for t in objetivos_de_shell(comando) + escrituras_en_codigo(comando)]
+            sin_cuerpos, cuerpos_de_codigo = partir_heredocs(comando)
+            textos = [sustituir(t, variables) for t in objetivos_de_shell(sin_cuerpos) + escrituras_en_codigo(sin_cuerpos + "\n" + "\n".join(cuerpos_de_codigo))]
         else:
             return 0
         import modo_hooks
