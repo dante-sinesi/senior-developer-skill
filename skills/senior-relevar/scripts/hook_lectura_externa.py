@@ -148,7 +148,11 @@ def decidir(ruta, cwd, es_shell=False):
     elif ext in IMAGENES and not es_shell:
         d = dimensiones(ruta)
         if d is None:
-            return "preguntar", f"No se pudo medir la imagen {ruta.name}; ¿se permite leerla sin reducirla?"
+            if ruta.exists() and ruta.stat().st_size <= 150_000:
+                return None  # una imagen chica no pesa lo suficiente como para frenar el trabajo
+            comando_img = f'python "{conversor().as_posix()}" --importar "{ruta}"'
+            return "negar", (f"No se pudo medir la imagen {ruta.name} (formato no reconocido) y pesa más de 150 KB. Copiarla y reducirla con: {comando_img} "
+                             "y leer la copia de docs/fuentes/imagenes/. Si el conversor tampoco puede abrirla, decírselo al usuario en el resumen y seguir sin ella.")
         if max(d) <= MAX_PX:
             return None
         cubierto = True
