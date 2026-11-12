@@ -62,7 +62,7 @@ Si una nota baja (algo se rompió o se descubrió un problema), se anota igual: 
 | 11 | Lo instalado y el repositorio se desalinean. | Los hooks usan las copias de `~/.claude/skills`: si no se reinstala, protege la versión vieja. | ~~`instalar.py --verificar` y un aviso en `asegurar` cuando difieren.~~ `--verificar` ya existía (lo había dado por faltante). Hecho el aviso: `instalar.py` anota de dónde instaló y la huella de cada skill, y `guardia_autoria.py asegurar` avisa si el repositorio tiene cambios sin instalar o si lo instalado se modificó a mano. | Resuelto (rama `mejora/ciego-11-instalacion-al-dia`) |
 | 12 | `auditar-consumo` mide lo instalado, no el repositorio. | Tras recortar una skill, la medición no cambia hasta reinstalar. | ~~Un modo `--repo` que mida las skills de la carpeta actual.~~ Hecho: `consumo.py --repo` mide `skills/` del proyecto (solo las skills; lo de la máquina, como `CLAUDE.md` y la memoria, no entra). | Resuelto (rama `mejora/ciego-12-consumo-repo`) |
 | 13 | Las heurísticas son aproximadas (reglas candidatas, estimador de ancho ±15 %, análisis por patrones). | Pueden proponer reglas que no son o no ver relaciones dinámicas. | Mantener todo como provisorio con evidencia, medir la precisión en los pilotos del punto 4 y ajustar. | Abierto |
-| 14 | `markitdown` y `Pillow` son obligatorias y no se instalan solas. | En una máquina nueva el primer documento externo se frena hasta que el usuario las instale. | `instalar.py` ya las comprueba; sumar un mensaje con el comando exacto al primer bloqueo. | Abierto |
+| 14 | `markitdown` y `Pillow` son obligatorias y no se instalan solas. | En una máquina nueva el primer documento externo se frena hasta que el usuario las instale. | ~~`instalar.py` ya las comprueba; sumar un mensaje con el comando exacto al primer bloqueo.~~ Hecho: el primer bloqueo del hook ya avisa que falta la biblioteca y da el comando exacto (con el intérprete que corre el script), y el conversor repite el mismo comando si falla. Nunca se instalan sin aprobación. | Resuelto (rama `mejora/ciego-14-mensaje-dependencias`) |
 | 15 | La protección de subida de GitHub no está activada y los secretos se detectan por patrones. | Es la única barrera que no se saltea con `--no-verify`; una clave partida, codificada o con un formato desconocido puede pasar los hooks locales. | Activarla en Settings → Code security (acción del usuario; `secretos.py github` comprueba el estado) y ampliar los formatos con lo que aparezca. | Abierto |
 
 ## Historial
@@ -76,6 +76,7 @@ Si una nota baja (algo se rompió o se descubrió un problema), se anota igual: 
 | 2026-11-12 | Punto 10: todos los hooks muestran el error con `SENIOR_HOOK_DEPURAR=1` y una prueba los rompe a propósito. | Punto 10 resuelto; ninguna nota. |
 | 2026-11-12 | Punto 11: `instalar.py` anota de dónde instaló y `asegurar` avisa si el repositorio tiene cambios sin instalar o lo instalado se modificó a mano. | Punto 11 resuelto; ninguna nota. |
 | 2026-11-12 | Punto 12: `consumo.py --repo` mide las skills del repositorio sin reinstalar. | Punto 12 resuelto; ninguna nota. |
+| 2026-11-12 | Punto 14: el primer bloqueo de un documento externo avisa si falta `markitdown` o `Pillow` y da el comando exacto de instalación, que se pide al usuario. | Punto 14 resuelto; ninguna nota. |
 
 ### Detalle del PR #28 (revisión completa)
 

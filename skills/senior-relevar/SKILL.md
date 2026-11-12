@@ -37,7 +37,7 @@ Ningún documento ni imagen externos se leen directo. Pasan **siempre** por `con
 2. **Los archivos que el usuario manda por el chat** (incluidas las imágenes): no se leen. Se **copian a `documentos-externos/` con `python <esta-skill>/scripts/convertir_fuentes.py --importar <archivos>`** (copiar no es leer; el original nunca se abre), el script los procesa y se lee el resultado. Es el procedimiento normal, sin pedirle nada al usuario.
 
 **Prohibiciones**
-- **`markitdown` (documentos) y `Pillow` (imágenes) son obligatorias** (`pip install "markitdown[all]"`, `pip install pillow`). Si falta alguna, no se lee el original como alternativa: se pide al usuario que apruebe la instalación, que nunca se hace sola, y se espera.
+- **`markitdown` (documentos) y `Pillow` (imágenes) son obligatorias** (`pip install "markitdown[all]"`, `pip install pillow`). Si falta alguna, no se lee el original como alternativa: se pide al usuario que apruebe la instalación, que nunca se hace sola, y se espera. El primer bloqueo del hook ya avisa qué biblioteca falta y da el comando exacto (con el intérprete que corre el script): ese es el que se le muestra al usuario.
 - Nunca se conecta un modelo externo para describir imágenes sin aprobación del usuario (enviaría el contenido a un servicio de terceros).
 
 **Cuándo la regla NO se aplica** (se pueden leer los originales, pero solo con el usuario al tanto):

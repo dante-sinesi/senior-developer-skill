@@ -45,7 +45,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 - Python 3.10 o superior (los scripts usan solo la biblioteca estándar).
 - Git. El CLI `gh` es necesario solo para trabajar con GitHub.
 - Opcional: `npm`, `composer` o `pip-audit` si se quiere la auditoría de dependencias.
-- **Obligatorias para documentos e imágenes externos:** `markitdown` (`pip install "markitdown[all]"`) para los documentos y `Pillow` (`pip install pillow`) para las imágenes. Nunca se instalan solas: si falta una, se pide aprobación.
+- **Obligatorias para documentos e imágenes externos:** `markitdown` (`pip install "markitdown[all]"`) para los documentos y `Pillow` (`pip install pillow`) para las imágenes. Nunca se instalan solas: si falta una, se pide aprobación. Si falta alguna, el primer bloqueo de un documento o una imagen ya lo avisa y da el comando exacto de instalación para que lo apruebes; nunca se instalan solas.
 
 ## Primeros pasos
 
