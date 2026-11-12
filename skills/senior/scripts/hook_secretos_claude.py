@@ -149,9 +149,10 @@ def main():
     if not resultado:
         return 0
     detalle, motivo = resultado
-    modo_hooks.registrar_bloqueo(raiz, "secretos", detalle)
+    veces = modo_hooks.registrar_bloqueo(raiz, "secretos", detalle)
     print(modo_hooks.respuesta_fija("deny", f"BLOQUEADO por senior (secretos): {detalle}. No es una pregunta ni hay que esperar al usuario: {motivo} "  # senior-ignore: SEC-LOG-SENSIBLE motivo: mensaje fijo, no imprime valores
-                                            "Seguí con el resto del trabajo; lo bloqueado quedó registrado para que el usuario lo revise cuando vuelva."))
+                                            "Seguí con el resto del trabajo; lo bloqueado quedó registrado para que el usuario lo revise cuando vuelva."
+                                            + modo_hooks.aviso_de_reincidencia(veces)))
     return 0
 
 

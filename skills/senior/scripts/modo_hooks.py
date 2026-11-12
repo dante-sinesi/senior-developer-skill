@@ -17,11 +17,13 @@ Si algo falla, no se frena nada. Solo biblioteca estándar.
 import json
 import os
 import subprocess
+import time
 from pathlib import Path
 
 MODOS = ("denegar", "preguntar")
 NOMBRE = "senior-hooks.json"
 MAX_BLOQUEOS = 60
+ESCALA = 3  # a la tercera vez que se repite el mismo bloqueo, el mensaje deja de ser una indicación y pasa a ser un alto
 
 
 def raiz_del_proyecto(cwd=None):
@@ -111,16 +113,34 @@ def permitir_ruta(raiz, ruta, motivo=""):
     return True, f"Autorizada de antemano: {ruta.as_posix()} (y todo lo que contiene)."
 
 
+def ahora():
+    return time.strftime("%Y-%m-%d %H:%M")
+
+
 def registrar_bloqueo(raiz, hook, detalle):
-    """Deja constancia de lo bloqueado (sin repetir) para que el usuario lo revise cuando vuelva."""
+    """Deja constancia de lo bloqueado para que el usuario lo revise cuando vuelva y cuenta las veces que se repite. Devuelve cuántas van."""
     try:
         datos = cargar(raiz)
-        if any(b.get("hook") == hook and b.get("detalle") == detalle for b in datos["bloqueos"]):
-            return
-        datos["bloqueos"] = (datos["bloqueos"] + [{"hook": hook, "detalle": detalle}])[-MAX_BLOQUEOS:]
+        for b in datos["bloqueos"]:
+            if b.get("hook") == hook and b.get("detalle") == detalle:
+                b["veces"] = int(b.get("veces", 1)) + 1
+                b["ultima"] = ahora()
+                guardar(raiz, datos)
+                return b["veces"]
+        datos["bloqueos"] = (datos["bloqueos"] + [{"hook": hook, "detalle": detalle, "veces": 1, "primera": ahora(), "ultima": ahora()}])[-MAX_BLOQUEOS:]
         guardar(raiz, datos)
-    except OSError:
-        pass
+        return 1
+    except (OSError, ValueError):
+        return 1
+
+
+def aviso_de_reincidencia(veces):
+    """Texto que se suma al mensaje cuando el mismo bloqueo se repite: la indicación ya falló y repetirla no la arregla (principio 17)."""
+    if veces < ESCALA:
+        return ""
+    return (f" ALTO: este mismo bloqueo ya ocurrió {veces} veces. No lo reintentes ni busques otra forma de lograr lo mismo: la indicación ya falló y repetirla no alcanza. "
+            "Dejá ese paso, contale al usuario en tu próximo mensaje qué intentabas y por qué (una frase) y proponele una autorización (`/permitir <ruta>`) "
+            "o una barrera (principio 17 de `senior`); seguí con otra parte del trabajo.")
 
 
 def respuesta(raiz, hook, detalle, pregunta, instruccion):
@@ -128,10 +148,10 @@ def respuesta(raiz, hook, detalle, pregunta, instruccion):
     if cargar(raiz)["modo"] == "preguntar":
         decision, razon = "ask", pregunta
     else:
-        registrar_bloqueo(raiz, hook, detalle)
+        veces = registrar_bloqueo(raiz, hook, detalle)
         decision = "deny"
         razon = (f"BLOQUEADO por senior ({hook}): {detalle}. No es una pregunta ni hay que esperar al usuario: {instruccion} "
-                 "Seguí con el resto del trabajo; lo bloqueado quedó registrado para que el usuario lo revise cuando vuelva.")
+                 "Seguí con el resto del trabajo; lo bloqueado quedó registrado para que el usuario lo revise cuando vuelva." + aviso_de_reincidencia(veces))
     return json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": decision,
                                               "permissionDecisionReason": razon}}, ensure_ascii=False)
 

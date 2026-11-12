@@ -56,7 +56,8 @@ def cmd_bloqueos(args):
         return
     print("Lo que se bloqueó (para decidir si autorizar algo con `permitir <ruta>`):")
     for b in d["bloqueos"]:
-        print(f"  - [{b['hook']}] {b['detalle']}")
+        veces = int(b.get("veces", 1))
+        print(f"  - [{b['hook']}] {b['detalle']}" + (f" (×{veces}{', reincide' if veces >= mh.ESCALA else ''})" if veces > 1 else ""))
 
 
 def cmd_modo(args):
