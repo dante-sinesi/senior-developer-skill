@@ -13,8 +13,10 @@ Qué cubre:
   - No ve lo que escribe un programa por dentro (por ejemplo, un script de Python que abre un archivo): para eso
     está la regla escrita en la skill.
 
-Qué decide: le PREGUNTA AL USUARIO en la interfaz de Claude Code (nunca bloquea del todo). Si algo falla o no se
-puede juzgar, deja pasar.
+Qué decide: según el modo de `modo_hooks.py`. Por defecto («denegar») NO interrumpe: bloquea y le dice a Claude que escriba
+en `.temporal/` y siga, y deja registrado lo bloqueado para que el usuario lo revise y, si corresponde, lo autorice de antemano
+con `permisos_hooks.py permitir`. En modo «preguntar» le pregunta al usuario en la interfaz y espera. La configuración de los
+hooks la edita el usuario, no Claude: cualquier intento de cambiarla se deniega. Si algo falla o no se puede juzgar, deja pasar.
 Quedan permitidas, porque son del propio Claude Code y no del proyecto, la memoria (`~/.claude/projects/*/memory/`)
 y los planes (`~/.claude/plans/`).
 La raíz del proyecto es CLAUDE_PROJECT_DIR; si no está, la raíz del repositorio git del directorio actual.
@@ -137,17 +139,31 @@ def main():
             textos = objetivos_de_shell(str(entrada.get("command", "")))
         else:
             return 0
-        fuera = fuera_del_proyecto([t for t in textos if t], cwd, raiz)
-    except Exception:  # noqa: BLE001 - si algo falla, no se frena nada
+        import modo_hooks
+        comando = str(entrada.get("command", "")) if herramienta in ("Bash", "PowerShell") else ""
+        toca_config = (modo_hooks.NOMBRE in comando or bool(re.search(r"permisos_hooks\.py\s+(?:--raiz\s+\S+\s+)?(modo|permitir|quitar|limpiar)\b", comando))
+                       or (not comando and Path(textos[0]).name == modo_hooks.NOMBRE))
+        fuera = [] if toca_config else fuera_del_proyecto([t for t in textos if t], cwd, raiz)
+        fuera = [t for t in fuera if not modo_hooks.esta_permitido(raiz, a_ruta(t, cwd))]
+    except Exception:  # noqa: BLE001 motivo: si algo falla, no se frena nada
+        return 0
+    if toca_config:
+        print(modo_hooks.respuesta_fija("deny", "Los permisos de los hooks de senior los configura el usuario desde su terminal "
+                                                 "(`permisos_hooks.py`); no se pueden cambiar desde Claude. Seguí con el resto del trabajo."))
         return 0
     if not fuera:
         return 0
     lista = ", ".join(fuera[:3]) + (f" y {len(fuera) - 3} más" if len(fuera) > 3 else "")
-    mensaje = (f"Claude quiere crear algo fuera del proyecto ({raiz}): {lista}. La regla máxima de senior es trabajar "
-               "dentro del proyecto: lo temporal va en `.temporal/` (git lo ignora; lo prepara temporal.py). "
-               "¿Autorizás esta excepción?")
-    print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask",
-                                             "permissionDecisionReason": mensaje}}, ensure_ascii=False))
+    pregunta = (f"Claude quiere crear algo fuera del proyecto ({raiz}): {lista}. La regla máxima de senior es trabajar "
+                "dentro del proyecto: lo temporal va en `.temporal/` (git lo ignora; lo prepara temporal.py). "
+                "¿Autorizás esta excepción?")
+    destinos = ", ".join(f"{t} → {(Path(raiz) / '.temporal' / Path(t).name).as_posix()}" for t in fuera[:3])
+    instruccion = (f"rehacé exactamente lo mismo dentro del proyecto y seguí desde ahí ({destinos}). Lo de paso va en `.temporal/` "
+                   "(git lo ignora; `temporal.py` la prepara; se crea sola al escribir ahí): ni la carpeta de trabajo del entorno "
+                   "ni la temporal del sistema, y los comandos posteriores usan esa ruta nueva. Si de verdad hace falta salir del proyecto (un servidor local, una carpeta de otro programa), "
+                   "anotalo en `docs/pendientes.md` (o en `.temporal/pendientes.md` si no hay docs/) como «necesita autorización del usuario» "
+                   "y continuá sin ese paso.")
+    print(modo_hooks.respuesta(raiz, "escritura fuera del proyecto", f"se intentó crear algo fuera del proyecto: {lista}", pregunta, instruccion))
     return 0
 
 

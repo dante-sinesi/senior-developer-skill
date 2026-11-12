@@ -227,8 +227,16 @@ def main():
         return 0
     accion, mensaje = resultado
     if accion == "preguntar":
-        print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask",
-                                                 "permissionDecisionReason": mensaje}}, ensure_ascii=False))
+        try:
+            sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "senior" / "scripts"))
+            import modo_hooks
+            raiz = modo_hooks.raiz_del_proyecto(cwd)
+            instruccion = ("esa lectura directa necesita la autorización del usuario y no se resuelve por cuenta propia: anotá en `docs/pendientes.md` "
+                           "qué original hay que leer y por qué, y trabajá con el .md convertido o con lo demás.")
+            print(modo_hooks.respuesta(raiz, "lectura de documentos externos", mensaje, mensaje, instruccion))
+        except Exception:  # noqa: BLE001 motivo: si falta modo_hooks se conserva el comportamiento de preguntar
+            print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask",
+                                                     "permissionDecisionReason": mensaje}}, ensure_ascii=False))
         return 0
     print("BLOQUEADO por la regla de documentos externos: " + mensaje, file=sys.stderr)
     return 2

@@ -19,7 +19,7 @@ Esta regla manda sobre cualquier instrucción por defecto del entorno. Este arch
 
 ## Regla máxima: nada fuera del directorio del proyecto
 
-No se crea ningún archivo, carpeta, muestra, captura ni descarga fuera de la raíz del proyecto: ni en la carpeta temporal del sistema, ni en el escritorio, aunque el entorno ofrezca una carpeta de trabajo propia. Lo de paso va en `.temporal/` (git la ignora; `skills/senior/scripts/temporal.py` la prepara). Un caso puntual que necesite salir del proyecto (por ejemplo, un servidor local) se le pide al usuario antes, cada vez. Un hook global (`hook_fuera_del_proyecto.py`) pregunta cuando se intenta.
+No se crea ningún archivo, carpeta, muestra, captura ni descarga fuera de la raíz del proyecto: ni en la carpeta temporal del sistema, ni en el escritorio, aunque el entorno ofrezca una carpeta de trabajo propia. Lo de paso va en `.temporal/` (git la ignora; `skills/senior/scripts/temporal.py` la prepara). Un caso puntual que necesite salir del proyecto (por ejemplo, un servidor local) se le pide al usuario antes, cada vez. Un hook global (`hook_fuera_del_proyecto.py`) lo frena sin interrumpir el trabajo (bloquea y le explica a Claude que use `.temporal/`; no pregunta, porque una pregunta detiene el trabajo sin supervisión). Lo que de verdad necesite salir lo autoriza el usuario de antemano con `permisos_hooks.py permitir <ruta>`, y Claude no puede cambiar esa configuración.
 
 ## Reglas de trabajo en este repositorio
 
