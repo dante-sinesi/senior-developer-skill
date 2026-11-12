@@ -77,23 +77,107 @@ Instalación manual, si se prefiere: copiar las carpetas de `skills/` a `~/.clau
 - **Pedido vago:** `senior-docs` elicita requisitos por lotes en un Markdown que se responde cuando se puede, o, si el usuario está presente, con una entrevista corta: una pregunta a la vez con su suposición, una intención reformulada y una confirmación que tiene que ser un sí explícito (un «dale, lo que te parezca» no cuenta).
 - **Fin de la sesión:** `/cerrar-sesion` actualiza el estado, corre el verificador y propone el commit.
 
-### Flujo de trabajo
-
-1. Leer el estado del proyecto.
-2. Relevar si el sistema es ajeno.
-3. Acordar un plan breve.
-4. Crear la rama.
-5. Test rojo desde la regla de negocio.
-6. Código mínimo.
-7. Refactor con tests en verde.
-8. Actualizar documentación y README.
-9. Verificar.
-10. Commits atómicos y PR.
-11. Actualizar el estado.
-
-La ceremonia se ajusta al tamaño del cambio: una corrección de texto no lleva ficha ni diagrama.
-
 Cada skill de proceso (`senior`, `senior-tdd`, `senior-git`, `senior-seguridad`, `senior-refactor`) trae una tabla corta de **excusas frecuentes**: los atajos que se ofrecen solos cuando el trabajo aprieta («lo pruebo después», «es un cambio chico», «ya me aprobó algo parecido») y qué se responde en cada caso. Sirven de freno: si aparece uno de esos pensamientos, es la señal para parar.
+
+## Cómo funciona
+
+<!-- diagrama: docs/diagramas/paquete.md#1 -->
+### Cómo está armado el paquete
+
+```mermaid
+flowchart LR
+    U["Usuario"] --> S["senior: principios, flujo y puntos de control"]
+    S --> M["Método: tdd, refactor, docs, memoria, git, seguridad"]
+    S --> R["Relevar y documentar un proyecto existente"]
+    S --> D["Diseño: tarjeta de estilo, bosquejos y auditoría"]
+    S --> C["Comandos: adoptar, cerrar sesión, revisar cambio, auditar consumo"]
+    M --> P["Proyecto: docs/, README y código"]
+    R --> P
+    D --> P
+    C --> P
+    P --> V["verificar.py: chequeos sin gastar tokens"]
+    H["Hooks globales: autoría, fuera del proyecto, protegidos y documentos externos"] -.-> P
+    P --> G["GitHub: ramas, commits y Pull Requests"]
+```
+<!-- /diagrama -->
+
+`senior` es la puerta de entrada: reparte el trabajo entre las skills del método, del relevamiento, del diseño y los comandos, todas sobre el mismo proyecto. El verificador controla el resultado sin gastar tokens y los hooks globales vigilan lo que se escribe.
+
+<!-- diagrama: docs/diagramas/ciclo-de-trabajo.md#1 -->
+### Ciclo de trabajo de un cambio
+
+```mermaid
+flowchart LR
+    A["Leer el estado y relevar si hace falta"] --> B["Acordar un plan breve"]
+    B --> C["Rama por cambio"]
+    C --> D["Test rojo desde la regla de negocio"]
+    D --> E["Código mínimo en verde"]
+    E --> F["Refactor con tests en verde"]
+    F --> G["Actualizar docs y README"]
+    G --> H["verificar.py"]
+    H -->|hallazgos| E
+    H --> I["Pull Request con descripción completa"]
+    I --> J{"¿Lo aprueba el usuario?"}
+    J -->|ajustes| E
+    J -->|sí| K["Fusión y estado al día"]
+```
+<!-- /diagrama -->
+
+Cada cambio sigue este camino, con el test antes que el código y la aprobación del usuario antes de fusionar. El rigor se ajusta al tamaño del cambio: una corrección de texto no lleva ficha ni diagrama.
+
+<!-- diagrama: docs/diagramas/confirmar-proyecto-existente.md#1 -->
+### Cómo se confirma un proyecto existente
+
+```mermaid
+sequenceDiagram
+    actor U as Usuario
+    participant C as Claude con senior
+    participant S as Scripts
+    participant D as docs/
+    U->>C: /adoptar-proyecto
+    C->>D: crea docs/, README y relevamiento
+    U->>C: /documentar-proyecto
+    C->>S: analiza el código sin gastar tokens
+    S->>D: diagramas, interfaces, dominio y decisiones, todo provisorio con evidencia
+    S->>D: consulta con las reglas de negocio candidatas
+    Note over D: provisorio hasta que el usuario confirma
+    U->>D: responde la consulta
+    C->>D: reglas confirmadas pasan a requisitos vigentes con ejemplos
+    C->>D: los tests salen de esos ejemplos
+```
+<!-- /diagrama -->
+
+En un proyecto que ya existe, lo generado desde el código queda provisorio y con evidencia, y las reglas de negocio salen como una consulta. Solo lo que el usuario confirma se vuelve requisito vigente y respalda tests.
+
+<!-- diagrama: docs/diagramas/hooks.md#1 -->
+### Cómo frenan los hooks
+
+```mermaid
+sequenceDiagram
+    participant C as Claude
+    participant H as Hook
+    participant K as Configuración
+    actor U as Usuario
+    C->>H: intenta escribir fuera del proyecto
+    H->>K: ¿ruta autorizada de antemano? ¿qué modo?
+    alt está autorizada
+        H-->>C: pasa
+    else modo denegar, el de por defecto
+        H-->>C: bloquea y da la ruta exacta dentro de .temporal/
+        H->>K: deja registrado el bloqueo
+        C->>C: rehace lo mismo dentro del proyecto y sigue
+    else modo preguntar
+        H->>U: pregunta y espera la respuesta
+    end
+    U->>K: al volver, permisos_hooks.py bloqueos o permitir
+```
+<!-- /diagrama -->
+
+Cuando Claude intenta algo protegido, el hook deja pasar lo autorizado de antemano y, si no, bloquea sin interrumpir y le da la ruta para rehacerlo dentro del proyecto. Lo bloqueado queda registrado para que el usuario lo revise al volver.
+
+
+
+
 
 ## Verificador
 
@@ -170,6 +254,7 @@ Al empezar en un repositorio de GitHub, nuevo o existente, la skill completa la 
 El README muestra la arquitectura y los flujos principales como **diagramas con un texto breve debajo**, en lugar de párrafos que los expliquen (GitHub dibuja Mermaid). El qué es, la instalación, el uso y las pruebas siguen siendo texto.
 
 - **Una sola fuente:** `senior-docs/scripts/readme_diagramas.py` copia el diagrama desde `docs/diagramas/` al README entre marcas (`listar`, `agregar`, `quitar`, `sync`, `estado`). `verificar.py readme` falla si una copia difiere de su fuente, no tiene su texto, es demasiado grande para el ancho del README o hay un diagrama escrito a mano.
+- **Propuesta con texto sugerido:** `readme_diagramas.py proponer` arma la lista de los que conviene mostrar (hasta 3) con un texto para cada uno; solo se agregan con `--aplicar`, cuando el usuario dice que sí, y el texto se puede editar.
 - **Pocos y chicos:** hasta 4 (arquitectura, de uno a tres flujos de secuencia y, si hay datos, el entidad-relación); el diagrama de clases suele ser ruido.
 - **Provisorios con aviso:** un diagrama inferido del código (`/documentar-proyecto`) entra con la nota «sin confirmar» hasta que se confirme con `documentar.py confirmar-diagrama`.
 
