@@ -247,19 +247,30 @@ def cmd_instalar(raiz):
 
 
 HOOKS_CLAUDE = (  # hooks globales de Claude Code que esta guardia mantiene activos
-    {"script": "hook_autoria_claude.py", "skill": "senior-git", "matcher": "Bash|PowerShell",
-     "nombre": "de autoría"},
-    {"script": "hook_lectura_externa.py", "skill": "senior-relevar", "matcher": "Read|Bash|PowerShell|Write|Edit",
-     "nombre": "de lectura de documentos externos"},
-    {"script": "hook_fuera_del_proyecto.py", "skill": "senior", "matcher": "Write|Edit|NotebookEdit|Bash|PowerShell",
-     "nombre": "de escritura fuera del proyecto"},
-    {"script": "hook_archivos_protegidos.py", "skill": "senior", "matcher": "Write|Edit|NotebookEdit",
-     "nombre": "de archivos protegidos"},
-    {"script": "hook_secretos_claude.py", "skill": "senior", "matcher": "Read|Grep|Write|Edit|NotebookEdit|Bash|PowerShell",
-     "nombre": "de secretos y datos personales"},
+    # un solo proceso para los cinco controles de PreToolUse (autoría, documentos externos, fuera del proyecto, protegidos y secretos)
+    {"script": "hook_senior.py", "skill": "senior", "matcher": "Read|Grep|Write|Edit|NotebookEdit|Bash|PowerShell",
+     "nombre": "de control de acciones (autoría, documentos externos, escritura fuera del proyecto, archivos protegidos y secretos)"},
     {"script": "hook_permisos_chat.py", "skill": "senior", "evento": "UserPromptSubmit", "matcher": None,
      "nombre": "de permisos desde el chat"},
 )
+# hooks sueltos de versiones anteriores: los reemplaza el despachador y se sacan para que no corran dos veces
+HOOKS_SUELTOS = ("hook_autoria_claude.py", "hook_lectura_externa.py", "hook_fuera_del_proyecto.py", "hook_archivos_protegidos.py", "hook_secretos_claude.py")
+
+
+def sacar_sueltos(ajustes):
+    """Quita de PreToolUse los hooks sueltos que reemplaza el despachador. Devuelve cuántos sacó."""
+    sacados = 0
+    grupos = (ajustes.get("hooks") or {}).get("PreToolUse")
+    if not isinstance(grupos, list):
+        return 0
+    for g in grupos:
+        if not isinstance(g, dict):
+            continue
+        quedan = [h for h in g.get("hooks", []) if not any(s in str(h.get("command", "")) for s in HOOKS_SUELTOS)]
+        sacados += len(g.get("hooks", [])) - len(quedan)
+        g["hooks"] = quedan
+    ajustes["hooks"]["PreToolUse"] = [g for g in grupos if not (isinstance(g, dict) and not g.get("hooks"))]
+    return sacados
 
 
 def python_que_funciona():
@@ -356,6 +367,15 @@ def asegurar_claude(solo_verificar):
                 grupo_nuevo = {"matcher": hook["matcher"], **grupo_nuevo}
             previos.append(grupo_nuevo)
         lineas.append(f"activé el hook global de Claude Code {hook['nombre']} (se aplica al abrir una sesión nueva)")
+        cambio = True
+    sueltos = sum(1 for g in (ajustes.get("hooks") or {}).get("PreToolUse", []) if isinstance(g, dict)
+                  for h in g.get("hooks", []) if any(s in str(h.get("command", "")) for s in HOOKS_SUELTOS))
+    if sueltos and solo_verificar:
+        lineas.append(f"FALTA migrar {sueltos} hooks sueltos de Claude Code al despachador (corren de a uno y suman casi un segundo por llamada)")
+        falta = True
+    elif sueltos:
+        sacar_sueltos(ajustes)
+        lineas.append(f"saqué {sueltos} hooks sueltos de Claude Code: los reemplaza el despachador (un proceso en lugar de cinco)")
         cambio = True
     if cambio:
         destino.parent.mkdir(parents=True, exist_ok=True)
