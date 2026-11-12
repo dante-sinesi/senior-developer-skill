@@ -86,3 +86,7 @@ python colores.py "#1a1a1a" "#ffffff"
 ## Imágenes del usuario
 
 Las referencias visuales o capturas se leen directamente. Se pregunta qué le gusta de cada una y se extraen principios; no se copian.
+
+## Tarjetas del README
+
+Cuando un repositorio nuevo elige README con tarjetas SVG, este método se aplica a la portada: tres estilos que difieren en estructura a partir de la descripción del proyecto, el usuario elige y se evoluciona. Los pasos, el formato del tema y las reglas objetivas están en `references/tarjetas-readme.md`. No hay estilos incluidos: se inventan por proyecto.

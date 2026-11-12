@@ -61,7 +61,7 @@ def listado(c):
     return sorted(p.relative_to(c).as_posix() for p in c.rglob("*") if p.is_file())
 
 
-FLAGS = ["--descripcion", "Herramienta de ejemplo para probar la inicialización.", "--topics", "ejemplo,pruebas"]
+FLAGS = ["--descripcion", "Herramienta de ejemplo para probar la inicialización.", "--topics", "ejemplo,pruebas", "--readme", "simple"]
 CLAVE = "AKIA" + "QWERTYUIOPASDFGH"
 
 # ---------------- 1. interpretar el repositorio (enlace, dueño/nombre, nombre)
@@ -89,6 +89,8 @@ a = carpeta("a", {"app.py": "print('hola')\n", "util.py": "x = 1\n", "notas.txt"
 antes = listado(a)
 rc, s = correr(a, "demo")
 chequear("sin visibilidad, descripción ni topics bloquea y lo dice", rc == 1 and "BLOQUEA" in s and "--publico" in s and "descripción y los topics son obligatorios" in s, s)
+chequear("y bloquea porque falta elegir el tipo de README (simple o con tarjetas), con la orientación por visibilidad",
+         "elegir el tipo de README" in s and "--readme simple" in s and "--readme tarjetas" in s and "privados suelen" in s, s)
 chequear("propone los topics que se deducen solos", "python" in s, s)
 chequear("el plan no escribió nada (ni .git ni README)", listado(a) == antes and not (a / ".git").exists(), listado(a))
 rc, s = correr(a, "demo", "--privado", *FLAGS)
@@ -170,10 +172,52 @@ chequear("público y privado a la vez no se acepta", rc != 0, s)
 rc, s = correr(g, "malo", "--privado", *FLAGS, env={k: v for k, v in ENV.items() if k != "SENIOR_GH"} | {"SENIOR_GH": json.dumps([sys.executable, "-c", "import sys; sys.exit(1)"])})
 chequear("sin sesión de GitHub bloquea y lo explica", rc == 1 and "no hay sesión de GitHub" in s, s)
 
+# ---------------- 9b. README con tarjetas SVG: se pregunta, el estilo lo elige el usuario y se genera
+TEMA = {"nombre": "Horno", "composicion": "dividida", "colores": {"fondo": "#2B1810", "titulo": "#FFE9C7", "texto": "#F2C9A0", "acento": "#FF8A3D"},
+        "tipografia": {"familia": "Georgia, serif"}, "sombra_titulo": "#7A3A12",
+        "decoracion": {"fondo_svg": '<circle cx="650" cy="150" r="120" fill="#3D2216"/>'}}
+TEMA_MALO = {**TEMA, "colores": {**TEMA["colores"], "titulo": "#3A2418"}}
+(BASE / "estilo.json").write_text(json.dumps(TEMA, ensure_ascii=False), encoding="utf-8")
+(BASE / "estilo-malo.json").write_text(json.dumps(TEMA_MALO, ensure_ascii=False), encoding="utf-8")
+DESC = "Sistema de pedidos para una panadería artesanal."
+k = carpeta("k", {"main.py": "x = 1\n", "util.py": "y = 2\n"})
+BASEK = ["panaderia-lumbre", "--publico", "--descripcion", DESC, "--topics", "panaderia,pedidos"]
+rc, s = correr(k, *BASEK)
+chequear("sin elegir el tipo de README el plan bloquea", rc == 1 and "elegir el tipo de README" in s, s)
+rc, s = correr(k, *BASEK, "--readme", "tarjetas")
+chequear("con tarjetas y sin estilo bloquea: el diseñador propone tres y el usuario elige", rc == 1 and "necesita el estilo elegido" in s and "tres" in s, s)
+rc, s = correr(k, *BASEK, "--readme", "tarjetas", "--estilo", str(BASE / "estilo-malo.json"))
+chequear("un estilo con poco contraste bloquea antes de escribir nada", rc == 1 and "no son válidos" in s and "contraste" in s, s)
+rc, s = correr(k, *BASEK, "--readme", "tarjetas", "--estilo", str(BASE / "no-existe.json"))
+chequear("un estilo que no existe bloquea", rc == 1 and "no existe el estilo" in s, s)
+antes = listado(k)
+rc, s = correr(k, *BASEK, "--readme", "tarjetas", "--estilo", str(BASE / "estilo.json"))
+chequear("con el estilo elegido el plan queda listo y no escribe nada", rc == 0 and "con tarjetas SVG" in s and listado(k) == antes, s)
+rc, s = correr(k, *BASEK, "--readme", "tarjetas", "--estilo", str(BASE / "estilo.json"), "--aplicar")
+readme_k = (k / "README.md").read_text(encoding="utf-8") if (k / "README.md").exists() else ""
+chequear("aplicar con tarjetas termina bien", rc == 0 and "README.md con tarjetas SVG" in s, s)
+chequear("el README empieza con la portada centrada y su pie de foto, y sigue con la descripción",
+         readme_k.startswith('<p align="center"><img src="docs/img/portada.svg" alt="panaderia lumbre" width="760"><br><sub>Portada de panaderia lumbre:') and DESC in readme_k.split("</p>", 1)[1], readme_k[:300])
+chequear("guardó el estilo elegido, la portada como datos y el SVG generado", all((k / f).exists() for f in ("docs/tarjetas/estilo.json", "docs/tarjetas/portada.json", "docs/img/portada.svg")))
+chequear("todo eso quedó commiteado (los SVG no se hacen a mano: se regeneran desde los JSON)", {"README.md", "docs/tarjetas/estilo.json", "docs/tarjetas/portada.json", "docs/img/portada.svg"} <= set(git(k, "ls-files").splitlines()))
+svg_k = (k / "docs" / "img" / "portada.svg").read_text(encoding="utf-8")
+chequear("el SVG tiene su descripción accesible y el estilo elegido", "<desc>" in svg_k and "panaderia lumbre" in svg_k.lower() and "#2B1810" in svg_k, svg_k[:200])
+r2 = subprocess.run([sys.executable, str(RAIZ / "skills" / "senior-docs" / "scripts" / "readme_tarjetas.py"), "verificar", "--raiz", str(k)], capture_output=True, text=True, encoding="utf-8", errors="replace")
+chequear("readme_tarjetas.py verificar da todo al día", r2.returncode == 0 and "1 al día" in r2.stdout, r2.stdout + r2.stderr)
+chequear("la descripción y los topics también quedaron en GitHub", estado()["repos"]["dante-prueba/panaderia-lumbre"]["descripcion"] == DESC)
+meta = importlib.util.spec_from_file_location("rm", RAIZ / "skills" / "senior-git" / "scripts" / "repo_meta.py")
+rm = importlib.util.module_from_spec(meta)
+meta.loader.exec_module(rm)
+chequear("un README sin título (empieza con la portada) igual aporta su presentación a repo_meta", DESC in rm.presentacion(k)[1], rm.presentacion(k))
+m = carpeta("m", {"README.md": "# Ya tenía\n\nUn README propio.\n", "q.py": "q = 1\n", "r.py": "r = 2\n"})
+rc, s = correr(m, "ya-tenia", "--publico", "--descripcion", DESC, "--topics", "ejemplo", "--readme", "tarjetas", "--estilo", str(BASE / "estilo.json"), "--aplicar")
+chequear("si ya hay README no se toca y no se generan tarjetas", rc == 0 and "no se toca" in s and (m / "README.md").read_text(encoding="utf-8") == "# Ya tenía\n\nUn README propio.\n" and not (m / "docs" / "img").exists(), s)
+
 # ---------------- 10. documentación y empaquetado
 sk = (RAIZ / "skills" / "inicializar-repositorio" / "SKILL.md").read_text(encoding="utf-8")
 chequear("el comando tiene su SKILL.md con nombre y descripción", sk.startswith("---\nname: inicializar-repositorio\ndescription:") and "/inicializar-repositorio" in sk)
 chequear("la skill explica la autorización y lo que no hace", "Invocar este comando es el pedido" in sk and "Forzar un push" in sk and "obligatorios" in sk)
+chequear("la skill manda a preguntar el tipo de README y a que el diseñador proponga tres estilos", "README simple" in sk and "tarjetas SVG" in sk and "tres estilos" in sk and "tarjetas-readme.md" in sk)
 rd = (RAIZ / "README.md").read_text(encoding="utf-8")
 chequear("el README lo explica", "`inicializar-repositorio`" in rd and "/inicializar-repositorio" in rd)
 

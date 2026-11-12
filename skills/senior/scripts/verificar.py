@@ -478,6 +478,18 @@ def chequeo_secretos(raiz, args):
     return salida, not hallazgos and not faltan
 
 
+def chequeo_tarjetas(raiz, args):
+    """Si el proyecto usa tarjetas SVG en el README (docs/tarjetas): que estén al día respecto de sus JSON y estilo, con su pie de foto, y sin SVG hechos a mano."""
+    ruta = Path(__file__).resolve().parents[2] / "senior-docs" / "scripts" / "readme_tarjetas.py"
+    if not ruta.exists():
+        return ["Tarjetas: no se encontró senior-docs/scripts/readme_tarjetas.py."], True
+    import importlib.util
+    espec = importlib.util.spec_from_file_location("readme_tarjetas", ruta)
+    modulo = importlib.util.module_from_spec(espec)
+    espec.loader.exec_module(modulo)
+    return modulo.verificar(raiz, "docs/tarjetas", "docs/img")
+
+
 def chequeo_fuentes(raiz, args):
     """Documentos externos: ninguno se lee sin convertirlo antes (carpeta documentos-externos/)."""
     conversor = Path(__file__).resolve().parents[2] / "senior-relevar" / "scripts" / "convertir_fuentes.py"
@@ -547,7 +559,7 @@ CHEQUEOS = {
     "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado, "escala": chequeo_escala, "evidencia": chequeo_evidencia,
     "docs": chequeo_docs, "fuentes": chequeo_fuentes, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
     "comentarios": chequeo_comentarios, "listones": chequeo_listones, "autoria": chequeo_autoria,
-    "diseno": chequeo_diseno, "seguridad": chequeo_seguridad, "secretos": chequeo_secretos,
+    "diseno": chequeo_diseno, "seguridad": chequeo_seguridad, "secretos": chequeo_secretos, "tarjetas": chequeo_tarjetas,
 }
 
 

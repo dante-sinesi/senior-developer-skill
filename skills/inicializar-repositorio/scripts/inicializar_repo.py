@@ -4,7 +4,8 @@
 Dado el repositorio (un enlace, `dueño/nombre` o solo el nombre), deja la carpeta lista y publicada:
   1. identidad de Git del repositorio, solo local, con la sesión de GitHub (`gh`): nunca la configuración global;
   2. `git init` en `main` si la carpeta todavía no es un repositorio, y el `.gitignore` con los archivos de secretos;
-  3. `README.md`, si no hay (título, descripción y lo que contiene la carpeta);
+  3. `README.md`, si no hay: SIMPLE (título, descripción y lo que contiene la carpeta) o CON TARJETAS SVG (una portada generada con un
+     estilo que el diseñador propuso y el usuario eligió: `--readme simple | tarjetas` y, para las tarjetas, `--estilo <tema.json>`);
   4. el repositorio remoto: si no existe, se crea (público o privado: hay que decirlo) y se lo asocia como `origin`;
   5. la DESCRIPCIÓN y los TOPICS, que son obligatorios (`senior-git/scripts/repo_meta.py`: valida, no pisa lo ajeno y comprueba);
   6. los hooks de Git del repositorio (autoría y secretos) y un escaneo de claves y datos personales ANTES de commitear;
@@ -17,6 +18,8 @@ Uso:
                el usuario de la sesión de `gh`).
   Sin --aplicar solo muestra el plan y no escribe nada. Con --aplicar hace todo lo anterior; si algo BLOQUEA, no hace nada.
   --publico / --privado  obligatorio solo si el repositorio hay que crearlo: no se decide por el usuario.
+  --readme     simple | tarjetas: el tipo de README cuando hay que crearlo. Es una DECISIÓN DEL USUARIO (privados suelen ser simples y
+               públicos con tarjetas, pero se pregunta siempre). Con tarjetas hace falta `--estilo` con el tema elegido.
   --sin-subir  hace todo menos el push.
   --anidado    la carpeta está dentro de OTRO repositorio de Git (no es su raíz) y se quiere uno propio acá; sin esto bloquea,
                porque inicializar o commitear ahí tocaría el repositorio de afuera.
@@ -126,6 +129,37 @@ def entradas_de_la_carpeta(raiz):
                   if not p.name.startswith(".") and p.name.lower() != "readme.md" and p.name not in ("__pycache__", "node_modules"))
 
 
+def resumir(texto, maximo):
+    """El texto cortado en una palabra entera, con puntos suspensivos si no entra."""
+    texto = " ".join(str(texto).split())
+    if len(texto) <= maximo:
+        return texto
+    return texto[:maximo - 1].rsplit(" ", 1)[0].rstrip(",;:. ") + "…"
+
+
+def datos_de_portada(nombre, descripcion, tarjetas):
+    titulo = re.sub(r"[-_]+", " ", nombre).strip()
+    return {"tipo": "portada", "titulo": titulo, "subtitulo": resumir(descripcion, tarjetas.MAX_SUBTITULO),
+            "pie": f"Portada de {titulo}: {resumir(descripcion, 160)}"}
+
+
+def escribir_readme_con_tarjetas(raiz, nombre, descripcion, estilo, tarjetas):
+    """Guarda el estilo elegido y la portada como JSON, genera el SVG y escribe el README con la imagen y su pie de foto."""
+    carpeta = raiz / "docs" / "tarjetas"
+    carpeta.mkdir(parents=True, exist_ok=True)
+    tema = tarjetas.cargar_json(estilo)
+    (carpeta / "estilo.json").write_text(json.dumps(tema, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    portada = datos_de_portada(nombre, descripcion, tarjetas)
+    (carpeta / "portada.json").write_text(json.dumps(portada, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    tarjetas.generar(raiz, "docs/tarjetas", "docs/img", None, "es")
+    lineas = [tarjetas.bloque_readme("portada", portada["pie"], portada["titulo"]), "", descripcion, ""]
+    entradas = entradas_de_la_carpeta(raiz)
+    entradas = [e for e in entradas if e not in ("docs/",)]
+    if entradas:
+        lineas += ["## Contenido", ""] + [f"- `{e}`" for e in entradas[:MAX_ENTRADAS_README]] + [""]
+    (raiz / "README.md").write_text("\n".join(lineas), encoding="utf-8", newline="\n")
+
+
 def escribir_readme(raiz, nombre, descripcion):
     lineas = [f"# {nombre}", "", descripcion, ""]
     entradas = entradas_de_la_carpeta(raiz)
@@ -215,7 +249,28 @@ def analizar(args, raiz, secretos, meta):
             r["bloqueos"].append(f"descripción o topics no válidos: {e}.")
     # archivos y secretos
     r["falta_readme"] = not (raiz / "README.md").exists()
-    r["acciones"].append("crear el README.md" if r["falta_readme"] else "conservar el README.md que hay")
+    if r["falta_readme"]:
+        if not args.readme:
+            r["bloqueos"].append("hay que elegir el tipo de README: simple (`--readme simple`) o con tarjetas SVG (`--readme tarjetas --estilo <tema.json>`). "
+                                 "Se le pregunta al usuario; como orientación, los repositorios privados suelen llevar README simple y los públicos tarjetas.")
+        elif args.readme == "tarjetas":
+            if not args.estilo:
+                r["bloqueos"].append("el README con tarjetas necesita el estilo elegido (`--estilo <tema.json>`): el diseñador propone tres a partir de la descripción, "
+                                     "el usuario elige uno y recién ahí se genera.")
+            elif not Path(args.estilo).exists():
+                r["bloqueos"].append(f"no existe el estilo {args.estilo}.")
+            else:
+                tarjetas = cargar("senior-docs", "readme_tarjetas.py")
+                try:
+                    tarjetas.validar_tema(tarjetas.cargar_json(args.estilo))
+                    tarjetas.validar(datos_de_portada(nombre, args.descripcion or "descripción", tarjetas))
+                except tarjetas.TarjetaError as e:
+                    r["bloqueos"].append(f"el estilo o la portada no son válidos: {e}.")
+        r["acciones"].append("crear el README.md " + ("con tarjetas SVG (portada)" if args.readme == "tarjetas" else "simple" if args.readme else "(tipo por decidir)"))
+    else:
+        r["acciones"].append("conservar el README.md que hay")
+        if args.readme:
+            r["avisos"].append("ya hay un README: no se toca, así que `--readme` no se usa.")
     r["acciones"].append("completar el .gitignore con los archivos de secretos y activar los hooks de Git (autoría y secretos)")
     if es_git:
         hallazgos = secretos.versionados_que_no_deben(raiz) + secretos.escanear_todo(raiz)
@@ -292,8 +347,16 @@ def ejecutar(args, raiz, r, secretos, meta):
         return 1, sal
     # 3. README
     if r["falta_readme"]:
-        escribir_readme(raiz, nombre, args.descripcion)
-        sal.append("LISTO README.md creado")
+        if args.readme == "tarjetas":
+            tarjetas = cargar("senior-docs", "readme_tarjetas.py")
+            try:
+                escribir_readme_con_tarjetas(raiz, nombre, args.descripcion, args.estilo, tarjetas)
+            except tarjetas.TarjetaError as e:
+                return 1, sal + [f"FALLÓ al generar las tarjetas: {e}"]
+            sal.append("LISTO README.md con tarjetas SVG (docs/tarjetas, docs/img)")
+        else:
+            escribir_readme(raiz, nombre, args.descripcion)
+            sal.append("LISTO README.md creado")
     # 4. hooks de Git
     rc, o = correr([sys.executable, str(guardia), "instalar", "--raiz", str(raiz)])
     sal.append("LISTO hooks de Git (autoría y secretos)" if rc == 0 else f"AVISO no se pudieron instalar los hooks de Git: {o[:160]}")
@@ -322,6 +385,8 @@ def ejecutar(args, raiz, r, secretos, meta):
     sal.append("LISTO descripción y topics aplicados y comprobados en GitHub")
     # 7. commits
     git(raiz, "add", "README.md", ".gitignore")
+    if (raiz / "docs" / "tarjetas").is_dir():
+        git(raiz, "add", "docs/tarjetas", "docs/img")
     if git(raiz, "diff", "--cached", "--quiet")[0] != 0:
         rc, o = git(raiz, "commit", "-q", "-m", "chore: inicializa el repositorio")
         if rc != 0:
@@ -370,6 +435,8 @@ def main():
     ap.add_argument("--topics")
     ap.add_argument("--aplicar", action="store_true")
     ap.add_argument("--sin-subir", action="store_true")
+    ap.add_argument("--readme", choices=("simple", "tarjetas"))
+    ap.add_argument("--estilo", help="el tema (JSON) de las tarjetas elegido por el usuario; solo con --readme tarjetas")
     ap.add_argument("--anidado", action="store_true", help="la carpeta está dentro de otro repositorio de Git y se quiere uno propio acá")
     args = ap.parse_args()
     raiz = Path(args.raiz).resolve()
