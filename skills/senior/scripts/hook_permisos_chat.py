@@ -69,11 +69,7 @@ def aplicar(mh, raiz, orden, resto):
         d["hermanos"] = valor != "no"
         mh.guardar(raiz, d)
         return "Proyectos hermanos: " + ("permitidos." if d["hermanos"] else "no permitidos.")
-    d = mh.cargar(raiz)
-    permitidos = ", ".join((p["ruta"] if isinstance(p, dict) else p) for p in d["permitidos"]) or "ninguna"
-    ultimos = "; ".join(f"[{b['hook']}] {b['detalle']}" for b in d["bloqueos"][-5:]) or "nada"
-    return (f"Modo: {d['modo']}. Proyectos hermanos: {'sí' if d['hermanos'] else 'no'}. Rutas autorizadas: {permitidos}. "
-            f"Últimos bloqueos: {ultimos}.")
+    return "Mostrale al usuario esta información completa, tal cual: " + mh.explicacion(raiz)
 
 
 def main():
@@ -92,7 +88,7 @@ def main():
     except Exception:  # noqa: BLE001 motivo: si algo falla, el mensaje del usuario sigue su curso
         return 0
     contexto = ("senior (hook de permisos, ejecutado por lo que escribió el usuario): " + " ".join(respuestas) +
-                " Confirmalo en una línea y seguí con el resto del mensaje.")
+                ("" if any(m.group(1).lower() == "permisos" for m in comandos) else " Confirmalo en una línea y seguí con el resto del mensaje."))
     print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": contexto}}, ensure_ascii=False))
     return 0
 

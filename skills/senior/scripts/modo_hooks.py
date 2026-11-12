@@ -24,6 +24,13 @@ MODOS = ("denegar", "preguntar")
 NOMBRE = "senior-hooks.json"
 MAX_BLOQUEOS = 60
 ESCALA = 3  # a la tercera vez que se repite el mismo bloqueo, el mensaje deja de ser una indicación y pasa a ser un alto
+REGLAS = (  # (nombre en el registro, qué frena, cómo se autoriza)
+    ("escritura fuera del proyecto", "crear archivos o carpetas fuera de la raíz del proyecto (lo de paso va en `.temporal/`)", "`/permitir <ruta>`"),
+    ("archivos protegidos", "editar `.env`, claves, el interior de `.git/` y los archivos de bloqueo de dependencias", "`/permitir <ruta>`"),
+    ("secretos", "escribir claves o datos personales en archivos que van a git, leer `.env`, `git add -f` y claves en mensajes de commit", "`/permitir .env` para leer y editar `.env`"),
+    ("lectura de documentos externos", "leer un PDF, Word, Excel o una imagen sin convertirlos antes", "se convierten con `convertir_fuentes.py`; no se autoriza por ruta"),
+    ("autoría", "commits, Pull Requests e issues con Claude o coautores", "no se autoriza: en GitHub figura solo el usuario"),
+)
 
 
 def raiz_del_proyecto(cwd=None):
@@ -108,7 +115,7 @@ def permitir_ruta(raiz, ruta, motivo=""):
     datos = cargar(raiz)
     if any(normal(p["ruta"] if isinstance(p, dict) else p) == normal(ruta) for p in datos["permitidos"]):
         return True, "Ya estaba autorizada."
-    datos["permitidos"].append({"ruta": ruta.as_posix(), "motivo": motivo})
+    datos["permitidos"].append({"ruta": ruta.as_posix(), "motivo": motivo, "fecha": ahora()})
     guardar(raiz, datos)
     return True, f"Autorizada de antemano: {ruta.as_posix()} (y todo lo que contiene)."
 
@@ -141,6 +148,43 @@ def aviso_de_reincidencia(veces):
     return (f" ALTO: este mismo bloqueo ya ocurrió {veces} veces. No lo reintentes ni busques otra forma de lograr lo mismo: la indicación ya falló y repetirla no alcanza. "
             "Dejá ese paso, contale al usuario en tu próximo mensaje qué intentabas y por qué (una frase) y proponele una autorización (`/permitir <ruta>`) "
             "o una barrera (principio 17 de `senior`); seguí con otra parte del trabajo.")
+
+
+def resumen_bloqueos(raiz, desde=None):
+    """Líneas con lo bloqueado, agrupado por hook y marcando lo que reincide. `desde` es una fecha «AAAA-MM-DD HH:MM»."""
+    bloqueos = [b for b in cargar(raiz)["bloqueos"] if not desde or b.get("ultima", "") >= desde]
+    if not bloqueos:
+        return ["Bloqueos: ninguno" + (f" desde {desde}." if desde else ".")]
+    por_hook = {}
+    for b in bloqueos:
+        por_hook.setdefault(b["hook"], []).append(b)
+    reincidentes = [b for b in bloqueos if int(b.get("veces", 1)) >= ESCALA]
+    lineas = [f"Bloqueos: {len(bloqueos)} distintos" + (f", {len(reincidentes)} que reinciden (la indicación no alcanzó)" if reincidentes else "") + "."]
+    for hook, lista in por_hook.items():
+        lineas.append(f"  [{hook}] {len(lista)}: " + "; ".join(b["detalle"] + (f" (×{b['veces']})" if int(b.get("veces", 1)) > 1 else "") for b in lista[-3:])
+                      + (f" y {len(lista) - 3} más" if len(lista) > 3 else ""))
+    if reincidentes:
+        lineas.append("  Para los que reinciden: autorizar de antemano (`/permitir <ruta>`) o armar una barrera (principio 17 de senior).")
+    return lineas
+
+
+def explicacion(raiz):
+    """Texto completo y legible de la configuración: modo, qué frena cada hook y cómo se autoriza, y lo que se bloqueó."""
+    d = cargar(raiz)
+    lineas = [f"Modo: {d['modo']}" + (" (no interrumpe: bloquea, le explica a Claude qué hacer y deja registro)" if d["modo"] == "denegar" else " (pregunta en la interfaz y espera tu respuesta)") + ".",
+              "Proyectos hermanos (otros repositorios de la misma carpeta): " + ("cuentan como «dentro»." if d["hermanos"] else "no cuentan."),
+              "Qué frena cada hook y cómo se autoriza:"]
+    lineas += [f"  - {n}: {que}. Autorización: {como}." for n, que, como in REGLAS]
+    if d["permitidos"]:
+        lineas.append("Autorizado de antemano:")
+        for p in d["permitidos"]:
+            ruta, motivo, fecha = (p["ruta"], p.get("motivo", ""), p.get("fecha", "")) if isinstance(p, dict) else (p, "", "")
+            lineas.append(f"  - {ruta}" + (f" — {motivo}" if motivo else "") + (f" ({fecha})" if fecha else ""))
+    else:
+        lineas.append("Autorizado de antemano: nada.")
+    lineas += resumen_bloqueos(raiz)
+    lineas.append(f"Configuración: {ruta_config(raiz)}")
+    return chr(10).join(lineas)
 
 
 def respuesta(raiz, hook, detalle, pregunta, instruccion):

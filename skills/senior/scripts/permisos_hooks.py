@@ -8,7 +8,8 @@ modos (ver modo_hooks.py): «denegar» (por defecto, no interrumpe: bloquea, le 
 
 Uso, desde la terminal del usuario (Claude no puede ejecutar los subcomandos que cambian algo: los hooks lo deniegan):
     python permisos_hooks.py estado   [--raiz .]          # modo, rutas autorizadas y lo último que se bloqueó
-    python permisos_hooks.py bloqueos [--raiz .]          # lo bloqueado, para decidir si autorizar algo
+    python permisos_hooks.py bloqueos [--raiz .]          # lo bloqueado y cuántas veces, para decidir si autorizar algo
+    python permisos_hooks.py resumen  [--raiz .] [--desde "AAAA-MM-DD HH:MM"]   # lo bloqueado en pocas líneas, marcando lo que reincide (lo usa /cerrar-sesion)
     python permisos_hooks.py modo denegar|preguntar       [--raiz .]
     python permisos_hooks.py permitir <ruta> [--motivo "…"]   # autoriza de antemano una ruta (o una carpeta con todo lo que contiene)
     python permisos_hooks.py hermanos si|no               # escribir en otros proyectos tuyos de la misma carpeta (por defecto sí)
@@ -30,23 +31,12 @@ def raiz_de(args):
     return Path(args.raiz).resolve()
 
 
-def mostrar(raiz):
-    d = mh.cargar(raiz)
-    print(f"Modo: {d['modo']}" + (" (no interrumpe: bloquea, avisa a Claude y deja registro)" if d["modo"] == "denegar" else " (pregunta y espera tu respuesta)"))
-    print("Proyectos hermanos (otros repositorios de la misma carpeta): " + ("permitidos" if d["hermanos"] else "no permitidos"))
-    if d["permitidos"]:
-        print("Autorizado de antemano:")
-        for p in d["permitidos"]:
-            ruta, motivo = (p["ruta"], p.get("motivo", "")) if isinstance(p, dict) else (p, "")
-            print(f"  - {ruta}" + (f" — {motivo}" if motivo else ""))
-    else:
-        print("Autorizado de antemano: nada.")
-    print(f"Bloqueos registrados: {len(d['bloqueos'])} (`bloqueos` los lista).")
-
-
 def cmd_estado(args):
-    mostrar(raiz_de(args))
-    print(f"Configuración: {mh.ruta_config(raiz_de(args))}")
+    print(mh.explicacion(raiz_de(args)))
+
+
+def cmd_resumen(args):
+    print(chr(10).join(mh.resumen_bloqueos(raiz_de(args), args.desde)))
 
 
 def cmd_bloqueos(args):
@@ -108,6 +98,9 @@ def main():
     sub = ap.add_subparsers(dest="orden", required=True)
     for nombre in ("estado", "bloqueos", "limpiar"):
         sub.add_parser(nombre).add_argument("--raiz", default=".")
+    r = sub.add_parser("resumen")
+    r.add_argument("--raiz", default=".")
+    r.add_argument("--desde", default=None)
     m = sub.add_parser("modo")
     m.add_argument("modo", choices=mh.MODOS)
     m.add_argument("--raiz", default=".")
@@ -122,7 +115,7 @@ def main():
     q.add_argument("ruta")
     q.add_argument("--raiz", default=".")
     args = ap.parse_args()
-    {"estado": cmd_estado, "bloqueos": cmd_bloqueos, "modo": cmd_modo, "permitir": cmd_permitir, "hermanos": cmd_hermanos, "quitar": cmd_quitar, "limpiar": cmd_limpiar}[args.orden](args)
+    {"estado": cmd_estado, "resumen": cmd_resumen, "bloqueos": cmd_bloqueos, "modo": cmd_modo, "permitir": cmd_permitir, "hermanos": cmd_hermanos, "quitar": cmd_quitar, "limpiar": cmd_limpiar}[args.orden](args)
 
 
 if __name__ == "__main__":
