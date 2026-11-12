@@ -8,6 +8,7 @@ Mermaid se escribe como texto, vive en el repositorio y GitHub lo muestra dibuja
 3. Plantilla de presentación
 4. Ejemplos mínimos
 5. Cómo dividir un diagrama grande
+6. En el README
 
 ## 1. Reglas
 
@@ -98,3 +99,14 @@ stateDiagram-v2
 3. En el general, enlazar a los detalles con un texto debajo (`Detalle: [[pago-de-pedido]]`).
 4. Los diagramas de detalle viven en `docs/diagramas/` con nombre que diga la pregunta (`pago-de-pedido.md`).
 5. Correr `diagramas.py`; si algo excede, repetir la división.
+
+## 6. En el README
+
+El README orienta, así que muestra la arquitectura y los flujos principales dibujados, cada uno con un texto breve debajo, y el detalle queda en `docs/diagramas/`.
+
+- **Cuáles:** la arquitectura (módulos y dependencias), de uno a tres flujos de secuencia y, si el proyecto gira en torno a datos, el entidad-relación. **Hasta 4 en total.** Un diagrama de clases de todo es ruido; si hace falta uno, de las pocas clases troncales.
+- **Más chicos que en `docs/`**, porque se leen al ancho de la página: flujo de hasta 12 nodos, secuencia de hasta 6 participantes y 12 mensajes, entidad-relación de hasta 8 entidades, clases de hasta 8 con 6 miembros.
+- **Una sola fuente:** el diagrama se copia desde `docs/diagramas/` con `senior-docs/scripts/readme_diagramas.py` entre marcas `<!-- diagrama: ruta#n -->` y `<!-- /diagrama -->`. No se edita en el README; se edita la fuente y se hace `sync`.
+- **El texto de debajo** (hasta 400 caracteres) lo escribe una persona y dice qué se ve y qué mirar: «Las rutas llaman a los controladores y estos a los servicios». No repite el diagrama.
+- **Provisorio o confirmado:** un diagrama inferido del código lleva la nota «sin confirmar»; al confirmarlo (`documentar.py confirmar-diagrama`) y hacer `sync`, la nota sale.
+- **Sin renderizar a imagen:** se usa el Mermaid que GitHub dibuja solo; convertirlo a imagen necesitaría una herramienta externa y la aprobación del usuario.

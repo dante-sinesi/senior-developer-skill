@@ -277,6 +277,20 @@ def chequeo_readme(raiz, args):
     if ajeno:
         problemas.append("contiene texto que no es del proyecto (" + "; ".join(ajeno[:3]) + "): "
                          "lo surgido en una consulta o la configuración personal del usuario se contesta en el chat, no se sube")
+    revisor = Path(__file__).resolve().parents[2] / "senior-docs" / "scripts" / "readme_diagramas.py"
+    sugerencia = ""
+    if revisor.exists():
+        import importlib.util
+        espec = importlib.util.spec_from_file_location("readme_diagramas", revisor)
+        modulo = importlib.util.module_from_spec(espec)
+        try:
+            espec.loader.exec_module(modulo)
+            problemas_diagramas, cantidad = modulo.estado(raiz)
+            problemas += ["diagramas: " + p for p in problemas_diagramas[:3]]
+            if not cantidad and any(c["tipo"] in ("secuencia", "er") or "modulos" in c["ref"] for c in modulo.candidatos(raiz)):
+                sugerencia = " Hay diagramas en docs/diagramas/ que podrían mostrar la arquitectura y los flujos principales (`readme_diagramas.py listar`)."
+        except Exception as e:  # noqa: BLE001 motivo: un fallo de este chequeo se informa y no detiene a los demás
+            problemas.append(f"el revisor de diagramas falló: {str(e)[:120]}")
     if es_repo(raiz):
         cambiados = archivos_cambiados(raiz, args.base)
         codigo = [a for a in cambiados if not a.startswith("docs/") and a.lower() != readme.name.lower()]
@@ -284,7 +298,7 @@ def chequeo_readme(raiz, args):
             problemas.append(f"hay {len(codigo)} archivos modificados y el README no se actualizó en este cambio "
                              "(revisar y actualizar la parte afectada; no agregar registros de cambios)")
     if not problemas:
-        return ["README: al día."], True
+        return ["README: al día." + sugerencia], True
     return ["README: " + "; ".join(problemas) + "."], False
 
 
