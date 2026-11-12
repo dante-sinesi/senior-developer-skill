@@ -108,6 +108,10 @@ Si el cambio toca una interfaz y **todavía no hay una dirección de diseño apr
 - **Al implementar:** usar las variables de diseño sin copiar sus valores, programar cada componente una sola vez y usar las etiquetas de los formularios **exactamente** como figuran en el contrato de campos (`verificar.py diseno` lo comprueba).
 - **Al documentar:** los ADR citan las decisiones de diseño por su ID (`D-001`), sin copiarlas.
 
+## Mostrarle algo al usuario en el navegador
+
+Para abrir un archivo o una página en el navegador se usa `python <esta-skill>/scripts/abrir_en_navegador.py <archivo-o-dirección>`: abre **una sola pestaña** por destino, con la dirección ya codificada, hasta 3 por llamada. Nunca con comandos improvisados (`Start-Process`, `start`, `open`) y una ruta sin entrecomillar: con espacios en la ruta («Mis Documentos/Proyecto Nuevo») el navegador la parte en pedazos y abre una pestaña por cada uno. Si hay que mostrar más de 3 cosas, se arma una página índice que las reúna.
+
 ## Verificación automática
 
 `scripts/verificar.py` (sin argumento corre todo) revisa tamaño, alcance, deuda, estado, documentación, calidad de los requisitos, README, texto (límites, repetición, información perdida), diagramas, comentarios del código modificado, **listones** (que el cambio no afloje umbrales, tests ni chequeos para pasar; `guardia_listones.py`) y seguridad, y devuelve pocas líneas. Con `--auditar` suma el chequeo de dependencias (usa la red). Ejecutarlo antes de cada PR y al cerrar la sesión.

@@ -14,17 +14,17 @@ tags: [diagrama, secuencia]
 ```mermaid
 sequenceDiagram
     actor U as Usuario
-    participant C as Claude con senior
+    participant C as Claude
     participant S as Scripts
     participant D as docs/
     U->>C: /adoptar-proyecto
-    C->>D: crea docs/, README y relevamiento
+    C->>D: crea docs/ y relevamiento
     U->>C: /documentar-proyecto
-    C->>S: analiza el código sin gastar tokens
-    S->>D: diagramas, interfaces, dominio y decisiones, todo provisorio con evidencia
-    S->>D: consulta con las reglas de negocio candidatas
-    Note over D: provisorio hasta que el usuario confirma
+    C->>S: analiza el código
+    S->>D: genera docs provisorios
+    S->>D: consulta de reglas
+    Note over D: provisorio hasta confirmar
     U->>D: responde la consulta
-    C->>D: reglas confirmadas pasan a requisitos vigentes con ejemplos
-    C->>D: los tests salen de esos ejemplos
+    C->>D: confirma y pasa a vigente
+    C->>D: tests desde los ejemplos
 ```

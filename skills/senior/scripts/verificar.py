@@ -231,9 +231,12 @@ def chequeo_diagramas(raiz, args):
     if not carpeta.is_dir():
         return ["Diagramas: no existe docs/ (se omite)."], True
     total, problemas = diagramas.analizar(raiz, carpeta)
+    anchos = diagramas.avisos_de_ancho(raiz, carpeta)
+    extra = ([f"  AVISO ancho: {len(anchos)} diagramas se achicarían demasiado al ancho de un README (no bloquea):"]
+             + [f"    {d}: {a}" for d, a in anchos[:3]]) if anchos else []
     if not problemas:
-        return [f"Diagramas: {total} revisados, todos legibles."], True
-    return [f"Diagramas: {len(problemas)} problemas en {total} diagramas:"] + [f"  {p}" for p in problemas[:10]], False
+        return [f"Diagramas: {total} revisados, todos legibles."] + extra, True
+    return [f"Diagramas: {len(problemas)} problemas en {total} diagramas:"] + [f"  {p}" for p in problemas[:10]] + extra, False
 
 
 # Señales de que el README (o un documento que se sube) responde a una consulta o habla de la máquina del

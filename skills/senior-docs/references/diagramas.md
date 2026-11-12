@@ -9,6 +9,7 @@ Mermaid se escribe como texto, vive en el repositorio y GitHub lo muestra dibuja
 4. Ejemplos mínimos
 5. Cómo dividir un diagrama grande
 6. En el README
+7. Forma y ancho de la página
 
 ## 1. Reglas
 
@@ -110,3 +111,14 @@ El README orienta, así que muestra la arquitectura y los flujos principales dib
 - **El texto de debajo** (hasta 400 caracteres) lo escribe una persona y dice qué se ve y qué mirar: «Las rutas llaman a los controladores y estos a los servicios». No repite el diagrama.
 - **Provisorio o confirmado:** un diagrama inferido del código lleva la nota «sin confirmar»; al confirmarlo (`documentar.py confirmar-diagrama`) y hacer `sync`, la nota sale.
 - **Sin renderizar a imagen:** se usa el Mermaid que GitHub dibuja solo; convertirlo a imagen necesitaría una herramienta externa y la aprobación del usuario.
+
+## 7. Forma y ancho de la página
+
+Un diagrama se lee al ancho de la página: si es más ancho, el navegador lo achica y el texto deja de leerse. Medido al dibujarlos con Mermaid: un flujo horizontal de 11 pasos con etiquetas de unos 30 caracteres midió 2.875 px y se leía al 29 % en un README; el mismo flujo en vertical y con etiquetas cortas midió 269 px.
+
+- **Los flujos, en vertical** (`flowchart TB`) salvo que tengan pocos pasos (hasta unos 4). Un flujo horizontal suma el ancho de todos sus pasos; uno vertical solo el del más ancho.
+- **Etiquetas cortas:** hasta unos 25 caracteres por línea; el detalle va en una segunda línea (`<br/>`) o en el texto de debajo, no en la caja.
+- **Muchos pasos, se agrupan en fases:** más de 8 pasos se abstraen en 3 o 5 cajas con el detalle adentro («Construir: test, código, refactor»). El mismo ciclo de 11 pasos en 4 fases horizontales midió 773 × 123 px; con las 4 fases como columnas (`subgraph`, con los pasos adentro y los retornos entre fases) Mermaid lo acomoda casi cuadrado, 815 × 665 px, sin perder ningún paso. Los subgrafos no cuentan como pasos y su ancho no se estima: se mira dibujado.
+- **Secuencias:** el ancho lo fijan los participantes (cada uno suma unos 220 px) y el mensaje más largo entre dos vecinos (unos 7 px por carácter). Hasta 4 o 5 participantes y mensajes de hasta unos 30 o 40 caracteres.
+- **Lo controla `diagramas.py`:** estima el ancho de cada flujo y de cada secuencia (error de alrededor del 15 % contra Mermaid) y avisa cuando se achicaría por debajo del 85 % al ancho de un README; en el README (`readme_diagramas.py`) por debajo del 60 % ya no entra. Es una estimación: no reemplaza mirar el diagrama dibujado.
+- **Lo que genera la skill sale así:** el mapa de módulos de `/documentar-proyecto` es vertical y las secuencias guardadas con `documentar.py secuencia` avisan si quedan anchas.
