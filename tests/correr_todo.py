@@ -17,6 +17,8 @@ AQUI = Path(__file__).resolve().parent
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     filtros = [a.lower() for a in sys.argv[1:]]
     baterias = [b for b in sorted(AQUI.glob("probar_*.py")) if not filtros or any(f in b.name.lower() for f in filtros)]
     if not baterias:

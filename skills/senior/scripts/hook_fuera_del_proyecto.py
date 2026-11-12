@@ -53,7 +53,7 @@ LECTURA = {"cat", "type", "get-content", "gc", "head", "tail", "less", "more", "
 
 
 def sin_exe(nombre):
-    """Quita «.exe» (no se usa str.removesuffix: es de Python 3.9 y el paquete promete 3.8)."""
+    """Quita «.exe» (no se usa str.removesuffix: es de Python 3.9; se mantiene el código simple)."""
     return nombre[:-4] if nombre.endswith(".exe") else nombre
 
 

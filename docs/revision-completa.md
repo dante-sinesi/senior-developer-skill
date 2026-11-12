@@ -7,7 +7,7 @@ Auditoría crítica de todas las partes del paquete: qué tan bien funciona cada
 - **Inventario:** 131 archivos versionados, 16 skills, unas 10.900 líneas de Python. La skill `senior` es la más grande (17 scripts, ~4.750 tokens al activarse) y `senior-diseno` la segunda (9 scripts, 12 referencias).
 - **Hooks:** 28 formas de escribir fuera del proyecto (y de solo leer) contra el hook real. Al inicio **6 se le escapaban**; ahora se frenan todas y `tests/probar_hook_fuera.py` las vigila. Cada hook tarda unos 180 ms y una llamada de Bash o Write pasa por 3 (~0,55 s).
 - **Documentación inferida:** `/documentar-proyecto` se corrió sobre código Python real (este mismo repositorio, copiado a `.temporal/`). Encontró módulos y variables de entorno, pero 2 de las 6 primeras «reglas de negocio» eran falsos positivos (un docstring y una expresión regular); ya no salen.
-- **Compatibilidad:** el README promete Python 3.8 y un hook usaba `str.removesuffix` (3.9). En 3.8 el hook se rompía y, como un hook que falla no bloquea, **dejaba de proteger sin avisar**.
+- **Compatibilidad:** el README prometía Python 3.8, pero 15 scripts usaban `Path.write_text(newline=…)` (3.10+) y un hook usaba `str.removesuffix` (3.9). El CI de GitHub lo mostró en el primer intento. En una versión vieja el hook se rompía y, como un hook que falla no bloquea, **dejaba de proteger sin avisar**. El mínimo documentado pasa a **Python 3.10** (3.8 y 3.9 ya no tienen soporte).
 
 Qué se hizo en la rama `mejora/revision-completa` está en la sección final. «Nota hoy» ya lo incluye.
 
@@ -47,7 +47,7 @@ Qué se hizo en la rama `mejora/revision-completa` está en la sección final. �
 | 7 | Tres procesos de Python por cada llamada de Bash o Write. | ~0,55 s de espera por llamada; en una sesión de miles de llamadas es tiempo real. | Un despachador único que ejecute los tres controles en el mismo proceso. |
 | 8 | Todo se probó en Windows. | En Linux y macOS las rutas (`C:/...`, `/c/...`) y varias pruebas pueden comportarse distinto. | Matriz de CI con Ubuntu y macOS, adaptando `a_ruta` y las pruebas que usan rutas de Windows. |
 | 9 | Mermaid solo se vio dibujado en la versión 10.9.1 de la comparación. | GitHub puede dibujar distinto (ancho, flechas de retorno). | Mirar el README en GitHub y ajustar los diagramas con lo que se vea. |
-| 10 | Un hook que falla **abre en silencio**. | Pasó dos veces: con Python 3.8 y con un error de expresión regular durante esta revisión; todo «pasaba» porque el hook no frenaba nada. | **Hecho en el hook de escritura:** con `SENIOR_HOOK_DEPURAR=1` la caída interna se hace visible y las pruebas la usan. Extenderlo a los otros cuatro hooks. |
+| 10 | Un hook que falla **abre en silencio**. | Pasó dos veces: con una versión de Python vieja y con un error de expresión regular durante esta revisión; todo «pasaba» porque el hook no frenaba nada. | **Hecho en el hook de escritura:** con `SENIOR_HOOK_DEPURAR=1` la caída interna se hace visible y las pruebas la usan. Extenderlo a los otros cuatro hooks. |
 | 11 | Lo instalado y el repositorio se desalinean. | Los hooks usan las copias de `~/.claude/skills`: si no se reinstala, protege la versión vieja (hoy el hook instalado no tiene las correcciones de esta rama). | `instalar.py --verificar` y un aviso en `asegurar` cuando difieren. |
 | 12 | `auditar-consumo` mide lo instalado, no el repositorio. | Tras recortar una skill, la medición no cambia hasta reinstalar. | Un modo `--repo` que mida las skills de la carpeta actual. |
 | 13 | Las heurísticas son aproximadas (reglas candidatas, estimador de ancho ±15 %, análisis por patrones). | Pueden proponer reglas que no son o no ver relaciones dinámicas. | Mantener todo como provisorio con evidencia, medir la precisión en los pilotos del punto 4 y ajustar. |
@@ -55,8 +55,8 @@ Qué se hizo en la rama `mejora/revision-completa` está en la sección final. �
 
 ## Qué se hizo en esta rama
 
-1. **Hook de escritura:** reemplazado `removesuffix` (Python 3.8), cerradas las 6 fugas (`python -c` y heredocs, `node -e`, `sed -i`, `dd of=`, rutas armadas con variables encadenadas), rutas de red sin consulta a la red y modo de depuración. Pasó de 6 fallos en 28 casos a 0.
-2. **Pruebas versionadas:** 19 baterías en `tests/`, un corredor (`tests/correr_todo.py`), pruebas nuevas de hook, compatibilidad 3.8 y consistencia de carpetas ignoradas, y CI en `.github/workflows/pruebas.yml`. Tres pruebas dependían del estado del árbol de trabajo o escribían fuera del proyecto, y se arreglaron.
+1. **Hook de escritura:** reemplazado `removesuffix`, cerradas las 6 fugas (`python -c` y heredocs, `node -e`, `sed -i`, `dd of=`, rutas armadas con variables encadenadas), rutas de red sin consulta a la red y modo de depuración. Pasó de 6 fallos en 28 casos a 0.
+2. **Pruebas versionadas:** 19 baterías en `tests/`, un corredor (`tests/correr_todo.py`), pruebas nuevas de hook, compatibilidad con la versión mínima y consistencia de carpetas ignoradas, y CI en `.github/workflows/pruebas.yml`. Tres pruebas dependían del estado del árbol de trabajo o escribían fuera del proyecto, y se arreglaron. El mínimo de Python sube a 3.10 (README, `instalar.py` y CI con 3.10 y 3.12).
 3. **Hook de Git de este clon** instalado (`guardia_autoria.py instalar`) y carpetas ignoradas alineadas (dos scripts no ignoraban `dist`, `build` ni los entornos virtuales).
 4. **`/documentar-proyecto` sobre código real:** las líneas de docstrings y las definiciones de expresiones regulares ya no se proponen como reglas, con su prueba.
 5. **Peso:** la descripción de `senior-diseno` baja de 1.034 a 773 caracteres y el cuerpo de `senior` de ~5.300 a ~4.750 tokens (el detalle del hook pasó a `references/hooks.md`). Es una mejora parcial: el tope de 3.000 sigue pendiente.

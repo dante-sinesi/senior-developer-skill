@@ -42,7 +42,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 ## Requisitos
 
 - [Claude Code](https://claude.com/claude-code).
-- Python 3.8 o superior (los scripts usan solo la biblioteca estándar).
+- Python 3.10 o superior (los scripts usan solo la biblioteca estándar).
 - Git. El CLI `gh` es necesario solo para trabajar con GitHub.
 - Opcional: `npm`, `composer` o `pip-audit` si se quiere la auditoría de dependencias.
 - **Obligatorias para documentos e imágenes externos:** `markitdown` (`pip install "markitdown[all]"`) para los documentos y `Pillow` (`pip install pillow`) para las imágenes. Nunca se instalan solas: si falta una, se pide aprobación.
@@ -51,7 +51,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 
 Para dejar todo funcionando la primera vez, o en una máquina nueva, en este orden:
 
-1. **Instalar Python 3.8 o superior y Git.** Opcional: el CLI `gh` ([cli.github.com](https://cli.github.com)) para crear y fusionar Pull Requests.
+1. **Instalar Python 3.10 o superior y Git.** Opcional: el CLI `gh` ([cli.github.com](https://cli.github.com)) para crear y fusionar Pull Requests.
 2. **Clonar el repositorio:**
    ```bash
    git clone https://github.com/dante-sinesi/senior-developer-skill.git
@@ -302,14 +302,14 @@ Cada lenguaje es un archivo de datos en `senior-lenguajes/perfiles/` (símbolos,
 
 ## Pruebas
 
-Las baterías están en `tests/` (un `probar_*.py` por tema: hooks, escala, listones, diagramas, documentación inferida, compatibilidad con Python 3.8, etc.) y se corren juntas:
+Las baterías están en `tests/` (un `probar_*.py` por tema: hooks, escala, listones, diagramas, documentación inferida, compatibilidad con Python 3.10, etc.) y se corren juntas:
 
 ```
 python tests/correr_todo.py            # todas
 python tests/correr_todo.py hook       # solo las que contengan «hook»
 ```
 
-Cada batería imprime `ok` o `MAL` por caso y sale con 1 si alguno falla; lo que crean va en `.temporal/`, que git ignora. En GitHub las corre `.github/workflows/pruebas.yml` con Python 3.8 y 3.12 sobre Windows, porque las pruebas de los hooks usan rutas de Windows.
+Cada batería imprime `ok` o `MAL` por caso y sale con 1 si alguno falla; lo que crean va en `.temporal/`, que git ignora. En GitHub las corre `.github/workflows/pruebas.yml` con Python 3.10 y 3.12 sobre Windows, porque las pruebas de los hooks usan rutas de Windows.
 
 ## Evaluación
 
