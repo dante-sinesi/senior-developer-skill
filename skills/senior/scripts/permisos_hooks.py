@@ -11,8 +11,11 @@ Uso, desde la terminal del usuario (Claude no puede ejecutar los subcomandos que
     python permisos_hooks.py bloqueos [--raiz .]          # lo bloqueado, para decidir si autorizar algo
     python permisos_hooks.py modo denegar|preguntar       [--raiz .]
     python permisos_hooks.py permitir <ruta> [--motivo "…"]   # autoriza de antemano una ruta (o una carpeta con todo lo que contiene)
+    python permisos_hooks.py hermanos si|no               # escribir en otros proyectos tuyos de la misma carpeta (por defecto sí)
     python permisos_hooks.py quitar <ruta>
     python permisos_hooks.py limpiar                      # borra el registro de bloqueos
+Desde el chat, sin terminal: escribir `/permitir <ruta>`, `/quitar-permiso <ruta>`, `/hooks-modo denegar|preguntar`, `/hooks-hermanos si|no` o
+`/permisos` (lo recoge `hook_permisos_chat.py`, que solo actúa con lo que el usuario escribe: Claude no puede usarlo).
 La configuración es por proyecto y vive en `.git/senior-hooks.json` (no se sube). Solo biblioteca estándar.
 """
 import argparse
@@ -30,6 +33,7 @@ def raiz_de(args):
 def mostrar(raiz):
     d = mh.cargar(raiz)
     print(f"Modo: {d['modo']}" + (" (no interrumpe: bloquea, avisa a Claude y deja registro)" if d["modo"] == "denegar" else " (pregunta y espera tu respuesta)"))
+    print("Proyectos hermanos (otros repositorios de la misma carpeta): " + ("permitidos" if d["hermanos"] else "no permitidos"))
     if d["permitidos"]:
         print("Autorizado de antemano:")
         for p in d["permitidos"]:
@@ -64,16 +68,17 @@ def cmd_modo(args):
 
 
 def cmd_permitir(args):
+    ok, mensaje = mh.permitir_ruta(raiz_de(args), args.ruta, args.motivo)
+    print(mensaje)
+    sys.exit(0 if ok else 1)
+
+
+def cmd_hermanos(args):
     raiz = raiz_de(args)
-    ruta = Path(args.ruta)
-    ruta = ruta if ruta.is_absolute() else raiz / ruta
     d = mh.cargar(raiz)
-    if any(mh.normal(p["ruta"] if isinstance(p, dict) else p) == mh.normal(ruta) for p in d["permitidos"]):
-        print("Ya estaba autorizada.")
-        return
-    d["permitidos"].append({"ruta": ruta.as_posix(), "motivo": args.motivo})
+    d["hermanos"] = args.valor == "si"
     mh.guardar(raiz, d)
-    print(f"Autorizada de antemano: {ruta.as_posix()} (y todo lo que contiene).")
+    print("Proyectos hermanos: " + ("permitidos." if d["hermanos"] else "no permitidos."))
 
 
 def cmd_quitar(args):
@@ -105,6 +110,9 @@ def main():
     m = sub.add_parser("modo")
     m.add_argument("modo", choices=mh.MODOS)
     m.add_argument("--raiz", default=".")
+    h = sub.add_parser("hermanos")
+    h.add_argument("valor", choices=["si", "no"])
+    h.add_argument("--raiz", default=".")
     p = sub.add_parser("permitir")
     p.add_argument("ruta")
     p.add_argument("--motivo", default="")
@@ -113,7 +121,7 @@ def main():
     q.add_argument("ruta")
     q.add_argument("--raiz", default=".")
     args = ap.parse_args()
-    {"estado": cmd_estado, "bloqueos": cmd_bloqueos, "modo": cmd_modo, "permitir": cmd_permitir, "quitar": cmd_quitar, "limpiar": cmd_limpiar}[args.orden](args)
+    {"estado": cmd_estado, "bloqueos": cmd_bloqueos, "modo": cmd_modo, "permitir": cmd_permitir, "hermanos": cmd_hermanos, "quitar": cmd_quitar, "limpiar": cmd_limpiar}[args.orden](args)
 
 
 if __name__ == "__main__":

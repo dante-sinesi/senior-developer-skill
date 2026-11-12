@@ -217,6 +217,8 @@ HOOKS_CLAUDE = (  # hooks globales de Claude Code que esta guardia mantiene acti
      "nombre": "de escritura fuera del proyecto"},
     {"script": "hook_archivos_protegidos.py", "skill": "senior", "matcher": "Write|Edit|NotebookEdit",
      "nombre": "de archivos protegidos"},
+    {"script": "hook_permisos_chat.py", "skill": "senior", "evento": "UserPromptSubmit", "matcher": None,
+     "nombre": "de permisos desde el chat"},
 )
 
 
@@ -278,9 +280,9 @@ def asegurar_claude(solo_verificar):
             return ["NO se tocó ~/.claude/settings.json porque no es un JSON válido; corregirlo y repetir"], True
     if not isinstance(ajustes, dict):
         return ["NO se tocó ~/.claude/settings.json: tiene una estructura inesperada"], True
-    previos = ajustes.setdefault("hooks", {}).setdefault("PreToolUse", [])
     lineas, falta, cambio = [], False, False
     for hook in HOOKS_CLAUDE:
+        previos = ajustes.setdefault("hooks", {}).setdefault(hook.get("evento", "PreToolUse"), [])
         script = ruta_hook_claude(hook)
         entrada = None
         for grupo in previos:
@@ -306,7 +308,10 @@ def asegurar_claude(solo_verificar):
         if entrada is not None:
             entrada["command"] = comando
         else:
-            previos.append({"matcher": hook["matcher"], "hooks": [{"type": "command", "command": comando}]})
+            grupo_nuevo = {"hooks": [{"type": "command", "command": comando}]}
+            if hook.get("matcher"):
+                grupo_nuevo = {"matcher": hook["matcher"], **grupo_nuevo}
+            previos.append(grupo_nuevo)
         lineas.append(f"activé el hook global de Claude Code {hook['nombre']} (se aplica al abrir una sesión nueva)")
         cambio = True
     if cambio:

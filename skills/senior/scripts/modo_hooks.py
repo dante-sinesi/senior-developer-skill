@@ -48,7 +48,7 @@ def normal(ruta):
 
 
 def cargar(raiz):
-    datos = {"modo": "denegar", "permitidos": [], "bloqueos": []}
+    datos = {"modo": "denegar", "permitidos": [], "bloqueos": [], "hermanos": True}
     try:
         leido = json.loads(ruta_config(raiz).read_text(encoding="utf-8-sig"))
         if isinstance(leido, dict):
@@ -57,6 +57,7 @@ def cargar(raiz):
         pass
     if datos["modo"] not in MODOS:
         datos["modo"] = "denegar"
+    datos["hermanos"] = datos["hermanos"] is not False
     return datos
 
 
@@ -74,6 +75,40 @@ def esta_permitido(raiz, ruta):
         if r == base or r.startswith(base + "/"):
             return True
     return False
+
+
+def proyecto_hermano(raiz, ruta):
+    """True si la ruta está dentro de otro repositorio git que vive en la misma carpeta que el proyecto de la sesión
+    (otro proyecto del usuario en su carpeta de trabajo). Escribir ahí es trabajar en un proyecto, no dejar archivos sueltos."""
+    padre, propia = normal(Path(raiz).parent), normal(raiz)
+    p = Path(ruta)
+    for a in [p, *p.parents]:
+        try:
+            if (a / ".git").exists():
+                return normal(a.parent) == padre and normal(a) != propia
+        except OSError:
+            return False
+    return False
+
+
+def demasiado_amplia(ruta):
+    """Una raíz de disco, la carpeta del usuario o una ruta de menos de tres niveles no se autoriza de antemano."""
+    p = Path(ruta).resolve()
+    return p == Path(p.anchor) or p == Path.home().resolve() or len(p.parts) < 3
+
+
+def permitir_ruta(raiz, ruta, motivo=""):
+    """Autoriza de antemano una ruta (y lo que contiene). Devuelve (ok, mensaje)."""
+    ruta = Path(ruta.strip("\"'"))
+    ruta = ruta if ruta.is_absolute() else Path(raiz) / ruta
+    if demasiado_amplia(ruta):
+        return False, f"{ruta.as_posix()} es demasiado amplia (un disco, la carpeta del usuario o una ruta casi en la raíz): indicar la carpeta concreta."
+    datos = cargar(raiz)
+    if any(normal(p["ruta"] if isinstance(p, dict) else p) == normal(ruta) for p in datos["permitidos"]):
+        return True, "Ya estaba autorizada."
+    datos["permitidos"].append({"ruta": ruta.as_posix(), "motivo": motivo})
+    guardar(raiz, datos)
+    return True, f"Autorizada de antemano: {ruta.as_posix()} (y todo lo que contiene)."
 
 
 def registrar_bloqueo(raiz, hook, detalle):
