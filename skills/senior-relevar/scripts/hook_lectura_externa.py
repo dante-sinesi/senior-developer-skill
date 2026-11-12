@@ -24,6 +24,7 @@ Qué decide:
 Con SENIOR_LECTURA_DIRECTA=1 no controla nada. Solo biblioteca estándar.
 """
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -136,6 +137,20 @@ def conversor():
     return Path(__file__).resolve().with_name("convertir_fuentes.py")
 
 
+def modulo_instalado(nombre):
+    return importlib.util.find_spec(nombre) is not None
+
+
+def aviso_dependencia(ext):
+    """Si falta la biblioteca que el conversor necesita, lo dice en el primer bloqueo, con el comando exacto, en lugar de esperar a que el conversor falle."""
+    modulo, paquete = ("PIL", "pillow") if ext in IMAGENES else ("markitdown", "markitdown[all]")
+    if modulo_instalado(modulo):
+        return ""
+    return (f"ANTES DE CONVERTIR: en esta máquina falta `{paquete}` y es obligatoria. Es una instalación que necesita la aprobación del usuario (nunca se instala sola): "
+            f"pedísela con el comando exacto `\"{sys.executable}\" -m pip install \"{paquete}\"` (o `python instalar.py --instalar-dependencias`, que instala las dos bibliotecas). "
+            "Mientras no la apruebe, seguí sin ese archivo y anotalo en `docs/pendientes.md`. ")
+
+
 def decidir(ruta, cwd, es_shell=False):
     """Devuelve None (deja pasar), ('negar', mensaje) o ('preguntar', mensaje)."""
     ext = ruta.suffix.lower()
@@ -164,9 +179,10 @@ def decidir(ruta, cwd, es_shell=False):
     if autorizado(ruta, raiz):
         return None
     comando = f'python "{conversor().as_posix()}" --importar "{ruta}"'
+    aviso = aviso_dependencia(ext)
     if ext in IMAGENES:
         d = dimensiones(ruta)
-        return "negar", (f"La imagen {ruta.name} mide {d[0]}x{d[1]} px y las imágenes externas no se leen sin reducirlas "
+        return "negar", (aviso + f"La imagen {ruta.name} mide {d[0]}x{d[1]} px y las imágenes externas no se leen sin reducirlas "
                          f"a un máximo de {MAX_PX} px (ahorra entre 50 % y 75 % de tokens). Copiarla y reducirla con: {comando} "
                          "y leer la copia de docs/fuentes/imagenes/. Si hace falta más detalle, pedirle al usuario un máximo "
                          "mayor con --max-px.")
@@ -178,7 +194,7 @@ def decidir(ruta, cwd, es_shell=False):
         if md is not None:
             return "negar", (f"{ruta.name} ya está convertido: leer {md.as_posix()} en lugar del original "
                              "(los documentos externos no se leen directo).")
-    return "negar", (f"{ruta.name} es un documento externo y no se lee directo: primero se convierte. Copiarlo y convertirlo con: "
+    return "negar", (aviso + f"{ruta.name} es un documento externo y no se lee directo: primero se convierte. Copiarlo y convertirlo con: "
                      f"{comando} y leer el .md resultante en docs/fuentes/. Excepciones (PDF escaneado sin texto o diseño visual "
                      "que importa): pedirle al usuario que autorice la lectura del original; no se resuelve por cuenta propia.")
 
@@ -225,7 +241,9 @@ def main():
                 resultado = decidir(ruta, cwd, es_shell=True)
                 if resultado:
                     break
-    except Exception:  # noqa: BLE001 - si algo falla, no se bloquea nada
+    except Exception:  # noqa: BLE001 - si algo falla, no se bloquea nada (con SENIOR_HOOK_DEPURAR=1 el error se ve)
+        if os.environ.get("SENIOR_HOOK_DEPURAR") == "1":
+            raise
         return 0
     if not resultado:
         return 0

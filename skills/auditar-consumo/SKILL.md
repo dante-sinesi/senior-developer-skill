@@ -9,7 +9,7 @@ Mide dónde se va el contexto y propone qué recortar. No se carga solo: se usa 
 
 ## Pasos
 
-1. **Medir** (solo lectura, sin gastar tokens del modelo):
+1. **Medir** (solo lectura, sin gastar tokens del modelo). Si el proyecto es un paquete de skills (tiene una carpeta `skills/`) y se quiere ver el efecto de un recorte antes de reinstalar, agregar `--repo`: mide las skills del repositorio en lugar de las instaladas.
    ```
    python <esta-skill>/scripts/consumo.py --raiz <proyecto> [--salida .temporal/consumo.md]
    ```
