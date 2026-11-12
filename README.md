@@ -38,6 +38,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 | `auditar-diseno` | Comando `/auditar-diseno`: revisa la interfaz de un proyecto existente sin modificarlo |
 | `adoptar-proyecto` | Comando `/adoptar-proyecto`: plan, aprobación y creación de la base documental |
 | `cerrar-sesion` | Comando `/cerrar-sesion`: cierre ordenado opcional |
+| `inicializar-repositorio` | Comando `/inicializar-repositorio`: de un enlace o un nombre a un repositorio de GitHub listo y publicado |
 
 ## Requisitos
 
@@ -278,6 +279,20 @@ Ninguna clave, contraseña, token, certificado ni dato personal (tarjetas, docum
 **`.env` se puede leer y modificar con permiso del usuario, y Claude lo propone.** Sin permiso trabaja con `env_gestion.py`: `estructura` muestra los nombres de las variables con los valores ocultos y `declarar NOMBRE` las agrega a `.env.example`. Cuando hace falta tocar `.env`, le plantea al usuario qué variables y para qué, y él lo autoriza escribiendo en el chat `/permitir .env`; el valor real de un secreto siempre lo completa el usuario.
 
 Se detectan formatos conocidos (AWS, GitHub, Anthropic, OpenAI, Stripe, Slack, Google y otros), credenciales dentro de una dirección o asignadas como texto, tarjetas (con control Luhn), documentos, archivos de claves y volcados de datos. Un falso positivo se descarta con `senior-ignore: <ID> motivo` en la línea. Límites: una clave partida o codificada puede pasar, en un frontend las variables de entorno quedan a la vista del navegador y una clave que ya se subió se rota, no alcanza con borrarla. Detalle en `skills/senior/references/secretos.md`.
+
+## Inicializar un repositorio
+
+`/inicializar-repositorio <enlace | dueño/nombre | nombre>` deja una carpeta lista y publicada sin armar cada paso a mano. Se le pasa el enlace de un repositorio que ya existe o el nombre de uno nuevo (en ese caso hay que decir si es `--publico` o `--privado`: no se decide por vos) y hace, en orden:
+
+1. La identidad de Git del repositorio, solo local, con tu sesión de GitHub.
+2. `git init` en `main` si hace falta, y el `.gitignore` con los archivos de secretos.
+3. El `README.md`, si falta (título, descripción y lo que contiene la carpeta).
+4. El repositorio remoto: lo crea si no existe y lo asocia como `origin`.
+5. **La descripción y los topics, que son obligatorios**: Claude los redacta leyendo el proyecto, y `repo_meta.py` los valida, no pisa una descripción ajena y comprueba el resultado.
+6. Los hooks de Git de autoría y de secretos y un escaneo de claves y datos personales **antes** de commitear.
+7. Los commits (`chore: inicializa el repositorio` y, si ya había archivos, `chore: agrega el contenido existente`) y el push.
+
+Primero muestra un plan sin escribir nada; con `--aplicar` lo hace. Invocar el comando es el pedido: cubre crear ese repositorio, el commit inicial y el push a `origin/main`, y nada más (ni Pull Requests ni otras ramas). **Nunca** fuerza un push, mezcla la historia local con un remoto que ya tiene contenido, sube una carpeta con claves a la vista ni inicializa Git en una carpeta que está dentro de otro repositorio (salvo `--anidado`). Si algo bloquea, no hace nada y lo dice. Se prueba con un `gh` simulado y remotos locales (`tests/probar_inicializar_repositorio.py`).
 
 ## Documentar un proyecto existente
 

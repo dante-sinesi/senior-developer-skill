@@ -129,6 +129,15 @@ def huella(tecs, titulo, intro):
     return hashlib.sha1(json.dumps([sorted(tecs), titulo, intro], ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
 
 
+def gh_cmd():
+    """El comando de `gh` como lista, o None si no está instalado. La variable SENIOR_GH (una lista JSON) lo reemplaza: sirve para probar sin red."""
+    env = os.environ.get("SENIOR_GH")
+    if env:
+        return list(json.loads(env))
+    ruta = shutil.which("gh")
+    return [ruta] if ruta else None
+
+
 def correr(args, cwd=None):
     r = subprocess.run(args, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
     return r.returncode, (r.stdout or "") + (r.stderr or "")
@@ -141,10 +150,10 @@ def actual_de_github(raiz, simular):
         return {"repo": d.get("repo", "simulado/repo"), "description": d.get("description") or "",
                 "topics": list(d.get("topics") or []), "permiso": d.get("permiso", "ADMIN"),
                 "privado": bool(d.get("privado", False))}, ""
-    gh = shutil.which("gh")
+    gh = gh_cmd()
     if not gh:
         return None, "no está instalado `gh`"
-    rc, salida = correr([gh, "repo", "view", "--json", "nameWithOwner,description,repositoryTopics,viewerPermission,isPrivate"], cwd=raiz)
+    rc, salida = correr([*gh, "repo", "view", "--json", "nameWithOwner,description,repositoryTopics,viewerPermission,isPrivate"], cwd=raiz)
     if rc != 0:
         return None, "este proyecto todavía no tiene un repositorio en GitHub, o `gh` no tiene la sesión iniciada"
     try:
@@ -297,7 +306,7 @@ def main():
     if a.simular:
         print("Simulación, comando que se ejecutaría: " + " ".join(f'"{x}"' if " " in x else x for x in cmd))
         return 0
-    cmd[0] = shutil.which("gh") or "gh"
+    cmd = [*(gh_cmd() or ["gh"]), *cmd[1:]]
     rc, salida = correr(cmd, cwd=raiz)
     if rc != 0:
         print("NO se aplicó: " + salida.strip()[:300])
