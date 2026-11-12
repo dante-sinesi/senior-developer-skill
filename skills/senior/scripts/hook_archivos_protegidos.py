@@ -75,6 +75,13 @@ def main():
     pregunta = f"Claude quiere editar {ruta}, que {MENSAJES[cat]}. ¿Autorizás esta edición?"
     instruccion = ("no se edita a mano. Si hace falta cambiarlo, hacelo por la vía correcta (el gestor de paquetes para un archivo de bloqueo; "
                    "variables de entorno o un archivo de ejemplo para un secreto) o anotá en `docs/pendientes.md` qué cambio necesita autorización del usuario y seguí sin ese paso.")
+    if cat == "secreto":
+        env_gestion = (Path(__file__).resolve().parent / "env_gestion.py").as_posix()
+        instruccion = ("un archivo de secretos se modifica con el permiso del usuario, y puede dártelo de antemano escribiendo en el chat `/permitir <ruta>` "
+                       "(vos no podés). Mientras tanto: para declarar una variable nueva usá `python \"" + env_gestion + "\" declarar NOMBRE --comentario \"para qué sirve\"` "
+                       "(la agrega a `.env.example` con un valor falso y, si `.env` está autorizado, también a `.env` sin valor), y proponele al usuario lo que necesitás "
+                       "cambiar en `.env` (qué variables y para qué) para que lo autorice o lo complete él. Si trabajás sin supervisión, anotalo en `docs/pendientes.md` y "
+                       "seguí con el código leyendo la variable de entorno.")
     print(modo_hooks.respuesta(raiz, "archivos protegidos", f"se intentó editar {ruta}", pregunta, instruccion))
     return 0
 
