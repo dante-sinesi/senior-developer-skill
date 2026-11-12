@@ -20,3 +20,5 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Baterías de pruebas
         run: python tests/correr_todo.py
+      - name: Sin claves ni datos personales en el repositorio
+        run: python skills/senior/scripts/secretos.py todo

@@ -53,6 +53,7 @@ import comentarios  # noqa: E402
 import diagramas  # noqa: E402
 import escala  # noqa: E402 motivo: sys.path se ajusta antes, igual que los imports vecinos
 import guardia_listones  # noqa: E402 motivo: sys.path se ajusta antes, igual que los imports vecinos
+import secretos  # noqa: E402
 import seguridad  # noqa: E402
 import texto  # noqa: E402
 
@@ -459,6 +460,24 @@ def chequeo_autoria(raiz, args):
     return [f"Autoría: {len(lista)} commits revisados, sin rastro de Claude ni coautores; guardia activa."], True
 
 
+def chequeo_secretos(raiz, args):
+    """Claves, credenciales y datos personales en lo versionado, y que el .gitignore cubra los archivos de secretos."""
+    hallazgos = secretos.versionados_que_no_deben(raiz) + secretos.escanear_todo(raiz)
+    faltan = secretos.gitignore_faltante(raiz)
+    salida = []
+    if hallazgos:
+        salida.append(f"Secretos: {len(hallazgos)} hallazgos que no deben llegar a GitHub:")
+        for h in hallazgos[:10]:
+            salida.append(f"  {h['id']} {h['archivo']}" + (f":{h['linea']}" if h["linea"] else "") + f" ({h['descripcion']})")
+        if len(hallazgos) > 10:
+            salida.append(f"  … y {len(hallazgos) - 10} más (ejecutar secretos.py todo para el detalle).")
+    else:
+        salida.append("Secretos: sin claves, credenciales ni datos personales a la vista.")
+    if faltan:
+        salida.append(f"  AVISO .gitignore: faltan {len(faltan)} líneas de secretos ({', '.join(faltan[:4])}…). Completarlo: python secretos.py gitignore --aplicar")
+    return salida, not hallazgos and not faltan
+
+
 def chequeo_fuentes(raiz, args):
     """Documentos externos: ninguno se lee sin convertirlo antes (carpeta documentos-externos/)."""
     conversor = Path(__file__).resolve().parents[2] / "senior-relevar" / "scripts" / "convertir_fuentes.py"
@@ -528,7 +547,7 @@ CHEQUEOS = {
     "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado, "escala": chequeo_escala, "evidencia": chequeo_evidencia,
     "docs": chequeo_docs, "fuentes": chequeo_fuentes, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
     "comentarios": chequeo_comentarios, "listones": chequeo_listones, "autoria": chequeo_autoria,
-    "diseno": chequeo_diseno, "seguridad": chequeo_seguridad,
+    "diseno": chequeo_diseno, "seguridad": chequeo_seguridad, "secretos": chequeo_secretos,
 }
 
 

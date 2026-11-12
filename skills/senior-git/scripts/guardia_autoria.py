@@ -146,9 +146,32 @@ def cmd_mensaje(archivo):
     return 0
 
 
+def cargar_secretos():
+    """El módulo de secretos: la copia que está junto a este hook o, en el repositorio de la skill, el de la skill `senior`."""
+    import importlib.util
+    aqui = Path(__file__).resolve().parent
+    for ruta in (aqui / "senior_secretos.py", aqui.parent.parent / "senior" / "scripts" / "secretos.py"):
+        if ruta.exists():
+            spec = importlib.util.spec_from_file_location("senior_secretos", ruta)
+            modulo = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(modulo)
+            return modulo
+    return None
+
+
 def cmd_prepush(raiz):
     problemas, total = [], 0
-    for linea in sys.stdin.read().splitlines():
+    entrada = sys.stdin.read().splitlines()
+    secretos = cargar_secretos()
+    if secretos is not None:
+        hallazgos = secretos.revisar_push(raiz, entrada)
+        if hallazgos:
+            print(f"PUSH BLOQUEADO: {len(hallazgos)} claves, credenciales o datos personales en lo que se va a subir:", file=sys.stderr)  # senior-ignore: SEC-LOG-SENSIBLE motivo: mensaje fijo, no imprime valores
+            secretos.imprimir(hallazgos, sys.stderr)
+            print("  " + secretos.mensaje_de_arreglo(hallazgos), file=sys.stderr)  # senior-ignore: SEC-LOG-SENSIBLE motivo: mensaje fijo, no imprime valores
+            print("  Quitarlos de los commits (no alcanza con borrarlos en uno nuevo: viajan en el historial) y volver a intentar.", file=sys.stderr)
+            return 1
+    for linea in entrada:
         partes = linea.split()
         if len(partes) < 4 or partes[1] == CEROS:
             continue
@@ -176,12 +199,24 @@ for c in python python3 py; do
   if "$c" -c "import sys" >/dev/null 2>&1; then PY="$c"; break; fi
 done
 if [ -z "$PY" ]; then
-  echo "Guardia de autoría: no se encontró un Python que funcione, así que no se puede comprobar la regla." >&2
-  echo "Instalar Python 3 o quitar la guardia (borrar commit-msg y pre-push de .git/hooks) con aprobación del usuario." >&2
+  echo "Guardia de senior: no se encontró un Python que funcione, así que no se pueden comprobar las reglas." >&2
+  echo "Instalar Python 3 o quitar la guardia (borrar commit-msg, pre-commit y pre-push de .git/hooks) con aprobación del usuario." >&2
   exit 1
 fi
-exec "$PY" "$(dirname "$0")/senior_guardia_autoria.py" {modo} "$@"
+exec "$PY" "$(dirname "$0")/{script}" {modo} "$@"
 """
+
+
+HOOKS_GIT = (("commit-msg", "mensaje", "senior_guardia_autoria.py"), ("pre-push", "prepush", "senior_guardia_autoria.py"),
+             ("pre-commit", "staged", "senior_secretos.py"))
+
+
+def ruta_secretos():
+    """El `secretos.py` de la skill `senior` (instalada o de este repositorio) que se copia junto a los hooks."""
+    for ruta in (Path.home() / ".claude" / "skills" / "senior" / "scripts" / "secretos.py", Path(__file__).resolve().parents[2] / "senior" / "scripts" / "secretos.py"):
+        if ruta.exists():
+            return ruta
+    return None
 
 
 def cmd_instalar(raiz):
@@ -193,18 +228,21 @@ def cmd_instalar(raiz):
         ruta_hooks = (raiz / ruta_hooks).resolve()
     ruta_hooks.mkdir(parents=True, exist_ok=True)
     hechos = []
-    for nombre, modo in (("commit-msg", "mensaje"), ("pre-push", "prepush")):
+    for nombre, modo, script in HOOKS_GIT:
         destino = ruta_hooks / nombre
         if destino.exists() and MARCA_HOOK not in destino.read_text(encoding="utf-8", errors="replace"):
             print(f"No se pisa el hook existente {nombre}; integrarlo a mano llamando a senior_guardia_autoria.py {modo}.")
             continue
-        destino.write_text(HOOK.format(marca=MARCA_HOOK, modo=modo), encoding="utf-8", newline="\n")
+        destino.write_text(HOOK.format(marca=MARCA_HOOK, modo=modo, script=script), encoding="utf-8", newline="\n")
         destino.chmod(0o755)
         hechos.append(nombre)
     copia = ruta_hooks / "senior_guardia_autoria.py"
     copia.write_text(Path(__file__).read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
+    origen = ruta_secretos()
+    if origen is not None:
+        (ruta_hooks / "senior_secretos.py").write_text(origen.read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
     print(f"Guardia instalada en {ruta_hooks}: {', '.join(hechos) or 'ningún hook nuevo'}. "
-          "Bloquea commits y push con atribuciones a Claude o coautores.")
+          "Bloquea commits y push con atribuciones a Claude, coautores, claves, credenciales y datos personales.")
     return 0
 
 
@@ -217,6 +255,8 @@ HOOKS_CLAUDE = (  # hooks globales de Claude Code que esta guardia mantiene acti
      "nombre": "de escritura fuera del proyecto"},
     {"script": "hook_archivos_protegidos.py", "skill": "senior", "matcher": "Write|Edit|NotebookEdit",
      "nombre": "de archivos protegidos"},
+    {"script": "hook_secretos_claude.py", "skill": "senior", "matcher": "Read|Grep|Write|Edit|NotebookEdit|Bash|PowerShell",
+     "nombre": "de secretos y datos personales"},
     {"script": "hook_permisos_chat.py", "skill": "senior", "evento": "UserPromptSubmit", "matcher": None,
      "nombre": "de permisos desde el chat"},
 )
@@ -246,11 +286,14 @@ def hooks_git_al_dia(raiz):
     if not ruta.is_absolute():
         ruta = (raiz / ruta).resolve()
     copia = ruta / "senior_guardia_autoria.py"
-    for nombre in ("commit-msg", "pre-push"):
+    for nombre, _, _ in HOOKS_GIT:
         f = ruta / nombre
         if not f.exists() or MARCA_HOOK not in f.read_text(encoding="utf-8", errors="replace"):
             return False
-    return copia.exists() and copia.read_text(encoding="utf-8", errors="replace") == Path(__file__).read_text(encoding="utf-8")
+    origen = ruta_secretos()
+    secretos_al_dia = origen is None or ((ruta / "senior_secretos.py").exists()
+                                         and (ruta / "senior_secretos.py").read_text(encoding="utf-8", errors="replace") == origen.read_text(encoding="utf-8"))
+    return secretos_al_dia and copia.exists() and copia.read_text(encoding="utf-8", errors="replace") == Path(__file__).read_text(encoding="utf-8")
 
 
 def asegurar_git(raiz, solo_verificar):
@@ -260,12 +303,12 @@ def asegurar_git(raiz, solo_verificar):
     if hooks_git_al_dia(raiz):
         return ["hook de Git activo en este repositorio"], False
     if solo_verificar:
-        return ["FALTA el hook de Git de este repositorio (commit-msg y pre-push)"], True
+        return ["FALTA el hook de Git de este repositorio (commit-msg, pre-commit y pre-push)"], True
     salida = io.StringIO()
     with contextlib.redirect_stdout(salida):
         codigo = cmd_instalar(raiz)
     if codigo == 0 and hooks_git_al_dia(raiz):
-        return ["activé el hook de Git de este repositorio (commit-msg y pre-push)"], False
+        return ["activé el hook de Git de este repositorio (commit-msg, pre-commit y pre-push)"], False
     return ["NO se pudo activar el hook de Git: " + salida.getvalue().strip()[:160]], True
 
 

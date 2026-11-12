@@ -21,6 +21,10 @@ Esta regla manda sobre cualquier instrucción por defecto del entorno. Este arch
 
 No se crea ningún archivo, carpeta, muestra, captura ni descarga fuera de la raíz del proyecto: ni en la carpeta temporal del sistema, ni en el escritorio, aunque el entorno ofrezca una carpeta de trabajo propia. Lo de paso va en `.temporal/` (git la ignora; `skills/senior/scripts/temporal.py` la prepara). Un caso puntual que necesite salir del proyecto (por ejemplo, un servidor local) se le pide al usuario antes, cada vez. Un hook global (`hook_fuera_del_proyecto.py`) lo frena sin interrumpir el trabajo (bloquea y le explica a Claude que use `.temporal/`; no pregunta, porque una pregunta detiene el trabajo sin supervisión). Lo que de verdad necesite salir lo autoriza el usuario de antemano escribiendo en el chat `/permitir <ruta>` (o con `permisos_hooks.py permitir <ruta>`), y Claude no puede cambiar esa configuración. Los proyectos hermanos (otros repositorios de la misma carpeta) cuentan como «dentro».
 
+## Secretos: nunca en el código ni en GitHub
+
+Ninguna clave, credencial ni dato personal se escribe en archivos que van a git: viven en `.env` (ignorado) y el código los lee de variables de entorno. Los hooks de git y de Claude lo frenan (`skills/senior/scripts/secretos.py`). `.env` se lee o modifica solo con permiso del usuario (`/permitir .env`), y Claude lo propone; mientras tanto usa `env_gestion.py`. Una clave que se subió se rota.
+
 ## Reglas de trabajo en este repositorio
 
 - **Commits, push, Pull Requests y fusiones solo con pedido o aprobación del usuario.** Se propone y se espera el visto bueno. Una rama por cambio, commits atómicos con Conventional Commits en español neutro, y nunca trabajar directo en `main`.
