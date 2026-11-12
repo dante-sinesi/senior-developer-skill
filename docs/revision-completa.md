@@ -40,7 +40,7 @@ Si una nota baja (algo se rompió o se descubrió un problema), se anota igual: 
 | `/adoptar-proyecto` y `/cerrar-sesion` | 7,5 | 7,5 | Pruebas de punta a punta sobre un proyecto vacío y uno existente, con el plan mostrado antes de escribir. | 8,5 |
 | `/revisar-cambio` y `/auditar-*` | 7,5 | 7,5 | Ejemplos de informe reales en `references/` y que `auditar-diseno` quede cubierto por una prueba (usa el script de `senior-diseno`, no tiene uno propio). | 8,5 |
 | Hooks globales | 6 | 7 | Despachador único, modo de depuración en todos, escalada ante la reincidencia, resumen de bloqueos y una segunda capa para las escrituras desde Bash (puntos ciegos 1, 2, 6, 7 y 10). | 8,5 |
-| `instalar.py` y empaquetado | 6,5 | 7,5 | Agregar `instalar.py --verificar` (compara lo instalado con el repositorio), `--desinstalar`, etiquetas de versión en GitHub y una licencia (la elige el usuario). | 8,5 |
+| `instalar.py` y empaquetado | 6,5 | 7,5 | ~~`instalar.py --verificar` (ya existía) y el aviso de instalación desactualizada.~~ Falta `--desinstalar`, etiquetas de versión en GitHub y una licencia (la elige el usuario). | 8,5 |
 | Pruebas y CI | 4 | 7 | Ver el CI en verde en GitHub con Linux y macOS tras adaptar las rutas, y medir cobertura. | 8,5 |
 
 **Nota global** (promedio de las filas): 7,1 al inicio (16 partes; secretos no existía), **7,5 hoy** (17 partes) y 8,4 estimada si se hace todo lo propuesto. Las notas «con la mejora» son estimaciones: la mejora real solo se ve al usar la parte en proyectos reales.
@@ -59,7 +59,7 @@ Si una nota baja (algo se rompió o se descubrió un problema), se anota igual: 
 | 8 | Todo se probó en Windows. | En Linux y macOS las rutas (`C:/...`, `/c/...`) y varias pruebas pueden comportarse distinto. | Matriz de CI con Ubuntu y macOS, adaptando `a_ruta` y las pruebas que usan rutas de Windows. | Abierto |
 | 9 | Mermaid solo se vio dibujado en la versión 10.9.1 de la comparación. | GitHub puede dibujar distinto (ancho, flechas de retorno). | Mirar el README en GitHub y ajustar los diagramas con lo que se vea. | Abierto |
 | 10 | Un hook que falla **abre en silencio**. | Pasó dos veces: con una versión de Python vieja y con un error de expresión regular; todo «pasaba» porque el hook no frenaba nada. | `SENIOR_HOOK_DEPURAR=1` hace visible la caída. Está en el hook de escritura y en el de secretos; falta extenderlo a los demás y vigilarlo con una prueba. | Parcial |
-| 11 | Lo instalado y el repositorio se desalinean. | Los hooks usan las copias de `~/.claude/skills`: si no se reinstala, protege la versión vieja. | `instalar.py --verificar` y un aviso en `asegurar` cuando difieren. | Abierto |
+| 11 | Lo instalado y el repositorio se desalinean. | Los hooks usan las copias de `~/.claude/skills`: si no se reinstala, protege la versión vieja. | ~~`instalar.py --verificar` y un aviso en `asegurar` cuando difieren.~~ `--verificar` ya existía (lo había dado por faltante). Hecho el aviso: `instalar.py` anota de dónde instaló y la huella de cada skill, y `guardia_autoria.py asegurar` avisa si el repositorio tiene cambios sin instalar o si lo instalado se modificó a mano. | Resuelto (rama `mejora/ciego-11-instalacion-al-dia`) |
 | 12 | `auditar-consumo` mide lo instalado, no el repositorio. | Tras recortar una skill, la medición no cambia hasta reinstalar. | Un modo `--repo` que mida las skills de la carpeta actual. | Abierto |
 | 13 | Las heurísticas son aproximadas (reglas candidatas, estimador de ancho ±15 %, análisis por patrones). | Pueden proponer reglas que no son o no ver relaciones dinámicas. | Mantener todo como provisorio con evidencia, medir la precisión en los pilotos del punto 4 y ajustar. | Abierto |
 | 14 | `markitdown` y `Pillow` son obligatorias y no se instalan solas. | En una máquina nueva el primer documento externo se frena hasta que el usuario las instale. | `instalar.py` ya las comprueba; sumar un mensaje con el comando exacto al primer bloqueo. | Abierto |
@@ -72,6 +72,7 @@ Si una nota baja (algo se rompió o se descubrió un problema), se anota igual: 
 | 2026-11-12 | PR #28, revisión completa: hook de escritura sin fugas, 19 baterías en `tests/`, CI y mínimo de Python 3.10. | Hooks 6→7, pruebas y CI 4→7, instalación 6,5→7,5, `/documentar-proyecto` 6,5→7, `senior-git` 8,5→9; puntos 3 resuelto y 10 parcial. |
 | 2026-11-12 | PR #29, secretos y datos personales: detector, hooks de git y de Claude, `.env` con permiso del usuario. | Parte nueva «Secretos» (7,5), `senior-seguridad` 7→7,5; punto 15 nuevo. |
 | 2026-11-12 | Este documento pasa a ser un documento vivo, con estado por punto ciego, historial y reglas de mantenimiento. | Ninguna nota. |
+| 2026-11-12 | Punto 11: `instalar.py` anota de dónde instaló y `asegurar` avisa si el repositorio tiene cambios sin instalar o lo instalado se modificó a mano. | Punto 11 resuelto; ninguna nota. |
 
 ### Detalle del PR #28 (revisión completa)
 

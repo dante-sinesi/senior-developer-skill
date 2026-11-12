@@ -11,7 +11,7 @@ Uso:
     python guardia_autoria.py instalar [--raiz .]                  # instala los hooks de Git de este repositorio
     python guardia_autoria.py identidad [--raiz .] [--nombre <usuario> --correo <correo>]
         # resuelve en nombre de quién se hacen los commits de este repositorio (ver más abajo)
-    python guardia_autoria.py asegurar [--raiz .] [--silencioso] [--solo-verificar]
+    python guardia_autoria.py asegurar [--raiz .] [--silencioso] [--solo-verificar]  # también avisa si lo instalado se desalineó del repositorio
         # comprueba que estén activos los hooks de Git del repositorio y el hook global de Claude Code
         # (~/.claude/settings.json: autoría y lectura de documentos externos) y, si falta alguno, lo activa. El usuario lo autorizó de forma permanente.
 
@@ -32,6 +32,7 @@ Códigos de salida: 0 sin problemas, 1 con problemas. Solo biblioteca estándar.
 """
 import argparse
 import contextlib
+import hashlib
 import io
 import json
 import os
@@ -39,6 +40,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 MARCA_HOOK = "# senior-guardia-autoria"
@@ -366,6 +368,73 @@ def asegurar_claude(solo_verificar):
     return lineas, falta
 
 
+SUFIJOS_TEXTO = {".py", ".md", ".json", ".html", ".css", ".js", ".txt", ".sh", ".yml", ".yaml"}
+
+
+def huella_archivo(ruta):
+    """Huella de un archivo con el fin de línea normalizado (así es como `instalar.py` lo copia)."""
+    datos = Path(ruta).read_bytes()
+    if Path(ruta).suffix.lower() in SUFIJOS_TEXTO:
+        datos = datos.replace(b"\r\n", b"\n")
+    return hashlib.sha256(datos).hexdigest()
+
+
+def huella_skill(carpeta):
+    h = hashlib.sha256()
+    for f in sorted(p for p in Path(carpeta).rglob("*") if p.is_file() and "__pycache__" not in p.parts):
+        h.update(f.relative_to(carpeta).as_posix().encode("utf-8"))
+        h.update(huella_archivo(f).encode())
+    return h.hexdigest()
+
+
+def huellas_de(carpeta, nombres=None):
+    """{skill: huella} de las skills de una carpeta (solo las de `nombres`, si se indican)."""
+    carpeta = Path(carpeta)
+    if not carpeta.is_dir():
+        return {}
+    return {d.name: huella_skill(d) for d in sorted(carpeta.iterdir()) if d.is_dir() and (nombres is None or d.name in nombres)}
+
+
+def ruta_manifiesto():
+    return Path.home() / ".claude" / "skills" / ".senior-instalacion.json"
+
+
+def escribir_manifiesto(skills_origen):
+    """Anota de dónde se instaló y la huella de cada skill, para poder avisar si el repositorio cambia o lo instalado se toca."""
+    skills_origen = Path(skills_origen).resolve()
+    datos = {"origen": skills_origen.parent.as_posix(), "fecha": time.strftime("%Y-%m-%d %H:%M"), "skills": huellas_de(skills_origen)}
+    destino = ruta_manifiesto()
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    destino.write_text(json.dumps(datos, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+
+
+def asegurar_instalacion():
+    """Líneas sobre si lo instalado en ~/.claude/skills coincide con el repositorio del que salió. Los hooks usan las copias instaladas."""
+    manifiesto = ruta_manifiesto()
+    if not manifiesto.exists():
+        return ["AVISO: la instalación de las skills no tiene registro, así que no se puede comprobar si está al día (se crea la próxima vez que se ejecute `python instalar.py`)"]
+    try:
+        datos = json.loads(manifiesto.read_text(encoding="utf-8-sig"))
+        registradas = dict(datos["skills"])
+        origen = Path(datos["origen"])
+    except (ValueError, KeyError, TypeError):
+        return ["AVISO: el registro de la instalación de las skills está dañado (se rehace con `python instalar.py`)"]
+    lineas = []
+    instaladas = huellas_de(manifiesto.parent, set(registradas))
+    a_mano = sorted(n for n in registradas if instaladas.get(n) != registradas[n])
+    if a_mano:
+        lineas.append("AVISO: hay skills instaladas que se modificaron después de instalarlas (" + ", ".join(a_mano[:5]) + "): los hooks usan esas copias; para volver a lo del repositorio, `python instalar.py`")
+    if not (origen / "skills").is_dir():
+        lineas.append(f"AVISO: no se encuentra el repositorio de origen de la instalación ({origen.as_posix()}), así que no se puede comprobar si hay cambios sin instalar")
+        return lineas
+    del_repo = huellas_de(origen / "skills")
+    cambiadas = sorted(n for n in del_repo if registradas.get(n) != del_repo[n])
+    if cambiadas:
+        lineas.append(f"AVISO: el repositorio de la skill ({origen.as_posix()}) tiene cambios que no están instalados (" + ", ".join(cambiadas[:6])
+                      + (f" y {len(cambiadas) - 6} más" if len(cambiadas) > 6 else "") + f"): los hooks siguen usando la versión instalada; ejecutar `python {(origen / 'instalar.py').as_posix()}`")
+    return lineas
+
+
 def git_config_local(raiz, clave):
     return git(raiz, "config", "--local", "--get", clave)[0].strip()
 
@@ -428,7 +497,8 @@ def cmd_asegurar(raiz, silencioso, solo_verificar):
     for l, f in (asegurar_git(raiz, solo_verificar), asegurar_identidad(raiz, solo_verificar), asegurar_claude(solo_verificar)):
         lineas += l
         falta = falta or f
-    cambios = [l for l in lineas if l.startswith(("activé", "NO", "FALTA"))]
+    lineas += asegurar_instalacion()
+    cambios = [l for l in lineas if l.startswith(("activé", "NO", "FALTA", "AVISO"))]
     if silencioso and not cambios:
         return 0
     for l in (cambios if silencioso else lineas):
