@@ -123,7 +123,7 @@ def diagrama_modulos(proyecto):
     otros = [m for m in tamano if m not in ids]
     if otros:
         ids["(otros)"] = "otros"
-    lineas = ["flowchart LR"]
+    lineas = ["flowchart TB"]
     for m in visibles:
         lineas.append(f'    {ids[m]}["{m} ({tamano[m]})"]')
     if otros:
@@ -522,7 +522,13 @@ def cmd_secuencia(args):
     except ImportError:
         ruta.parent.mkdir(parents=True, exist_ok=True)
         ruta.write_text(texto, encoding="utf-8", newline="\n")
+    try:
+        aviso = dg.aviso_de_ancho("secuencia", mermaid)
+    except NameError:
+        aviso = None
     print(f"Guardado {ruta.relative_to(raiz).as_posix()} (provisorio).")
+    if aviso:
+        print("AVISO: " + aviso)
 
 
 def cmd_secuencias(args):

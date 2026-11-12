@@ -17,16 +17,16 @@ sequenceDiagram
     participant H as Hook
     participant K as Configuración
     actor U as Usuario
-    C->>H: intenta escribir fuera del proyecto
-    H->>K: ¿ruta autorizada de antemano? ¿qué modo?
+    C->>H: escribe fuera del proyecto
+    H->>K: ¿autorizada? ¿qué modo?
     alt está autorizada
         H-->>C: pasa
-    else modo denegar, el de por defecto
-        H-->>C: bloquea y da la ruta exacta dentro de .temporal/
-        H->>K: deja registrado el bloqueo
-        C->>C: rehace lo mismo dentro del proyecto y sigue
+    else modo denegar, por defecto
+        H-->>C: bloquea y da la ruta nueva
+        H->>K: registra el bloqueo
+        C->>C: rehace dentro del proyecto
     else modo preguntar
-        H->>U: pregunta y espera la respuesta
+        H->>U: pregunta y espera
     end
-    U->>K: al volver, permisos_hooks.py bloqueos o permitir
+    U->>K: al volver: bloqueos o permitir
 ```

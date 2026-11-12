@@ -107,19 +107,26 @@ flowchart TB
 ### Ciclo de trabajo de un cambio
 
 ```mermaid
-flowchart TB
-    A["Leer estado y relevar"] --> B["Plan breve"]
-    B --> C["Rama por cambio"]
-    C --> D["Test rojo"]
-    D --> E["Código mínimo en verde"]
-    E --> F["Refactor"]
-    F --> G["Docs y README"]
-    G --> H["verificar.py"]
-    H -->|hallazgos| E
-    H --> I["Pull Request"]
-    I --> J{"¿Aprobado?"}
-    J -->|ajustes| E
-    J -->|sí| K["Fusión y estado al día"]
+flowchart LR
+    subgraph P["Preparar"]
+        direction TB
+        A["Leer estado"] --> B["Plan breve"] --> C["Rama"]
+    end
+    subgraph K["Construir"]
+        direction TB
+        D["Test rojo"] --> E["Código mínimo"] --> F["Refactor"]
+    end
+    subgraph V["Verificar"]
+        direction TB
+        G["Docs y README"] --> H["verificar.py"]
+    end
+    subgraph R["Revisar y fusionar"]
+        direction TB
+        I["Pull Request"] --> J{"¿Aprobado?"} --> L["Fusión"]
+    end
+    P --> K --> V --> R
+    V -->|hallazgos| K
+    R -->|ajustes| K
 ```
 <!-- /diagrama -->
 
@@ -131,19 +138,19 @@ Cada cambio sigue este camino, con el test antes que el código y la aprobación
 ```mermaid
 sequenceDiagram
     actor U as Usuario
-    participant C as Claude con senior
+    participant C as Claude
     participant S as Scripts
     participant D as docs/
     U->>C: /adoptar-proyecto
-    C->>D: crea docs/, README y relevamiento
+    C->>D: crea docs/ y relevamiento
     U->>C: /documentar-proyecto
-    C->>S: analiza el código sin gastar tokens
-    S->>D: diagramas, interfaces, dominio y decisiones, todo provisorio con evidencia
-    S->>D: consulta con las reglas de negocio candidatas
-    Note over D: provisorio hasta que el usuario confirma
+    C->>S: analiza el código
+    S->>D: genera docs provisorios
+    S->>D: consulta de reglas
+    Note over D: provisorio hasta confirmar
     U->>D: responde la consulta
-    C->>D: reglas confirmadas pasan a requisitos vigentes con ejemplos
-    C->>D: los tests salen de esos ejemplos
+    C->>D: confirma y pasa a vigente
+    C->>D: tests desde los ejemplos
 ```
 <!-- /diagrama -->
 
@@ -158,18 +165,18 @@ sequenceDiagram
     participant H as Hook
     participant K as Configuración
     actor U as Usuario
-    C->>H: intenta escribir fuera del proyecto
-    H->>K: ¿ruta autorizada de antemano? ¿qué modo?
+    C->>H: escribe fuera del proyecto
+    H->>K: ¿autorizada? ¿qué modo?
     alt está autorizada
         H-->>C: pasa
-    else modo denegar, el de por defecto
-        H-->>C: bloquea y da la ruta exacta dentro de .temporal/
-        H->>K: deja registrado el bloqueo
-        C->>C: rehace lo mismo dentro del proyecto y sigue
+    else modo denegar, por defecto
+        H-->>C: bloquea y da la ruta nueva
+        H->>K: registra el bloqueo
+        C->>C: rehace dentro del proyecto
     else modo preguntar
-        H->>U: pregunta y espera la respuesta
+        H->>U: pregunta y espera
     end
-    U->>K: al volver, permisos_hooks.py bloqueos o permitir
+    U->>K: al volver: bloqueos o permitir
 ```
 <!-- /diagrama -->
 
@@ -188,7 +195,7 @@ python ~/.claude/skills/senior/scripts/verificar.py            # todo
 python ~/.claude/skills/senior/scripts/verificar.py readme     # un chequeo puntual
 ```
 
-Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `fuentes`, `requisitos`, `texto`, `diagramas`, `comentarios`, `listones`, `escala`, `evidencia`, `autoria`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `hook_archivos_protegidos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
+Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `fuentes`, `requisitos`, `texto`, `diagramas`, `comentarios`, `listones`, `escala`, `evidencia`, `autoria`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `abrir_en_navegador.py` (abre un archivo o una página en una sola pestaña, con la dirección codificada), `hook_archivos_protegidos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
 
 Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
 
@@ -255,6 +262,7 @@ El README muestra la arquitectura y los flujos principales como **diagramas con 
 
 - **Una sola fuente:** `senior-docs/scripts/readme_diagramas.py` copia el diagrama desde `docs/diagramas/` al README entre marcas (`listar`, `agregar`, `quitar`, `sync`, `estado`). `verificar.py readme` falla si una copia difiere de su fuente, no tiene su texto, es demasiado grande para el ancho del README o hay un diagrama escrito a mano.
 - **Propuesta con texto sugerido:** `readme_diagramas.py proponer` arma la lista de los que conviene mostrar (hasta 3) con un texto para cada uno; solo se agregan con `--aplicar`, cuando el usuario dice que sí, y el texto se puede editar.
+- **Pensados para el ancho de la página:** los flujos van en vertical, con etiquetas cortas y agrupando en fases cuando hay muchos pasos, y los que genera la skill salen así. `diagramas.py` estima el ancho de cada flujo y secuencia (error de alrededor del 15 % contra Mermaid) y avisa los que se achicarían por debajo del 85 % al ancho de un README; en el README, por debajo del 60 % no entran.
 - **Pocos y chicos:** hasta 4 (arquitectura, de uno a tres flujos de secuencia y, si hay datos, el entidad-relación); el diagrama de clases suele ser ruido.
 - **Provisorios con aviso:** un diagrama inferido del código (`/documentar-proyecto`) entra con la nota «sin confirmar» hasta que se confirme con `documentar.py confirmar-diagrama`.
 

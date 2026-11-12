@@ -89,8 +89,14 @@ def bloque_de_fuente(raiz, ruta, n):
 
 
 def tamano_excedido(codigo):
+    """Lo que hace que un diagrama no quepa en el README: demasiadas piezas o un ancho que lo achicaría hasta volverlo ilegible."""
     tipo = dg.tipo_diagrama(codigo)
-    return dg.excesos(tipo, dg.medir(tipo, codigo), LIMITES_README)
+    exceso = dg.excesos(tipo, dg.medir(tipo, codigo), LIMITES_README)
+    ancho = dg.ancho_estimado(tipo, codigo)
+    if ancho and dg.escala_en_readme(ancho) < dg.ESCALA_MINIMA:
+        exceso.append(f"ancho estimado {ancho} px: se achicaría al {round(dg.escala_en_readme(ancho) * 100)} % al ancho del README "
+                      f"(mínimo {round(dg.ESCALA_MINIMA * 100)} %); " + ("vertical (TB) y etiquetas más cortas" if tipo == "flujo" else "mensajes más cortos"))
+    return exceso
 
 
 def renderizar(ruta, n, titulo, codigo, provisorio):

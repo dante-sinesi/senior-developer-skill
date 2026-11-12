@@ -18,7 +18,7 @@ Cómo se escriben los requisitos funcionales y los diagramas de secuencia de un 
 
 1. `documentar.py secuencias` lista puntos de entrada (rutas y programas de consola), los de código más grande primero.
 2. Elegir **cuatro o cinco** que representen lo más importante del sistema; no uno por ruta.
-3. Leer la cadena de llamadas de cada uno (controlador, servicios, acceso a datos) y escribir un `sequenceDiagram` en `.temporal/secuencia.mmd` con **hasta 8 participantes y 20 mensajes**, nombres cortos y una nota `Note over` solo donde ayude.
+3. Leer la cadena de llamadas de cada uno (controlador, servicios, acceso a datos) y escribir un `sequenceDiagram` en `.temporal/secuencia.mmd` con **hasta 8 participantes y 20 mensajes** (mejor 4 o 5 participantes y mensajes de hasta unos 40 caracteres, para que no quede ancho: cada participante suma unos 220 px), nombres cortos y una nota `Note over` solo donde ayude.
 4. Guardarlo con `documentar.py secuencia --titulo "…" --pregunta "¿Qué pasa cuando…?" --archivo .temporal/secuencia.mmd --evidencia archivo:línea` (una o varias evidencias). Si no es legible, el script lo rechaza: se divide en dos diagramas.
 5. Un diagrama de secuencia describe lo que el código hace; si el flujo no está claro en el código (llamadas dinámicas, eventos), se escribe lo que se ve y se aclara en la pregunta qué parte no se pudo seguir.
 
