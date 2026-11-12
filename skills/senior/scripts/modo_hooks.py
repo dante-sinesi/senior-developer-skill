@@ -17,11 +17,19 @@ Si algo falla, no se frena nada. Solo biblioteca estándar.
 import json
 import os
 import subprocess
+import time
 from pathlib import Path
 
 MODOS = ("denegar", "preguntar")
 NOMBRE = "senior-hooks.json"
 MAX_BLOQUEOS = 60
+REGLAS = (  # (nombre en el registro, qué frena, cómo se autoriza)
+    ("escritura fuera del proyecto", "crear archivos o carpetas fuera de la raíz del proyecto (lo de paso va en `.temporal/`)", "`/permitir <ruta>`"),
+    ("archivos protegidos", "editar `.env`, claves, el interior de `.git/` y los archivos de bloqueo de dependencias", "`/permitir <ruta>`"),
+    ("secretos", "escribir claves o datos personales en archivos que van a git, leer `.env`, `git add -f` y claves en mensajes de commit", "`/permitir .env` para leer y editar `.env`"),
+    ("lectura de documentos externos", "leer un PDF, Word, Excel o una imagen sin convertirlos antes", "se convierten con `convertir_fuentes.py`; no se autoriza por ruta"),
+    ("autoría", "commits, Pull Requests e issues con Claude o coautores", "no se autoriza: en GitHub figura solo el usuario"),
+)
 
 
 def raiz_del_proyecto(cwd=None):
@@ -106,21 +114,62 @@ def permitir_ruta(raiz, ruta, motivo=""):
     datos = cargar(raiz)
     if any(normal(p["ruta"] if isinstance(p, dict) else p) == normal(ruta) for p in datos["permitidos"]):
         return True, "Ya estaba autorizada."
-    datos["permitidos"].append({"ruta": ruta.as_posix(), "motivo": motivo})
+    datos["permitidos"].append({"ruta": ruta.as_posix(), "motivo": motivo, "fecha": ahora()})
     guardar(raiz, datos)
     return True, f"Autorizada de antemano: {ruta.as_posix()} (y todo lo que contiene)."
+
+
+def ahora():
+    return time.strftime("%Y-%m-%d %H:%M")
 
 
 def registrar_bloqueo(raiz, hook, detalle):
     """Deja constancia de lo bloqueado (sin repetir) para que el usuario lo revise cuando vuelva."""
     try:
         datos = cargar(raiz)
-        if any(b.get("hook") == hook and b.get("detalle") == detalle for b in datos["bloqueos"]):
-            return
-        datos["bloqueos"] = (datos["bloqueos"] + [{"hook": hook, "detalle": detalle}])[-MAX_BLOQUEOS:]
+        for b in datos["bloqueos"]:
+            if b.get("hook") == hook and b.get("detalle") == detalle:
+                b["ultima"] = ahora()
+                guardar(raiz, datos)
+                return
+        datos["bloqueos"] = (datos["bloqueos"] + [{"hook": hook, "detalle": detalle, "primera": ahora(), "ultima": ahora()}])[-MAX_BLOQUEOS:]
         guardar(raiz, datos)
     except OSError:
         pass
+
+
+def resumen_bloqueos(raiz, desde=None):
+    """Líneas con lo bloqueado, agrupado por hook. `desde` es una fecha «AAAA-MM-DD HH:MM» y filtra los que tienen fecha."""
+    bloqueos = [b for b in cargar(raiz)["bloqueos"] if not desde or b.get("ultima", "9999") >= desde]
+    if not bloqueos:
+        return ["Bloqueos: ninguno" + (f" desde {desde}." if desde else ".")]
+    por_hook = {}
+    for b in bloqueos:
+        por_hook.setdefault(b["hook"], []).append(b)
+    lineas = [f"Bloqueos: {len(bloqueos)} distintos."]
+    for hook, lista in por_hook.items():
+        lineas.append(f"  [{hook}] {len(lista)}: " + "; ".join(b["detalle"] for b in lista[-3:]) + (f" y {len(lista) - 3} más" if len(lista) > 3 else ""))
+    lineas.append("  Si alguno se repite, autorizarlo de antemano (`/permitir <ruta>`) evita que Claude lo vuelva a intentar.")
+    return lineas
+
+
+def explicacion(raiz):
+    """Texto completo y legible de la configuración: modo, qué frena cada hook y cómo se autoriza, y lo que se bloqueó."""
+    d = cargar(raiz)
+    lineas = [f"Modo: {d['modo']}" + (" (no interrumpe: bloquea, le explica a Claude qué hacer y deja registro)" if d["modo"] == "denegar" else " (pregunta en la interfaz y espera tu respuesta)") + ".",
+              "Proyectos hermanos (otros repositorios de la misma carpeta): " + ("cuentan como «dentro»." if d["hermanos"] else "no cuentan."),
+              "Qué frena cada hook y cómo se autoriza:"]
+    lineas += [f"  - {n}: {que}. Autorización: {como}." for n, que, como in REGLAS]
+    if d["permitidos"]:
+        lineas.append("Autorizado de antemano:")
+        for p in d["permitidos"]:
+            ruta, motivo, fecha = (p["ruta"], p.get("motivo", ""), p.get("fecha", "")) if isinstance(p, dict) else (p, "", "")
+            lineas.append(f"  - {ruta}" + (f" — {motivo}" if motivo else "") + (f" ({fecha})" if fecha else ""))
+    else:
+        lineas.append("Autorizado de antemano: nada.")
+    lineas += resumen_bloqueos(raiz)
+    lineas.append(f"Configuración: {ruta_config(raiz)}")
+    return chr(10).join(lineas)
 
 
 def respuesta(raiz, hook, detalle, pregunta, instruccion):
