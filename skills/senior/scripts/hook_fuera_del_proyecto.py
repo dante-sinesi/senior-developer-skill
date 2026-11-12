@@ -221,7 +221,7 @@ def toca_configuracion(herramienta, entrada, comando, nombre):
     if herramienta in ("Write", "Edit", "NotebookEdit"):
         return Path(str(entrada.get("file_path") or entrada.get("notebook_path") or "")).name == nombre
     for seg in SEPARADORES.split(comando):
-        if re.search(r"permisos_hooks\.py\s+(?:--raiz\s+\S+\s+)?(modo|permitir|quitar|limpiar|hermanos)\b", seg):
+        if re.search(r"permisos_hooks\.py[\"']?\s+(?:--raiz\s+\S+\s+)?(modo|permitir|quitar|limpiar|hermanos)\b", seg):
             return True
         if nombre in seg:
             tokens = [t.strip("\"'") for t in TOKEN.findall(seg)]
