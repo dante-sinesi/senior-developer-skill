@@ -533,15 +533,30 @@ ES_PERMISO = re.compile(r"\b(?:hasRole|hasPermission|can|authorize|is_admin|isAd
 ES_ESTADO = re.compile(r"\bconst\s+[A-Z_]*(?:ESTADO|STATUS|ROL|ROLE|TIPO|TYPE)\w*\s*=|^\s*class\s+\w+\([^)]*Enum\)|^\s*enum\s+\w+")
 
 
+def lineas_de_docstrings(texto):
+    """Líneas de Python que son documentación (cadenas sueltas como docstrings): no son reglas aunque nombren valores."""
+    import ast
+    try:
+        arbol = ast.parse(texto)
+    except (SyntaxError, ValueError):
+        return set()
+    res = set()
+    for nodo in ast.walk(arbol):
+        if isinstance(nodo, ast.Expr) and isinstance(nodo.value, ast.Constant) and isinstance(nodo.value.value, str):
+            res.update(range(nodo.lineno, (nodo.end_lineno or nodo.lineno) + 1))
+    return res
+
+
 def reglas_candidatas(proyecto):
     out = []
     for rel, leng in proyecto.codigo:
         if "migrations" in Path(rel).parts:
             continue
         texto = proyecto.texto(rel)
+        documentacion = lineas_de_docstrings(texto) if leng == "py" else set()
         for n, linea in enumerate(texto.splitlines(), 1):
             codigo = sin_comentarios(linea, leng).strip()
-            if len(codigo) < 6 or len(codigo) > 220:
+            if len(codigo) < 6 or len(codigo) > 220 or n in documentacion or "re.compile(" in codigo:
                 continue
             tipo, puntaje = None, 0
             if ES_VALIDACION.search(codigo):
