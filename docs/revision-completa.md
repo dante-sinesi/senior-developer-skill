@@ -58,7 +58,7 @@ Si una nota baja (algo se rompió o se descubrió un problema), se anota igual: 
 | 7 | Hasta cinco procesos de Python por cada llamada de Bash o Write. | De ~0,55 s a ~0,9 s de espera por llamada; en una sesión de miles de llamadas es tiempo real. | Un despachador único que ejecute los controles en el mismo proceso. | Abierto |
 | 8 | Todo se probó en Windows. | En Linux y macOS las rutas (`C:/...`, `/c/...`) y varias pruebas pueden comportarse distinto. | Matriz de CI con Ubuntu y macOS, adaptando `a_ruta` y las pruebas que usan rutas de Windows. | Abierto |
 | 9 | Mermaid solo se vio dibujado en la versión 10.9.1 de la comparación. | GitHub puede dibujar distinto (ancho, flechas de retorno). | Mirar el README en GitHub y ajustar los diagramas con lo que se vea. | Abierto |
-| 10 | Un hook que falla **abre en silencio**. | Pasó dos veces: con una versión de Python vieja y con un error de expresión regular; todo «pasaba» porque el hook no frenaba nada. | `SENIOR_HOOK_DEPURAR=1` hace visible la caída. Está en el hook de escritura y en el de secretos; falta extenderlo a los demás y vigilarlo con una prueba. | Parcial |
+| 10 | Un hook que falla **abre en silencio**. | Pasó dos veces: con una versión de Python vieja y con un error de expresión regular; todo «pasaba» porque el hook no frenaba nada. | ~~`SENIOR_HOOK_DEPURAR=1` hace visible la caída; extenderlo a todos los hooks y vigilarlo con una prueba.~~ Hecho en los seis hooks (el de autoría no atrapa errores y falla con ruido) y `tests/probar_depuracion.py` los rompe a propósito para comprobarlo. Queda que el despachador del punto 7 lo respete. | Resuelto (rama `mejora/ciego-10-depuracion`) |
 | 11 | Lo instalado y el repositorio se desalinean. | Los hooks usan las copias de `~/.claude/skills`: si no se reinstala, protege la versión vieja. | `instalar.py --verificar` y un aviso en `asegurar` cuando difieren. | Abierto |
 | 12 | `auditar-consumo` mide lo instalado, no el repositorio. | Tras recortar una skill, la medición no cambia hasta reinstalar. | Un modo `--repo` que mida las skills de la carpeta actual. | Abierto |
 | 13 | Las heurísticas son aproximadas (reglas candidatas, estimador de ancho ±15 %, análisis por patrones). | Pueden proponer reglas que no son o no ver relaciones dinámicas. | Mantener todo como provisorio con evidencia, medir la precisión en los pilotos del punto 4 y ajustar. | Abierto |
@@ -72,6 +72,7 @@ Si una nota baja (algo se rompió o se descubrió un problema), se anota igual: 
 | 2026-11-12 | PR #28, revisión completa: hook de escritura sin fugas, 19 baterías en `tests/`, CI y mínimo de Python 3.10. | Hooks 6→7, pruebas y CI 4→7, instalación 6,5→7,5, `/documentar-proyecto` 6,5→7, `senior-git` 8,5→9; puntos 3 resuelto y 10 parcial. |
 | 2026-11-12 | PR #29, secretos y datos personales: detector, hooks de git y de Claude, `.env` con permiso del usuario. | Parte nueva «Secretos» (7,5), `senior-seguridad` 7→7,5; punto 15 nuevo. |
 | 2026-11-12 | Este documento pasa a ser un documento vivo, con estado por punto ciego, historial y reglas de mantenimiento. | Ninguna nota. |
+| 2026-11-12 | Punto 10: todos los hooks muestran el error con `SENIOR_HOOK_DEPURAR=1` y una prueba los rompe a propósito. | Punto 10 resuelto; ninguna nota. |
 
 ### Detalle del PR #28 (revisión completa)
 
