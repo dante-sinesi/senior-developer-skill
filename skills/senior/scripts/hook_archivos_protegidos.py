@@ -16,6 +16,7 @@ Se ignora lo que está dentro de `.temporal/` (muestras y pruebas del propio tra
 Solo biblioteca estándar.
 """
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -68,7 +69,9 @@ def main():
             raiz = modo_hooks.raiz_del_proyecto(datos.get("cwd"))
             if modo_hooks.esta_permitido(raiz, Path(datos.get("cwd") or ".") / ruta if not Path(ruta).is_absolute() else ruta):
                 return 0
-    except Exception:  # noqa: BLE001 motivo: si algo falla, el hook deja pasar y no frena nada
+    except Exception:  # noqa: BLE001 motivo: si algo falla, el hook deja pasar y no frena nada (con SENIOR_HOOK_DEPURAR=1 el error se ve)
+        if os.environ.get("SENIOR_HOOK_DEPURAR") == "1":
+            raise
         return 0
     if not cat:
         return 0

@@ -225,7 +225,9 @@ def main():
                 resultado = decidir(ruta, cwd, es_shell=True)
                 if resultado:
                     break
-    except Exception:  # noqa: BLE001 - si algo falla, no se bloquea nada
+    except Exception:  # noqa: BLE001 - si algo falla, no se bloquea nada (con SENIOR_HOOK_DEPURAR=1 el error se ve)
+        if os.environ.get("SENIOR_HOOK_DEPURAR") == "1":
+            raise
         return 0
     if not resultado:
         return 0
