@@ -70,6 +70,7 @@ La descripción y los Topics son la portada del repositorio en GitHub: lo primer
   3. `python <esta-skill>/scripts/repo_meta.py --descripcion "..." --topics a,b,c` muestra el cambio; con `--aplicar` se aplica y se comprueba en GitHub. Al terminar se le dice al usuario qué quedó escrito.
 - **Autorización permanente del usuario, solo para esto:** la descripción y los Topics se actualizan sin pedir permiso cada vez, y siempre se informa qué cambió. No se extiende a nada más: nunca se tocan la visibilidad, la página web ni otros ajustes del repositorio.
 - **Cuidados:** una descripción que ya existe y no escribió senior se muestra y se pregunta antes de pisarla (`--reemplazar-descripcion`). Solo se quitan los Topics que senior agregó antes; los que puso el usuario se conservan. Nunca van datos personales, nombres de clientes, claves ni nada interno, aunque el repositorio sea privado: el script rechaza correos y claves. Hace falta permiso de administrador o de mantenimiento.
+- **Repositorio nuevo:** `/inicializar-repositorio` lo hace todo de una vez (identidad local, README, repositorio remoto, descripción y topics, escaneo de claves, commits y push).
 
 ## Excusas frecuentes y qué se responde
 

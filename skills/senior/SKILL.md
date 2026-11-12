@@ -144,5 +144,6 @@ Atajos que se ofrecen solos cuando el trabajo aprieta. Si aparece uno de estos p
 - `senior-seguridad`: lente ISO/IEC 27000, lista de revisión, modo formal.
 - `senior-lenguajes`: perfiles de PHP, JS, CSS, SQL, HTML y alta de lenguajes nuevos.
 - `cerrar-sesion`: cierre ordenado opcional.
+- `inicializar-repositorio`: de un enlace o un nombre a un repositorio de GitHub listo y publicado (README, descripción y topics obligatorios, secretos a salvo; comando `/inicializar-repositorio`).
 - `documentar-proyecto`: genera la documentación que falta de un proyecto existente (diagramas, requisitos de interfaz y de dominio, decisiones y reglas por confirmar), provisoria y con evidencia (comando `/documentar-proyecto`).
 - `auditar-consumo`: mide cuánto contexto consumen las skills, `CLAUDE.md` y la memoria, y propone qué recortar (comando `/auditar-consumo`); las reglas para cuidarlo día a día están en `references/tokens.md`.
