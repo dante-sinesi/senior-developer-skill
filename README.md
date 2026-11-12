@@ -283,6 +283,7 @@ Una pregunta en la interfaz detiene a Claude hasta que alguien responde, y quien
 - **Autorizar desde el chat:** escribir `/permitir <ruta>` (con comillas si tiene espacios; `-- motivo` opcional) autoriza de antemano una carpeta y todo lo que contiene, sin terminal ni sesión nueva. `/quitar-permiso <ruta>`, `/hooks-modo denegar|preguntar`, `/hooks-hermanos si|no` y `/permisos` completan el set. Lo recoge un hook de `UserPromptSubmit`, que solo se dispara con lo que escribe el usuario: Claude no puede usarlo. No acepta discos enteros ni la carpeta del usuario.
 - **Lo que de verdad necesita salir del proyecto** (un servidor local, la carpeta de otro programa) también se autoriza desde la terminal: `python ~/.claude/skills/senior/scripts/permisos_hooks.py permitir <ruta> --motivo "…"`. `bloqueos` muestra qué se frenó mientras no estaba y `estado` lo configurado.
 - **`modo preguntar`** devuelve el comportamiento anterior (preguntar en la interfaz y esperar), para quien trabaja delante de la pantalla.
+- **Qué ve el hook de escritura:** las rutas de `Write`, `Edit` y `NotebookEdit`; en Bash y PowerShell, las redirecciones, `cp`, `mv`, `tee`, `sed -i`, `dd of=`, descargas y `git clone`, y en el código que viaja dentro del comando (`python -c`, `node -e`, heredocs) las escrituras con una ruta literal. No ve lo que hace un script que está en un archivo ni rutas armadas con código: es una barrera contra descuidos, no contra una evasión deliberada.
 - **Claude no puede autorizarse solo:** los hooks deniegan cualquier intento de cambiar el modo, las rutas autorizadas o la configuración, también en modo preguntar.
 
 ## Cuando una regla falla dos veces
@@ -298,6 +299,17 @@ Modo liviano por defecto; el modo formal con registro de riesgos se propone cuan
 ## Lenguajes
 
 Cada lenguaje es un archivo de datos en `senior-lenguajes/perfiles/` (símbolos, herramienta de tests, convenciones estándar, alertas de seguridad). Incluidos: PHP, JavaScript/TypeScript, CSS, SQL y HTML. Un lenguaje nuevo se agrega con un perfil, y **nunca se guarda sin aprobación del usuario**.
+
+## Pruebas
+
+Las baterías están en `tests/` (un `probar_*.py` por tema: hooks, escala, listones, diagramas, documentación inferida, compatibilidad con Python 3.8, etc.) y se corren juntas:
+
+```
+python tests/correr_todo.py            # todas
+python tests/correr_todo.py hook       # solo las que contengan «hook»
+```
+
+Cada batería imprime `ok` o `MAL` por caso y sale con 1 si alguno falla; lo que crean va en `.temporal/`, que git ignora. En GitHub las corre `.github/workflows/pruebas.yml` con Python 3.8 y 3.12 sobre Windows, porque las pruebas de los hooks usan rutas de Windows.
 
 ## Evaluación
 
