@@ -165,6 +165,14 @@ Al empezar en un repositorio de GitHub, nuevo o existente, la skill completa la 
 - No pisa una descripción que escribió el usuario sin preguntar, y solo quita los Topics que ella misma agregó (los registra en `.git/senior-repo-meta.json`, que no se sube).
 - Rechaza correos, claves y textos de más de 350 caracteres; exige permiso de administrador o de mantenimiento.
 
+## Diagramas en el README
+
+El README muestra la arquitectura y los flujos principales como **diagramas con un texto breve debajo**, en lugar de párrafos que los expliquen (GitHub dibuja Mermaid). El qué es, la instalación, el uso y las pruebas siguen siendo texto.
+
+- **Una sola fuente:** `senior-docs/scripts/readme_diagramas.py` copia el diagrama desde `docs/diagramas/` al README entre marcas (`listar`, `agregar`, `quitar`, `sync`, `estado`). `verificar.py readme` falla si una copia difiere de su fuente, no tiene su texto, es demasiado grande para el ancho del README o hay un diagrama escrito a mano.
+- **Pocos y chicos:** hasta 4 (arquitectura, de uno a tres flujos de secuencia y, si hay datos, el entidad-relación); el diagrama de clases suele ser ruido.
+- **Provisorios con aviso:** un diagrama inferido del código (`/documentar-proyecto`) entra con la nota «sin confirmar» hasta que se confirme con `documentar.py confirmar-diagrama`.
+
 ## Documentar un proyecto existente
 
 `/documentar-proyecto` reconstruye la documentación que falta a partir del código (PHP, JavaScript o TypeScript y Python). **Todo lo generado queda `provisorio`** y cita su evidencia (`archivo:línea`), que `documentar.py evidencia` y `verificar.py evidencia` comprueban: lo que el código hace hoy no es necesariamente lo que debería hacer.

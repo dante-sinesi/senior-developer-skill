@@ -16,6 +16,7 @@ Uso:
     python documentar.py secuencias  [--raiz .]               # flujos candidatos para dibujar a mano un diagrama de secuencia
     python documentar.py requisito   --tipo RF --titulo "…" --evidencia archivo:línea [--modulo m] [--descripcion "…"]
     python documentar.py secuencia   --titulo "…" --pregunta "…" --archivo diagrama.mmd --evidencia archivo:línea
+    python documentar.py confirmar-diagrama docs/diagramas/x.md   # el usuario lo confirmó: deja de ser provisorio y de regenerarse
     python documentar.py progreso    [--raiz .]               # qué módulos ya tienen requisitos funcionales y secuencias
     python documentar.py evidencia   [--raiz .]               # comprueba que cada cita archivo:línea exista
 
@@ -551,6 +552,20 @@ def cmd_secuencias(args):
           "Máximo 8 participantes y 20 mensajes por diagrama.")
 
 
+def cmd_confirmar_diagrama(args):
+    ruta = (Path(args.raiz).resolve() / args.diagrama).resolve()
+    if not ruta.is_file():
+        sys.exit(f"No existe {args.diagrama}.")
+    texto = ruta.read_text(encoding="utf-8-sig", errors="replace")
+    if not MARCA_RE.search(texto[:900]):
+        sys.exit("Ese diagrama no es provisorio (no tiene la marca de generado): no hay nada que confirmar.")
+    nuevo = re.sub(r"(?m)^<!--\s*generado por documentar\.py[^\n]*-->\s*$",
+                   "<!-- confirmado por el usuario: este diagrama ya no se regenera; se edita a mano -->", texto, count=1)
+    nuevo = re.sub(r"(?m)^tags:\s*\[(.*?)\]", lambda m: "tags: [" + ", ".join(x for x in re.split(r",\s*", m.group(1)) if x and x != "inferido") + "]", nuevo, count=1)
+    ruta.write_text(nuevo, encoding="utf-8", newline="\n")
+    print(f"Confirmado {args.diagrama}: deja de ser provisorio y las copias en el README pierden la nota de «sin confirmar» con `readme_diagramas.py sync`.")
+
+
 def cmd_progreso(args):
     raiz = Path(args.raiz).resolve()
     proyecto = an.Proyecto(raiz)
@@ -679,6 +694,8 @@ def main():
         p.add_argument("--refrescar", action="store_true")
     for nombre in ("plan", "secuencias", "progreso", "evidencia"):
         con_raiz(sub.add_parser(nombre))
+    cd = con_raiz(sub.add_parser("confirmar-diagrama"))
+    cd.add_argument("diagrama")
     r = con_raiz(sub.add_parser("requisito"))
     r.add_argument("--tipo", required=True)
     r.add_argument("--titulo", required=True)
@@ -696,7 +713,7 @@ def main():
     if args.orden in ETAPAS or args.orden == "todo":
         cmd_etapa(args)
     else:
-        {"plan": cmd_plan, "secuencias": cmd_secuencias, "progreso": cmd_progreso, "evidencia": cmd_evidencia,
+        {"plan": cmd_plan, "secuencias": cmd_secuencias, "progreso": cmd_progreso, "evidencia": cmd_evidencia, "confirmar-diagrama": cmd_confirmar_diagrama,
          "requisito": cmd_requisito, "secuencia": cmd_secuencia}[args.orden](args)
 
 

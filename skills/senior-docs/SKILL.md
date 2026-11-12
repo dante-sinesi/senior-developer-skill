@@ -56,6 +56,10 @@ Un diagrama que existe pero no se entiende no sirve. Reglas completas y ejemplos
 - Cualquier cambio que cruce capas (por ejemplo interfaz, servidor y base de datos) lleva antes un diagrama de secuencia; las notas citan el ID de la regla (`Note over X: RN-004`).
 - Los cambios a diagramas de arquitectura se muestran como **diff antes/después y esperan aprobación** del usuario antes de escribirse.
 
+## Diagramas en el README
+
+El README muestra la arquitectura y los flujos principales como **diagramas, con un texto breve debajo** en lugar de párrafos que los expliquen; el qué es, para qué sirve, cómo se instala, se usa y se prueba sigue siendo texto. GitHub dibuja Mermaid, y para que no se desfase del de `docs/diagramas/` (un dato, un lugar) el diagrama del README se **copia** desde ahí entre marcas: `python <esta-skill>/scripts/readme_diagramas.py listar` muestra los candidatos, `agregar docs/diagramas/<archivo>.md --texto "Qué se ve"` lo copia a la sección «Cómo funciona» (la crea si falta), `sync` lo vuelve a copiar cuando cambia la fuente y `estado` (también `verificar.py readme`) falla si una copia difiere de su fuente, no tiene su texto, es más grande de lo que cabe al ancho del README o hay un diagrama escrito a mano. Hasta 4 diagramas: la arquitectura (módulos), de uno a tres flujos de secuencia y, si el proyecto gira en torno a datos, el entidad-relación; el diagrama de clases suele ser ruido. Un diagrama provisorio (inferido del código) entra con la nota «sin confirmar» hasta que se confirme.
+
 ## Decisiones de arquitectura (ADR)
 
 Para decisiones importantes y difíciles de revertir: `docs/decisiones/ADR-001.md` con la plantilla `plantillas/adr.md` (contexto, decisión, alternativas, consecuencias). Evita rediscutir lo ya decidido.
