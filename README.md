@@ -298,6 +298,7 @@ Una pregunta en la interfaz detiene a Claude hasta que alguien responde, y quien
 - **`modo preguntar`** devuelve el comportamiento anterior (preguntar en la interfaz y esperar), para quien trabaja delante de la pantalla.
 - **Qué ve el hook de escritura:** las rutas de `Write`, `Edit` y `NotebookEdit`; en Bash y PowerShell, las redirecciones, `cp`, `mv`, `tee`, `sed -i`, `dd of=`, descargas y `git clone`, y en el código que viaja dentro del comando (`python -c`, `node -e`, heredocs) las escrituras con una ruta literal. No ve lo que hace un script que está en un archivo ni rutas armadas con código: es una barrera contra descuidos, no contra una evasión deliberada.
 - **Un solo proceso por llamada:** los cinco controles de PreToolUse corren dentro de un único despachador (`hook_senior.py`) y deciden igual que cada hook por separado, pero una llamada de Bash tarda ~150 ms en lugar de ~400 ms. `guardia_autoria.py asegurar` migra los hooks sueltos de versiones anteriores.
+- **Un hook que falla por dentro no frena nada** (es lo correcto para no trabar el trabajo), pero ese silencio ya engañó dos veces. Con la variable `SENIOR_HOOK_DEPURAR=1` todos los hooks muestran el error en lugar de dejar pasar, y `tests/probar_depuracion.py` lo comprueba con una entrada que los rompe.
 - **Claude no puede autorizarse solo:** los hooks deniegan cualquier intento de cambiar el modo, las rutas autorizadas o la configuración, también en modo preguntar.
 
 ## Cuando una regla falla dos veces
