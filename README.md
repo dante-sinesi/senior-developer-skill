@@ -119,7 +119,7 @@ Está prohibido leer directamente un PDF, DOCX, XLSX, PPTX, HTML, JSON u otro do
 - La carpeta es **`documentos-externos/`**, en la raíz del proyecto. Se crea sola al iniciar y ahí se dejan los archivos.
 - Se ejecuta `senior-relevar/scripts/convertir_fuentes.py`: los documentos pasan a Markdown (se lee `docs/fuentes/`) y las imágenes se reducen a un máximo de **1024 px** en el lado más largo (se lee `docs/fuentes/imagenes/`).
 - Lo que se manda por el chat no se lee: se copia a la carpeta con `convertir_fuentes.py --importar <archivos>`, se procesa y se lee el resultado.
-- Un **hook global de Claude Code** lo hace obligatorio (lo registra `guardia_autoria.py asegurar`): bloquea la lectura directa y, en los casos de excepción, le pregunta al usuario.
+- Un **hook global de Claude Code** lo hace obligatorio (lo registra `guardia_autoria.py asegurar`): bloquea la lectura directa y, en los casos de excepción, lo frena sin interrumpir o le pregunta al usuario, según el modo.
 
 Ahorro aproximado frente al original:
 - HTML o web, de 65 % a 87 %
@@ -152,8 +152,8 @@ En todo lo que se sube a GitHub figura **únicamente el usuario**: Claude no apa
 - **Hooks, verificados y activados al iniciar** con `guardia_autoria.py asegurar` (paso 0 del flujo; también lo corre `cargar_estado.py` y `/adoptar-proyecto`):
   - **Hooks de Git** (`commit-msg` y `pre-push`) en `.git/hooks/` de cada clon. Git no los sube, así que se instalan en cada proyecto donde falten. Si no hay un Python que funcione, fallan cerrados y avisan.
   - **Hook global de Claude Code** (`hook_autoria_claude.py`, registrado en `~/.claude/settings.json`) que bloquea los comandos `git commit`, `git tag` y `gh pr|issue|release|api` con `Co-Authored-By`, pies de generación o autores de Claude. Si se reinstala la máquina, `asegurar` lo vuelve a registrar.
-  - **Hook global de escritura fuera del proyecto** (`senior/scripts/hook_fuera_del_proyecto.py`): pregunta al usuario cuando Claude intenta crear algo fuera de la raíz del proyecto. Lo de paso va en `.temporal/`, que `temporal.py` crea y git ignora.
-  - **Hook global de archivos protegidos** (`senior/scripts/hook_archivos_protegidos.py`): pregunta al usuario antes de que Claude edite secretos (`.env`, claves y certificados), el interior de `.git/` o los archivos de bloqueo de dependencias (`package-lock.json`, `composer.lock`, `poetry.lock`...), que se generan con el gestor de paquetes. Nunca bloquea del todo.
+  - **Hook global de escritura fuera del proyecto** (`senior/scripts/hook_fuera_del_proyecto.py`): lo frena sin interrumpir (o pregunta al usuario, según el modo) cuando Claude intenta crear algo fuera de la raíz del proyecto. Lo de paso va en `.temporal/`, que `temporal.py` crea y git ignora.
+  - **Hook global de archivos protegidos** (`senior/scripts/hook_archivos_protegidos.py`): frena sin interrumpir (o pregunta al usuario, según el modo) antes de que Claude edite secretos (`.env`, claves y certificados), el interior de `.git/` o los archivos de bloqueo de dependencias (`package-lock.json`, `composer.lock`, `poetry.lock`...), que se generan con el gestor de paquetes. Nunca bloquea del todo.
 - Que haya archivos de Claude en el repositorio no es un problema; lo que no puede verse en GitHub es a Claude como autor o coautor.
 - Los commits usan la identidad del usuario, configurada solo de forma local en el repositorio: la de la sesión de GitHub si ya hay una y, si no, la que el usuario indique cuando Claude le pregunta en nombre de quién se hace el trabajo. La skill no trae ninguna identidad fija.
 
@@ -173,6 +173,14 @@ Al empezar en un repositorio de GitHub, nuevo o existente, la skill completa la 
 - **Con el modelo, por módulo y con aprobación:** requisitos funcionales y diagramas de secuencia de los flujos principales, escritos con ayudas que rechazan lo que no tiene evidencia real.
 - **Las reglas de negocio no se infieren:** salen como pregunta. Un requisito provisorio no exige ejemplos, no cuenta como «sin test» y no respalda tests hasta que se confirme.
 - **Nunca pisa lo confirmado o editado a mano**, y cada etapa muestra primero qué crearía (sin `--aplicar` no escribe nada). El análisis es aproximado: no ejecuta código y puede no ver rutas o relaciones dinámicas.
+
+## Trabajo sin supervisión
+
+Una pregunta en la interfaz detiene a Claude hasta que alguien responde, y quien lo deja trabajando horas no puede responder. Por eso los hooks que preguntaban (escritura fuera del proyecto, archivos protegidos y lectura directa de documentos externos) **por defecto no interrumpen**: bloquean la acción, le explican a Claude en el mismo mensaje qué hacer (escribir en `.temporal/`, anotar el pendiente en `docs/pendientes.md` y seguir) y dejan registrado lo bloqueado en `.git/senior-hooks.json`, que git no sube.
+
+- **Lo que de verdad necesita salir del proyecto** (un servidor local, la carpeta de otro programa) lo autoriza el usuario de antemano, desde su terminal: `python ~/.claude/skills/senior/scripts/permisos_hooks.py permitir <ruta> --motivo "…"`. `bloqueos` muestra qué se frenó mientras no estaba y `estado` lo configurado.
+- **`modo preguntar`** devuelve el comportamiento anterior (preguntar en la interfaz y esperar), para quien trabaja delante de la pantalla.
+- **Claude no puede autorizarse solo:** los hooks deniegan cualquier intento de cambiar el modo, las rutas autorizadas o la configuración, también en modo preguntar.
 
 ## Cuando una regla falla dos veces
 

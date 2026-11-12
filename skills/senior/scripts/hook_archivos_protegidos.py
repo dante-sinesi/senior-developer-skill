@@ -10,13 +10,15 @@ Protege tres grupos, porque equivocarse en ellos sale caro y casi nunca es lo qu
     paquetes; editarlos a mano deja versiones que nadie resolvió.
 
 Cubre Write, Edit y NotebookEdit. No ve lo que cambia un comando (por ejemplo `npm install` actualizando el
-archivo de bloqueo, que es lo correcto). Nunca bloquea del todo: le PREGUNTA al usuario en la interfaz de Claude Code.
+archivo de bloqueo, que es lo correcto). Según el modo de `modo_hooks.py`: por defecto («denegar») no interrumpe y le explica a Claude qué hacer; en modo «preguntar»
+le pregunta al usuario en la interfaz y espera. Una ruta autorizada de antemano con `permisos_hooks.py permitir` pasa.
 Se ignora lo que está dentro de `.temporal/` (muestras y pruebas del propio trabajo). Si algo falla, deja pasar.
 Solo biblioteca estándar.
 """
 import json
 import re
 import sys
+from pathlib import Path
 
 SECRETOS = re.compile(
     r"^(\.env(\..+)?|.+\.(pem|key|p12|pfx|keystore)|id_rsa.*|id_ed25519.*|\.netrc|\.pgpass)$", re.IGNORECASE)
@@ -61,14 +63,19 @@ def main():
         entrada = datos.get("tool_input") or {}
         ruta = str(entrada.get("file_path") or entrada.get("notebook_path") or "")
         cat = categoria(ruta)
+        if cat:
+            import modo_hooks
+            raiz = modo_hooks.raiz_del_proyecto(datos.get("cwd"))
+            if modo_hooks.esta_permitido(raiz, Path(datos.get("cwd") or ".") / ruta if not Path(ruta).is_absolute() else ruta):
+                return 0
     except Exception:  # noqa: BLE001 motivo: si algo falla, el hook deja pasar y no frena nada
         return 0
     if not cat:
         return 0
-    mensaje = (f"Claude quiere editar {ruta}, que {MENSAJES[cat]}. "
-               "¿Autorizás esta edición?")
-    print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask",
-                                             "permissionDecisionReason": mensaje}}, ensure_ascii=False))
+    pregunta = f"Claude quiere editar {ruta}, que {MENSAJES[cat]}. ¿Autorizás esta edición?"
+    instruccion = ("no se edita a mano. Si hace falta cambiarlo, hacelo por la vía correcta (el gestor de paquetes para un archivo de bloqueo; "
+                   "variables de entorno o un archivo de ejemplo para un secreto) o anotá en `docs/pendientes.md` qué cambio necesita autorización del usuario y seguí sin ese paso.")
+    print(modo_hooks.respuesta(raiz, "archivos protegidos", f"se intentó editar {ruta}", pregunta, instruccion))
     return 0
 
 
