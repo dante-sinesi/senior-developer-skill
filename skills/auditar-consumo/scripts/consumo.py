@@ -8,11 +8,13 @@ mide las tres cosas con una estimación de tokens (caracteres / 4, con un margen
 marca lo que conviene recortar y dice qué no puede medir. Solo lee: no modifica nada.
 
 Uso:
-    python consumo.py [--raiz .] [--top 5] [--json] [--salida ruta.md] [--home <carpeta>]
+    python consumo.py [--raiz .] [--top 5] [--json] [--salida ruta.md] [--home <carpeta>] [--repo]
 
   --raiz     proyecto a auditar (por defecto, la carpeta actual)
   --salida   además escribe el informe completo en Markdown (debe quedar dentro del proyecto, p. ej. .temporal/)
   --home     carpeta que hace de «home» (por defecto la del usuario); sirve para probar
+  --repo     mide las skills de la carpeta `skills/` del proyecto (lo que se instalaría) en lugar de las instaladas en ~/.claude/skills:
+             sirve para ver el efecto de un recorte sin reinstalar. Solo mide las skills (no CLAUDE.md, memoria ni ajustes de la máquina)
 No puede medir: las definiciones de las herramientas de cada servidor MCP, las skills de plugins, el prompt de
 sistema ni el historial de la conversación. Solo biblioteca estándar.
 """
@@ -160,12 +162,16 @@ def medir_proyecto(raiz):
     return out
 
 
-def auditar(raiz, home):
-    skills = medir_skills(home / ".claude" / "skills", "usuario") + medir_skills(raiz / ".claude" / "skills", "proyecto")
-    instrucciones = medir_instrucciones(home, raiz)
-    memoria = medir_memoria(home, raiz)
-    ajustes = medir_ajustes(home, raiz)
-    proyecto = medir_proyecto(raiz)
+def auditar(raiz, home, repo=False):
+    if repo:
+        skills = medir_skills(raiz / "skills", "repositorio")
+        instrucciones, memoria, ajustes, proyecto = [], None, {"hooks": 0, "permisos": 0, "servidores_mcp": []}, {}
+    else:
+        skills = medir_skills(home / ".claude" / "skills", "usuario") + medir_skills(raiz / ".claude" / "skills", "proyecto")
+        instrucciones = medir_instrucciones(home, raiz)
+        memoria = medir_memoria(home, raiz)
+        ajustes = medir_ajustes(home, raiz)
+        proyecto = medir_proyecto(raiz)
     fijo = {
         "descripciones": sum(s["fijo_tokens"] for s in skills),
         "instrucciones": sum(i["tokens"] for i in instrucciones),
@@ -173,7 +179,7 @@ def auditar(raiz, home):
         "estado": proyecto.get("ESTADO.md", 0),
     }
     fijo["total"] = sum(fijo.values())
-    return {"skills": skills, "instrucciones": instrucciones, "memoria": memoria, "ajustes": ajustes,
+    return {"skills": skills, "instrucciones": instrucciones, "memoria": memoria, "ajustes": ajustes, "repo": repo,
             "proyecto": proyecto, "fijo": fijo, "hallazgos": hallazgos(skills, instrucciones, memoria, ajustes, proyecto, fijo)}
 
 
@@ -209,7 +215,23 @@ def hallazgos(skills, instrucciones, memoria, ajustes, proyecto, fijo):
     return h
 
 
+def resumen_repo(r, top=5):
+    """Resumen del modo --repo: solo las skills de la carpeta `skills/` del proyecto."""
+    s = r["skills"]
+    l = [f"Skills del repositorio (lo que se instalaría): {len(s)} skills, descripciones ~{r['fijo']['descripciones']} tokens que se pagarían en cada sesión; "
+         f"cuerpos que se pagan al activarse: ~{sum(x['cuerpo_tokens'] for x in s)} en total."]
+    l.append("Las que más pesan siempre: " + "; ".join(f"{x['nombre']} ~{x['fijo_tokens']}" for x in sorted(s, key=lambda x: -x["fijo_tokens"])[:top]) + ".")
+    l.append("Las que más pesan al activarse: " + "; ".join(f"{x['nombre']} ~{x['cuerpo_tokens']}" for x in sorted(s, key=lambda x: -x["cuerpo_tokens"])[:top]) + ".")
+    if r["hallazgos"]:
+        l.append(f"Para revisar ({len(r['hallazgos'])}):")
+        l += [f"  - {h}" for h in r["hallazgos"]]
+    l.append("Medición del repositorio, no de lo instalado: tras instalar (`python instalar.py`) lo instalado coincide. Tokens estimados (caracteres / 4, ±30 %).")
+    return l
+
+
 def resumen(r, top=5):
+    if r.get("repo"):
+        return resumen_repo(r, top)
     f = r["fijo"]
     l = [f"Consumo fijo (se paga en cada sesión): ~{f['total']} tokens = descripciones de {len(r['skills'])} skills ~{f['descripciones']}"
          f" + CLAUDE.md ~{f['instrucciones']} + índice de memoria ~{f['indice_memoria']} + ESTADO.md ~{f['estado']}."]
@@ -250,10 +272,13 @@ def main():
     ap.add_argument("--top", type=int, default=5)
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--salida", default=None)
+    ap.add_argument("--repo", action="store_true", help="medir las skills de la carpeta skills/ del proyecto en lugar de las instaladas")
     args = ap.parse_args()
     raiz = Path(args.raiz).resolve()
     home = Path(args.home).resolve() if args.home else Path.home()
-    r = auditar(raiz, home)
+    if args.repo and not (raiz / "skills").is_dir():
+        sys.exit(f"--repo necesita una carpeta skills/ en el proyecto ({raiz / 'skills'}).")
+    r = auditar(raiz, home, args.repo)
     if args.salida:
         destino = (raiz / args.salida).resolve() if not Path(args.salida).is_absolute() else Path(args.salida).resolve()
         if raiz != destino and raiz not in destino.parents:
