@@ -14,6 +14,7 @@ Chequeos (sin argumento corre "todo"):
   estado      ESTADO.md al día, cambios sin guardar, pasos abiertos en fichas
   escala      la escala del proyecto (pequeño, mediano o grande) está declarada en docs/ESTADO.md y el proyecto
               tiene lo que exige su nivel (ver escala.py)
+  evidencia   las citas archivo:línea de la documentación inferida del código existen (ver documentar-proyecto)
   docs        marca requisitos sin test e IDs sin documento (solo lectura: el
               índice se regenera aparte con senior-memoria/scripts/indexar_docs.py indexar)
   fuentes     documentos e imágenes de documentos-externos/ sin procesar (convertir a Markdown o reducir a 1024 px)
@@ -300,6 +301,27 @@ def chequeo_escala(raiz, args):
     return escala.evaluar(raiz)
 
 
+def chequeo_evidencia(raiz, args):
+    """Las citas archivo:línea de la documentación inferida del código existen (ver documentar-proyecto)."""
+    script = Path(__file__).resolve().parents[2] / "documentar-proyecto" / "scripts" / "documentar.py"
+    if not script.exists() or not (raiz / "docs").is_dir():
+        return [], True
+    import importlib.util
+    espec = importlib.util.spec_from_file_location("documentar", script)
+    modulo = importlib.util.module_from_spec(espec)
+    try:
+        espec.loader.exec_module(modulo)
+        inferidos = modulo.documentos_inferidos(raiz)
+        problemas = modulo.revisar_evidencia(raiz)
+    except Exception as e:  # noqa: BLE001 motivo: un fallo de este chequeo se informa y no detiene a los demás
+        return [f"Evidencia: el revisor falló: {str(e)[:150]}"], False
+    if not inferidos:
+        return [], True
+    if not problemas:
+        return [f"Evidencia: {len(inferidos)} documentos inferidos del código, todas sus citas existen."], True
+    return [f"Evidencia: {len(problemas)} citas que no se pueden comprobar:"] + [f"  {d} — {p}" for d, p in problemas[:5]], False
+
+
 EXT_FUENTE = {".html", ".htm", ".php", ".vue", ".svelte", ".jsx", ".tsx", ".js", ".ts", ".twig", ".ejs", ".css"}
 
 
@@ -486,7 +508,7 @@ def chequeo_seguridad(raiz, args):
 
 
 CHEQUEOS = {
-    "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado, "escala": chequeo_escala,
+    "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado, "escala": chequeo_escala, "evidencia": chequeo_evidencia,
     "docs": chequeo_docs, "fuentes": chequeo_fuentes, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
     "comentarios": chequeo_comentarios, "listones": chequeo_listones, "autoria": chequeo_autoria,
     "diseno": chequeo_diseno, "seguridad": chequeo_seguridad,

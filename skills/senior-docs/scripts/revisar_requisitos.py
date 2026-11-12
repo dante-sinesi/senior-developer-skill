@@ -194,7 +194,9 @@ def revisar(raiz):
                 destino = m.group(1).upper()
                 if not destino.endswith("-000") and destino not in ids:
                     hallazgos.append(hallazgo("FALLA", r, n, f"enlace [[{destino}]] a un requisito que no existe"))
-        if tipo in REQUIEREN_EJEMPLOS:
+        _, lineas_estado = r.seccion("estado")
+        es_hipotesis = next((l.strip() for _, l in lineas_estado if l.strip()), "").lower().startswith("provisorio")
+        if tipo in REQUIEREN_EJEMPLOS and not es_hipotesis:  # una hipótesis todavía no tiene ejemplos verificables
             ok, inicio = tiene_ejemplos(r)
             if not ok:
                 hallazgos.append(hallazgo("FALLA", r, inicio or 1, "sin ejemplos verificables: agregar una tabla entrada → resultado con valores concretos"))

@@ -106,7 +106,9 @@ def cargar_documentos(raiz, carpeta_docs):
         meta, cuerpo = separar_encabezado(leer(ruta))
         id_doc = meta.get("id") or ruta.stem
         tipo = meta.get("tipo") or tipo_por_id(id_doc) or "otro"
+        m_estado = re.search(r"(?mi)^##\s+Estado\s*\n+\s*(\S[^\n]*)", cuerpo) or re.search(r"(?mi)^\*\*Estado:\*\*\s*(\S[^\n]*)", cuerpo)
         docs[id_doc] = {
+            "estado": m_estado.group(1).strip().lower() if m_estado else "",
             "id": id_doc,
             "tipo": tipo,
             "titulo": meta.get("titulo") or titulo_de(cuerpo, ruta.stem),
@@ -285,16 +287,20 @@ def generar_indice(grafo):
     reqs = [d for d in docs if PATRON_ID.fullmatch(d["id"]) and d["tipo"] != "decision"]
     if reqs:
         lineas += ["## Trazabilidad", "", "| Requisito | Tests | Código |", "|---|---|---|"]
-        sin_test = []
+        sin_test, provisorios_sin_test = [], 0
         for d in reqs:
             tests = [a["hasta"] for a in grafo["aristas"] if a["desde"] == d["id"] and a["tipo"] == "verificado_en"]
             codigo = [a["hasta"] for a in grafo["aristas"] if a["desde"] == d["id"] and a["tipo"] == "implementado_en"]
-            if not tests:
+            if not tests and d.get("estado", "").startswith("provisorio"):
+                provisorios_sin_test += 1  # una hipótesis sin confirmar todavía no necesita un test
+            elif not tests:
                 sin_test.append(d["id"])
             lineas.append(f"| {d['id']} | {', '.join(tests) or '—'} | {', '.join(codigo) or '—'} |")
         lineas.append("")
         if sin_test:
             lineas += ["**Requisitos sin test:** " + ", ".join(sin_test), ""]
+        if provisorios_sin_test:
+            lineas += [f"Requisitos provisorios sin test: {provisorios_sin_test} (esperan confirmación; no cuentan como pendientes).", ""]
     huerfanos = sorted({a["desde"] for a in grafo["aristas"] if a["tipo"] == "sin_documento"})
     if huerfanos:
         lineas += ["**IDs usados en el código pero sin documento:** " + ", ".join(huerfanos), ""]
