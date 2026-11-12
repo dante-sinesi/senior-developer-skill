@@ -96,6 +96,10 @@ def construir_plan(info, tipo):
                                "documentos-externos/ para convertirlos antes de leerlos"))
     plan.append(("auto", "Activar la guardia de autoría (hooks de Git del repositorio y hook global de Claude Code, si faltan): "
                          "impide subir commits con Claude o coautores; en GitHub figura solo el usuario"))
+    plan.append(("auto", "Proteger los secretos: completar el .gitignore (.env, claves, certificados, bases locales) y activar los hooks de Git que frenan "
+                         "claves, credenciales y datos personales antes de commitear y de subir"))
+    if tipo == "existente":
+        plan.append(("manual", "Buscar secretos ya escritos o versionados (secretos.py todo): lo que aparezca se saca del código y la clave se rota, no alcanza con borrarla"))
     plan.append(("propuesta", "Hook de apertura que carga ESTADO.md (requiere aprobación aparte)"))
     plan.append(("propuesta", "Plantilla de Pull Request de GitHub (.github/pull_request_template.md)"))
     if not info["git"]:
@@ -126,6 +130,9 @@ def aplicar(raiz, info, tipo):
     guardia = SKILLS / "senior-git" / "scripts" / "guardia_autoria.py"
     if guardia.exists() and (raiz / ".git").exists():
         salidas.append(correr([sys.executable, "-I", str(guardia), "asegurar", "--raiz", str(raiz)], raiz))
+    secretos = SKILLS / "senior" / "scripts" / "secretos.py"
+    if secretos.exists():
+        salidas.append(correr([sys.executable, "-I", str(secretos), "gitignore", "--aplicar", "--raiz", str(raiz)], raiz))
     indexador = SKILLS / "senior-memoria" / "scripts" / "indexar_docs.py"
     if indexador.exists() and (raiz / "docs").is_dir():
         salidas.append(correr([sys.executable, "-I", str(indexador), "indexar", "--raiz", str(raiz)], raiz))
