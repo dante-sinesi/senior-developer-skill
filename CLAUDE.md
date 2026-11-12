@@ -25,6 +25,10 @@ No se crea ningún archivo, carpeta, muestra, captura ni descarga fuera de la ra
 
 Ninguna clave, credencial ni dato personal se escribe en archivos que van a git: viven en `.env` (ignorado) y el código los lee de variables de entorno. Los hooks de git y de Claude lo frenan (`skills/senior/scripts/secretos.py`). `.env` se lee o modifica solo con permiso del usuario (`/permitir .env`), y Claude lo propone; mientras tanto usa `env_gestion.py`. Una clave que se subió se rota.
 
+## Objetivo principal: desprenderse de lo que cubra Token Diet
+
+`senior` no se queda con las mecánicas de ahorro de tokens. Cuando una mecánica de Token Diet ([token-diet-skill](https://github.com/dante-sinesi/token-diet-skill), una skill independiente) cubra lo mismo o más que la de `senior`, `senior` la suelta y pasa a depender de que Token Diet esté instalada, porque sin ella consumiría demasiado. La dependencia va solo en ese sentido: Token Diet nunca depende de `senior`. Mientras tanto no se duplican esas mecánicas ni se agregan nuevas en `senior` sin consultar. Detalle y criterio de traspaso en `docs/revision-completa.md`.
+
 ## Reglas de trabajo en este repositorio
 
 - **Commits, push, Pull Requests y fusiones solo con pedido o aprobación del usuario.** Se propone y se espera el visto bueno. Una rama por cambio, commits atómicos con Conventional Commits en español neutro, y nunca trabajar directo en `main`.
