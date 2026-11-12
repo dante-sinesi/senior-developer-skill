@@ -196,7 +196,7 @@ python ~/.claude/skills/senior/scripts/verificar.py            # todo
 python ~/.claude/skills/senior/scripts/verificar.py readme     # un chequeo puntual
 ```
 
-Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `fuentes`, `requisitos`, `texto`, `diagramas`, `comentarios`, `listones`, `escala`, `evidencia`, `autoria`, `diseno`, `secretos` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `abrir_en_navegador.py` (abre un archivo o una página en una sola pestaña, con la dirección codificada), `hook_archivos_protegidos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
+Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `fuentes`, `requisitos`, `texto`, `diagramas`, `comentarios`, `listones`, `escala`, `evidencia`, `autoria`, `diseno`, `secretos`, `tarjetas` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `abrir_en_navegador.py` (abre un archivo o una página en una sola pestaña, con la dirección codificada), `hook_archivos_protegidos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
 
 Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
 
@@ -286,7 +286,7 @@ Se detectan formatos conocidos (AWS, GitHub, Anthropic, OpenAI, Stripe, Slack, G
 
 1. La identidad de Git del repositorio, solo local, con tu sesión de GitHub.
 2. `git init` en `main` si hace falta, y el `.gitignore` con los archivos de secretos.
-3. El `README.md`, si falta (título, descripción y lo que contiene la carpeta).
+3. El `README.md`, si falta, **simple** (título, descripción y lo que contiene la carpeta) o **con tarjetas SVG**: se pregunta siempre (como orientación, los repositorios privados suelen llevarlo simple y los públicos con tarjetas). Con tarjetas, el diseñador propone **tres estilos distintos** a partir de la descripción, se muestran lado a lado, elegís uno y recién ahí se genera la portada. El paquete no trae ningún estilo: lo único fijo son las reglas objetivas de `senior-docs/scripts/readme_tarjetas.py` (pie de foto en cada tarjeta, sello MEDIDO o ESPERADO en las cifras, contraste, decoración segura) y los SVG salen de JSON en `docs/tarjetas/`, nunca a mano.
 4. El repositorio remoto: lo crea si no existe y lo asocia como `origin`.
 5. **La descripción y los topics, que son obligatorios**: Claude los redacta leyendo el proyecto, y `repo_meta.py` los valida, no pisa una descripción ajena y comprueba el resultado.
 6. Los hooks de Git de autoría y de secretos y un escaneo de claves y datos personales **antes** de commitear.

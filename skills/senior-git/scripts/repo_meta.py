@@ -110,6 +110,14 @@ def presentacion(raiz):
                 break
             continue
         parrafo.append(s)
+    if not titulo:  # un README sin título (empieza con una imagen) igual tiene presentación: el primer párrafo de texto
+        for linea in f.read_text(encoding="utf-8-sig", errors="replace").splitlines():
+            s = linea.strip()
+            if not s or s.startswith(("#", "!", "[!", "<", "|", ">", "```", "---")) or re.match(r"^[-*+] |^\d+\. ", s):
+                if parrafo:
+                    break
+                continue
+            parrafo.append(s)
     texto = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", " ".join(parrafo))
     texto = re.sub(r"[*_`]", "", texto)
     return titulo, texto

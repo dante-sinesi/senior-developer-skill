@@ -71,3 +71,7 @@ Las decisiones de diseño viven en `docs/diseno/notas/decisiones.md` (IDs `D-001
 ## Trazabilidad
 
 Cada test cita el ID del requisito que verifica (en un comentario o nombre). `senior-memoria/scripts/indexar_docs.py` arma la matriz requisito → test → código y marca requisitos sin test e IDs sin documento. Regenerar el índice tras cambiar documentación.
+
+## Tarjetas SVG para el README (opcional)
+
+Un repositorio nuevo puede tener un README con tarjetas SVG (portada y cifras) en lugar de uno simple; se elige en `/inicializar-repositorio`. `scripts/readme_tarjetas.py` es un motor **neutro**: dibuja portada, cifra y antes-y-después desde JSON en `docs/tarjetas/`, exige el pie de foto, pone el sello MEDIDO o ESPERADO en las cifras, ajusta el texto y comprueba el contraste; el estilo es un tema que el diseñador inventa por proyecto (`senior-diseno/references/tarjetas-readme.md`). Los SVG no se hacen a mano: `generar` los regenera y `verificar.py tarjetas` avisa si quedó alguno desactualizado. Los diagramas de `docs/` siguen siendo Mermaid.
