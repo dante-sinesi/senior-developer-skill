@@ -16,6 +16,9 @@ un lugar), este script lo COPIA desde ahí entre dos marcas y comprueba que la c
 Uso:
     python readme_diagramas.py listar  [--raiz .]
         Los diagramas de docs/diagramas/ con su tipo, tamaño, si están confirmados o son provisorios y si ya están en el README.
+    python readme_diagramas.py proponer [--aplicar] [ref …] [--raiz .]
+        Arma la lista de diagramas que conviene mostrar (hasta 3), cada uno con un texto sugerido; con --aplicar, y solo con el
+        visto bueno del usuario, los agrega (todos o los que se pidan).
     python readme_diagramas.py agregar docs/diagramas/<archivo>.md[#n] --texto "Qué se ve" [--raiz .]
         Copia el diagrama al README, en la sección «Cómo funciona» (la crea si falta), con su texto debajo.
     python readme_diagramas.py quitar  docs/diagramas/<archivo>.md[#n] [--raiz .]
@@ -188,11 +191,12 @@ def cmd_listar(args):
     for c in lista:
         medidas = ", ".join(f"{v} {k}" for k, v in c["medidas"].items())
         apto = "cabe en el README" if not c["excesos"] else "no cabe: " + "; ".join(c["excesos"])
-        sirve = c["tipo"] in ("secuencia", "er") or "modulos" in c["ref"]
+        sirve = c["tipo"] in ("secuencia", "er", "flujo")
         recomendado = " · recomendado" if sirve and not c["excesos"] and not c["en_readme"] else ""
         print(f"  {c['ref']} · {c['tipo']} · {medidas} · {'provisorio' if c['provisorio'] else 'confirmado'} · "
               f"{'ya está' if c['en_readme'] else 'no está'} · {apto}{recomendado}  [{c['titulo']}]")
-    print("Para el README conviene la arquitectura (módulos) y de uno a tres flujos de secuencia; las clases suelen ser ruido.")
+    print("Para el README conviene la arquitectura, de uno a tres flujos y, si hay datos, el entidad-relación; las clases suelen ser ruido. "
+          "`proponer` arma la lista con un texto sugerido.")
 
 
 def insertar(texto, bloque, texto_debajo):
@@ -212,16 +216,16 @@ def insertar(texto, bloque, texto_debajo):
     return "\n".join(antes + [f"## {SECCION}", ""] + nuevo + lineas[pos:])
 
 
-def cmd_agregar(args):
-    raiz = Path(args.raiz).resolve()
+def agregar_diagrama(raiz, diagrama, texto):
+    """Copia un diagrama al README. Devuelve (mensaje, aviso); si no se puede, lanza SystemExit con el motivo."""
     readme = ruta_readme(raiz)
     if readme is None:
         sys.exit("No hay README.md en la raíz del proyecto.")
-    ruta, n = referencia(args.diagrama)
+    ruta, n = referencia(diagrama)
     fuente, error = bloque_de_fuente(raiz, ruta, n)
     if error:
         sys.exit("No se puede agregar: " + error)
-    texto_debajo = " ".join((args.texto or "").split())
+    texto_debajo = " ".join((texto or "").split())
     if not texto_debajo:
         sys.exit("Falta --texto: una o dos oraciones que expliquen qué se ve en el diagrama.")
     if len(texto_debajo) > MAX_TEXTO:
@@ -237,9 +241,78 @@ def cmd_agregar(args):
     if len(actuales) >= MAX_DIAGRAMAS:
         sys.exit(f"El README ya tiene {len(actuales)} diagramas (máximo {MAX_DIAGRAMAS}): quitar uno antes de agregar otro.")
     escribir(readme, insertar(contenido, renderizar(ruta, n, titulo, codigo, provisorio), texto_debajo))
-    print(f"Agregado {ruta}#{n} al README" + (" con la nota de «sin confirmar»." if provisorio else "."))
-    if tipo == "clases":
-        print("AVISO: un diagrama de clases en el README suele ser ruido; conviene la arquitectura y los flujos principales.")
+    aviso = "un diagrama de clases en el README suele ser ruido; conviene la arquitectura y los flujos principales." if tipo == "clases" else ""
+    return f"Agregado {ruta}#{n} al README" + (" con la nota de «sin confirmar»." if provisorio else "."), aviso
+
+
+def cmd_agregar(args):
+    mensaje, aviso = agregar_diagrama(Path(args.raiz).resolve(), args.diagrama, args.texto)
+    print(mensaje)
+    if aviso:
+        print("AVISO: " + aviso)
+
+
+def pregunta_de(raiz, ruta, n):
+    """La pregunta que responde el diagrama: el párrafo que está justo arriba del bloque."""
+    bloques = dg.bloques_de_markdown(leer(Path(raiz) / ruta))
+    previas = bloques[n - 1][2] if 1 <= n <= len(bloques) else []
+    for l in reversed(previas):
+        s = l.strip()
+        if s and not s.startswith("#"):
+            return s
+    return ""
+
+
+def texto_sugerido(c, pregunta):
+    """Un texto breve para empezar; la persona lo ajusta si quiere (`quitar` y `agregar --texto`, o editar el texto debajo del diagrama)."""
+    m = c["medidas"]
+    if c["tipo"] == "secuencia":
+        base = pregunta or c["titulo"]
+        return f"{base} Se lee de arriba hacia abajo: cada flecha es un mensaje entre participantes."
+    if c["tipo"] == "er":
+        return f"Las {m.get('entidades', '')} tablas del sistema y cómo se relacionan: la tabla del lado uno apunta a las que dependen de ella."
+    if "modulos" in c["ref"]:
+        return f"Los {m.get('nodos', '')} módulos del proyecto y qué módulo usa a cuál: cada flecha va de quien importa a lo importado."
+    return f"{pregunta or c['titulo']} Cada flecha lleva al paso siguiente."
+
+
+def propuestas(raiz):
+    """[(candidato, texto sugerido)] de los diagramas recomendados que todavía no están en el README y caben."""
+    readme = ruta_readme(raiz)
+    lugares = max(0, MAX_DIAGRAMAS - len(analizar_readme(leer(readme)))) if readme else 0
+    elegidos = [c for c in candidatos(raiz) if c["tipo"] in ("secuencia", "er", "flujo") and not c["excesos"] and not c["en_readme"]]
+    orden = {"flujo": 0, "secuencia": 1, "er": 2}
+    elegidos.sort(key=lambda c: (orden[c["tipo"]], c["ref"]))
+    out = []
+    for c in elegidos[:min(lugares, 3)]:
+        ruta, n = referencia(c["ref"])
+        out.append((c, texto_sugerido(c, pregunta_de(raiz, ruta, n))))
+    return out
+
+
+def cmd_proponer(args):
+    raiz = Path(args.raiz).resolve()
+    lista = propuestas(raiz)
+    if not lista:
+        print("No hay diagramas para proponer: o no hay en docs/diagramas/, o ya están en el README, o el README ya tiene el máximo "
+              f"({MAX_DIAGRAMAS}), o ninguno cabe al ancho del README.")
+        if args.aplicar and args.refs:
+            sys.exit("Ninguna de las referencias pedidas está entre las propuestas.")
+        return
+    elegidos = lista if not args.refs else [(c, t) for c, t in lista if c["ref"] in args.refs or c["ref"].split("#")[0] in args.refs]
+    if args.aplicar:
+        if not elegidos:
+            sys.exit("Ninguna de las referencias pedidas está entre las propuestas.")
+        for c, texto in elegidos:
+            mensaje, _ = agregar_diagrama(raiz, c["ref"], texto)
+            print(mensaje)
+        print("Los textos son sugeridos: se pueden editar a mano en el README (quedan debajo del diagrama, fuera de las marcas).")
+        return
+    print("Diagramas que conviene mostrar en el README (con un texto sugerido):")
+    for c, texto in lista:
+        estado_dg = "provisorio: entra con la nota «sin confirmar»" if c["provisorio"] else "confirmado"
+        print(f"  - {c['ref']} · {c['tipo']} · {c['titulo']} ({estado_dg})\n      Texto: {texto}")
+    print("Con el visto bueno del usuario: `readme_diagramas.py proponer --aplicar` (todos) o `proponer --aplicar <ref> …` (algunos).")
 
 
 def cmd_quitar(args):
@@ -304,6 +377,10 @@ def main():
     sub = ap.add_subparsers(dest="orden", required=True)
     for nombre in ("listar", "sync", "estado"):
         sub.add_parser(nombre).add_argument("--raiz", default=".")
+    pr = sub.add_parser("proponer")
+    pr.add_argument("refs", nargs="*")
+    pr.add_argument("--aplicar", action="store_true")
+    pr.add_argument("--raiz", default=".")
     a = sub.add_parser("agregar")
     a.add_argument("diagrama")
     a.add_argument("--texto", default="")
@@ -312,7 +389,7 @@ def main():
     q.add_argument("diagrama")
     q.add_argument("--raiz", default=".")
     args = ap.parse_args()
-    {"listar": cmd_listar, "agregar": cmd_agregar, "quitar": cmd_quitar, "sync": cmd_sync, "estado": cmd_estado}[args.orden](args)
+    {"listar": cmd_listar, "proponer": cmd_proponer, "agregar": cmd_agregar, "quitar": cmd_quitar, "sync": cmd_sync, "estado": cmd_estado}[args.orden](args)
 
 
 if __name__ == "__main__":
