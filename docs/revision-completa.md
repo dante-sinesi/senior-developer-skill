@@ -2,6 +2,17 @@
 
 Auditoría crítica de todas las partes del paquete: qué tan bien funciona cada una, dónde puede fallar y qué mejora más. Es la **base para seguir creciendo**: de acá salen las próximas tareas y acá se anota lo que se hizo. Las notas son un juicio (0 a 10) apoyado en mediciones hechas sobre el repositorio, no una métrica automática.
 
+## Objetivo principal: que Token Diet se encargue del ahorro de tokens
+
+`senior` no va a quedarse con las mecánicas de ahorro de tokens. Existe una skill nueva e independiente, **Token Diet** ([token-diet-skill](https://github.com/dante-sinesi/token-diet-skill)), dedicada únicamente a ahorrar tokens sin bajar el rendimiento de Claude. El objetivo principal es este:
+
+- **Traspaso:** cuando una mecánica de Token Diet cubra lo mismo o más que la de `senior`, `senior` la suelta.
+- **Dependencia:** desde ese momento `senior` pasa a depender de que Token Diet esté siempre instalada, porque sin ella consumiría demasiado. La dependencia va solo en ese sentido: Token Diet nunca depende de `senior`.
+- **Criterio de traspaso (propuesta a confirmar):** una mecánica se traspasa cuando Token Diet tiene su equivalente con pruebas que muestren los mismos tokens ahorrados o más, sin bajar el éxito de la tarea.
+- **Qué entra en juego:** las mecánicas inventariadas en el relevo (`docs/relevo-mecanicas.md` del repositorio de Token Diet): conversión de documentos e imágenes y su hook, auditoría de consumo (`consumo.py`, con `--repo`), la guía de salidas y lecturas, los resúmenes por script (`contexto.py`, `impacto.py`), el índice con los tokens de abrir cada resultado y los topes de texto.
+- **Mientras tanto:** no se duplican esas mecánicas en Token Diet ni se agregan nuevas en `senior` sin consultar, para no tener dos hooks que bloqueen la misma lectura con instrucciones distintas.
+- **Cuando se traspase:** `instalar.py` y `guardia_autoria.py asegurar` comprueban que Token Diet esté instalada y avisan si falta, y el punto ciego 17 se cierra.
+
 ## Cómo se mantiene
 
 Cada Pull Request que toque una parte puntuada o un punto ciego actualiza este documento **en el mismo PR**:
@@ -65,6 +76,7 @@ Si una nota baja (algo se rompió o se descubrió un problema), se anota igual: 
 | 14 | `markitdown` y `Pillow` son obligatorias y no se instalan solas. | En una máquina nueva el primer documento externo se frena hasta que el usuario las instale. | ~~`instalar.py` ya las comprueba; sumar un mensaje con el comando exacto al primer bloqueo.~~ Hecho: el primer bloqueo del hook ya avisa que falta la biblioteca y da el comando exacto (con el intérprete que corre el script), y el conversor repite el mismo comando si falla. Nunca se instalan sin aprobación. | Resuelto (rama `mejora/ciego-14-mensaje-dependencias`) |
 | 15 | La protección de subida de GitHub no está activada y los secretos se detectan por patrones. | Es la única barrera que no se saltea con `--no-verify`; una clave partida, codificada o con un formato desconocido puede pasar los hooks locales. | Activarla en Settings → Code security (acción del usuario; `secretos.py github` comprueba el estado) y ampliar los formatos con lo que aparezca. | Abierto |
 | 16 | El hook que protege su propia configuración bloquea comandos que solo **mencionan** el nombre del archivo. | Pasó tres veces en esta revisión (el cuerpo de un PR escrito con un heredoc, un `for` que listaba el archivo y un parche que nombraba el script de permisos): un comando legítimo se rechaza y hay que rodearlo. Es el mismo problema de falsos positivos de las listas de patrones. | ~~Distinguir un argumento que es una ruta del texto que la menciona.~~ Hecho: solo se bloquea cuando la configuración es el **destino de un cambio** (redirección, tee, cp, mv, rm, sed -i, dd, un intérprete que escribe, o el script de permisos con un subcomando que cambia algo); los cuerpos de heredoc que son texto y el texto entre comillas ya no se analizan como comandos, lo que también quita el mismo falso positivo en «nada fuera del proyecto». Límites: una variable que apunta a la configuración (un `for` que borra `"$f"`) y un script guardado en un archivo no se ven. | Resuelto (rama `mejora/ciego-16-menciones-de-la-configuracion`) |
+| 17 | Las mecánicas de ahorro de tokens viven en `senior` y van a duplicarse con las de Token Diet. | Con las dos skills instaladas, dos hooks distintos bloquearían la misma lectura con instrucciones diferentes, y cada mecánica habría que mantenerla dos veces. | Traspasar mecánica por mecánica según el criterio del objetivo principal; mientras tanto, no duplicar ni agregar mecánicas nuevas de ahorro en `senior` sin consultar. Al traspasar, `senior` exige Token Diet instalada. | Abierto |
 
 ## Historial
 
@@ -74,6 +86,7 @@ Si una nota baja (algo se rompió o se descubrió un problema), se anota igual: 
 | 2026-11-12 | PR #29, secretos y datos personales: detector, hooks de git y de Claude, `.env` con permiso del usuario. | Parte nueva «Secretos» (7,5), `senior-seguridad` 7→7,5; punto 15 nuevo. |
 | 2026-11-12 | Este documento pasa a ser un documento vivo, con estado por punto ciego, historial y reglas de mantenimiento. | Ninguna nota. |
 | 2026-11-12 | Punto 2, rediseñado con evidencia: ningún mensaje de los hooks manda a parar o esperar al usuario, lo pendiente va a `docs/pendientes.md`, se completa igual cuando se puede y la reincidencia se cuenta y se firma sin frenar. Se probó con agentes reales. | Punto 2 resuelto; punto 16 nuevo; hooks globales sin cambio de nota. |
+| 2026-11-12 | Se registra el objetivo principal: que `senior` se desprenda de lo que cubra Token Diet y pase a depender de ella. Punto 17 nuevo. | Ninguna nota. |
 | 2026-11-12 | Punto 16: el guardián de la configuración de los hooks bloquea cambiarla, no mencionarla; los heredocs de texto y el texto entre comillas ya no se analizan como comandos. | Punto 16 resuelto; ninguna nota. |
 | 2026-11-12 | Punto 7: un despachador (`hook_senior.py`) corre los cinco controles de PreToolUse en un solo proceso; una llamada de Bash baja de ~400 ms a ~150 ms. | Punto 7 resuelto; hooks globales 7→7,5. |
 | 2026-11-12 | Punto 10: todos los hooks muestran el error con `SENIOR_HOOK_DEPURAR=1` y una prueba los rompe a propósito. | Punto 10 resuelto; ninguna nota. |
@@ -106,5 +119,6 @@ El orden sugerido sale de lo que más pesa en las notas y de lo que desbloquea e
 3. **Pilotos en proyectos reales** (4 y 13): es lo que más sube las notas de `/documentar-proyecto`, diseño y secretos, y lo que ninguna prueba reemplaza.
 4. **Otros sistemas operativos** (8) y la capa de GitHub (15).
 5. **Peso** (5 y la fila de `senior`): un tope por skill que se haga cumplir.
+6. **Traspaso del ahorro de tokens a Token Diet** (17): es el objetivo principal; ver la sección de arriba.
 
 Un hallazgo nuevo (de un uso real, una prueba que falla o una medición) se agrega como punto ciego con su estado y entra en este orden según lo que rompa.
