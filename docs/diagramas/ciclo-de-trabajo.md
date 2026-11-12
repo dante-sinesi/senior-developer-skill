@@ -12,17 +12,17 @@ tags: [diagrama, flujo]
 ¿Qué pasos sigue un cambio desde que se pide hasta que se fusiona?
 
 ```mermaid
-flowchart LR
-    A["Leer el estado y relevar si hace falta"] --> B["Acordar un plan breve"]
+flowchart TB
+    A["Leer estado y relevar"] --> B["Plan breve"]
     B --> C["Rama por cambio"]
-    C --> D["Test rojo desde la regla de negocio"]
+    C --> D["Test rojo"]
     D --> E["Código mínimo en verde"]
-    E --> F["Refactor con tests en verde"]
-    F --> G["Actualizar docs y README"]
+    E --> F["Refactor"]
+    F --> G["Docs y README"]
     G --> H["verificar.py"]
     H -->|hallazgos| E
-    H --> I["Pull Request con descripción completa"]
-    I --> J{"¿Lo aprueba el usuario?"}
+    H --> I["Pull Request"]
+    I --> J{"¿Aprobado?"}
     J -->|ajustes| E
     J -->|sí| K["Fusión y estado al día"]
 ```
