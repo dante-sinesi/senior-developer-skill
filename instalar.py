@@ -4,7 +4,7 @@
 Uso:
     python instalar.py                         # instala las skills y registra los hooks, y dice qué falta
     python instalar.py --instalar-dependencias # además instala markitdown y Pillow (tu aprobación explícita)
-    python instalar.py --verificar             # solo informa el estado; no escribe nada
+    python instalar.py --verificar             # solo informa el estado (incluye si lo instalado está al día con este repositorio); no escribe nada
 
 Qué hace:
   1. Comprueba Python 3.10 o superior, Git, el CLI `gh` (opcional, para GitHub) y `pip`.
@@ -138,12 +138,15 @@ def main():
     else:
         pendientes = desactualizadas()
         if args.verificar:
+            if (SKILLS / "senior-git" / "scripts" / "guardia_autoria.py").exists():
+                avisos.extend(l.removeprefix("AVISO: ") for l in cargar_guardia().asegurar_instalacion())
             (falta if pendientes else listo).append(
                 "skills instaladas al día en ~/.claude/skills" if not pendientes else
                 "skills sin instalar o desactualizadas: " + ", ".join(pendientes) + " (ejecutar `python instalar.py`)")
         else:
             copiadas = instalar_skills()
             listo.append(f"{len(copiadas)} skills instaladas en {DESTINO}")
+            cargar_guardia().escribir_manifiesto(SKILLS)
 
     if SKILLS.is_dir() and (SKILLS / "senior-git" / "scripts" / "guardia_autoria.py").exists():
         guardia = cargar_guardia()
