@@ -75,6 +75,9 @@ def construir_plan(info, tipo):
         plan.append(("manual", "Proponer tests de caracterización prioritarios" if not info["tests"]
                      else "Revisar la cobertura de tests existente y los de caracterización que falten"))
         plan.append(("manual", "Revisión inicial de seguridad (verificar.py seguridad)"))
+        plan.append(("propuesta", "Documentación inferida del código, provisoria y con evidencia: diagramas, requisitos de interfaz y de dominio, "
+                                  "decisiones de arquitectura y una consulta con reglas de negocio candidatas, con /documentar-proyecto "
+                                  "(PHP, JavaScript o TypeScript y Python; las etapas con el modelo se aprueban una por una)"))
     else:
         plan.append(("manual", "Preguntar el stack y la herramienta de tests; registrar el primer ADR"))
     plan.append(("auto", "Generar el índice de documentación (docs/INDEX.md)"))

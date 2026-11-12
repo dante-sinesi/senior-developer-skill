@@ -33,6 +33,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 | `senior-seguridad` | Lista de revisión, chequeos automáticos y modo formal con registro de riesgos |
 | `senior-lenguajes` | Perfiles de PHP, JavaScript/TypeScript, CSS, SQL y HTML; alta de lenguajes nuevos |
 | `senior-diseno` | Diseño de interfaces: tarjeta de estilo, método (tres alternativas, feedback, evolución) y reglas objetivas con script; el estilo es libre |
+| `documentar-proyecto` | Comando `/documentar-proyecto`: genera la documentación que falta de un proyecto existente, provisoria y con evidencia |
 | `auditar-consumo` | Comando `/auditar-consumo`: mide cuánto contexto consumen las skills, `CLAUDE.md` y la memoria, y propone qué recortar |
 | `auditar-diseno` | Comando `/auditar-diseno`: revisa la interfaz de un proyecto existente sin modificarlo |
 | `adoptar-proyecto` | Comando `/adoptar-proyecto`: plan, aprobación y creación de la base documental |
@@ -103,7 +104,7 @@ python ~/.claude/skills/senior/scripts/verificar.py            # todo
 python ~/.claude/skills/senior/scripts/verificar.py readme     # un chequeo puntual
 ```
 
-Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `fuentes`, `requisitos`, `texto`, `diagramas`, `comentarios`, `listones`, `escala`, `autoria`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `hook_archivos_protegidos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
+Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `fuentes`, `requisitos`, `texto`, `diagramas`, `comentarios`, `listones`, `escala`, `evidencia`, `autoria`, `diseno` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `hook_archivos_protegidos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
 
 Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
 
@@ -163,6 +164,15 @@ Al empezar en un repositorio de GitHub, nuevo o existente, la skill completa la 
 - Solo toca la descripción y los Topics, nunca la visibilidad ni otros ajustes. El usuario lo autoriza de forma permanente, y la skill siempre informa qué cambió.
 - No pisa una descripción que escribió el usuario sin preguntar, y solo quita los Topics que ella misma agregó (los registra en `.git/senior-repo-meta.json`, que no se sube).
 - Rechaza correos, claves y textos de más de 350 caracteres; exige permiso de administrador o de mantenimiento.
+
+## Documentar un proyecto existente
+
+`/documentar-proyecto` reconstruye la documentación que falta a partir del código (PHP, JavaScript o TypeScript y Python). **Todo lo generado queda `provisorio`** y cita su evidencia (`archivo:línea`), que `documentar.py evidencia` y `verificar.py evidencia` comprueban: lo que el código hace hoy no es necesariamente lo que debería hacer.
+
+- **Por script, sin tokens:** diagramas de módulos y dependencias, de clases por módulo y entidad-relación (respetando los límites de legibilidad, así que se dividen), requisitos de interfaz (rutas HTTP y variables de entorno), requisitos de dominio (una entidad por tabla o modelo), decisiones de arquitectura visibles en el stack y una **consulta por lotes con reglas de negocio candidatas** (umbrales, validaciones, permisos y estados) para que las confirme el usuario.
+- **Con el modelo, por módulo y con aprobación:** requisitos funcionales y diagramas de secuencia de los flujos principales, escritos con ayudas que rechazan lo que no tiene evidencia real.
+- **Las reglas de negocio no se infieren:** salen como pregunta. Un requisito provisorio no exige ejemplos, no cuenta como «sin test» y no respalda tests hasta que se confirme.
+- **Nunca pisa lo confirmado o editado a mano**, y cada etapa muestra primero qué crearía (sin `--aplicar` no escribe nada). El análisis es aproximado: no ejecuta código y puede no ver rutas o relaciones dinámicas.
 
 ## Cuando una regla falla dos veces
 
