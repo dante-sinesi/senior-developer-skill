@@ -20,7 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import revisar_diseno  # noqa: E402
 
-IGNORAR = {"diseno", "docs", "node_modules", "vendor", "dist", "build", ".git"}
+IGNORAR = {"diseno", "docs", "node_modules", "vendor", "dist", "build", ".git", "__pycache__", ".venv", "venv"}
 PROPUESTAS = [
     ("etiquetas", "Etiquetas de formulario", "alto", "bajo",
      "Dar a cada campo una etiqueta visible, única y específica; quitar placeholders como etiqueta; agrupar opciones con título."),

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Indexador y grafo de conceptos para la documentación viva de un proyecto.
 
-Solo usa la biblioteca estándar de Python (3.8+). No depende de Obsidian ni de
+Solo usa la biblioteca estándar de Python (3.10+). No depende de Obsidian ni de
 ninguna herramienta externa.
 
 Uso:

@@ -7,7 +7,7 @@ Uso:
     python instalar.py --verificar             # solo informa el estado; no escribe nada
 
 Qué hace:
-  1. Comprueba Python 3.8 o superior, Git, el CLI `gh` (opcional, para GitHub) y `pip`.
+  1. Comprueba Python 3.10 o superior, Git, el CLI `gh` (opcional, para GitHub) y `pip`.
   2. Copia las skills de este repositorio a ~/.claude/skills, reemplazando las del paquete (no toca ninguna otra
      skill) y pasando los archivos de texto a fin de línea de Unix.
   3. Registra en ~/.claude/settings.json los cinco hooks globales de Claude Code (autoría, lectura de documentos
@@ -117,10 +117,10 @@ def main():
     args = ap.parse_args()
     listo, falta, avisos = [], [], []
 
-    if sys.version_info >= (3, 8):
+    if sys.version_info >= (3, 10):
         listo.append(f"Python {sys.version_info.major}.{sys.version_info.minor}")
     else:
-        falta.append("Python 3.8 o superior (instalarlo desde python.org y repetir)")
+        falta.append("Python 3.10 o superior (instalarlo desde python.org y repetir)")
     codigo, salida = programa("git", "--version")
     (listo if codigo == 0 else falta).append(salida.splitlines()[0] if codigo == 0 else "Git (instalarlo desde git-scm.com y repetir)")
     codigo, salida = programa("gh", "--version")

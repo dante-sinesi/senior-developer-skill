@@ -19,8 +19,9 @@ Qué cubre:
     tee, Set-Content, Add-Content, Out-File, curl -o, wget -O, Invoke-WebRequest -OutFile y `git clone <url> <destino>`.
     Las variables del propio comando (`D=.temporal/x; cp a $D/b`) se resuelven; una variable que no se puede resolver no
     se juzga (se deja pasar), salvo las del sistema como TEMP o APPDATA, que son siempre «afuera».
-  - No ve lo que escribe un programa por dentro (por ejemplo, un script de Python que abre un archivo): para eso
-    está la regla escrita en la skill.
+  - Del código que viaja dentro del comando (`python -c`, `node -e`, heredocs) ve las escrituras con una ruta literal
+    (`open("/tmp/x", "w")`, `writeFileSync`, `Path(...).write_text`…). No ve lo que hace un script que está en un archivo
+    ni rutas armadas con código: para eso está la regla escrita en la skill.
 
 Qué decide: según el modo de `modo_hooks.py`. Por defecto («denegar») NO interrumpe: bloquea y le dice a Claude que escriba
 en `.temporal/` y siga, y deja registrado lo bloqueado. En modo «preguntar» le pregunta al usuario y espera. La configuración de
@@ -49,6 +50,11 @@ SISTEMA = {"temp", "tmp", "tmpdir", "appdata", "localappdata", "userprofile", "h
 DEL_PROYECTO = {"claude_project_dir", "pwd", "cd", "oldpwd"}
 LECTURA = {"cat", "type", "get-content", "gc", "head", "tail", "less", "more", "ls", "dir", "get-childitem", "gci", "grep", "rg",
            "select-string", "findstr", "wc", "stat", "file", "jq", "test-path"}
+
+
+def sin_exe(nombre):
+    """Quita «.exe» (no se usa str.removesuffix: es de Python 3.9; se mantiene el código simple)."""
+    return nombre[:-4] if nombre.endswith(".exe") else nombre
 
 
 def raiz_del_proyecto(cwd):
@@ -93,7 +99,10 @@ def de_claude(ruta):
 
 def variables_del_comando(comando):
     """{nombre en minúscula: valor} de las asignaciones del propio comando (`D=.temporal/x`, `$d = "..."`)."""
-    return {m.group(1).lower(): m.group(2).strip("\"'") for m in ASIGNACION.finditer(comando)}
+    res = {}
+    for m in ASIGNACION.finditer(comando):  # en orden: `D=/tm; D=${D}p` vale /tmp
+        res[m.group(1).lower()] = sustituir(m.group(2).strip("\"'"), res)
+    return res
 
 
 def sustituir(texto, variables):
@@ -120,6 +129,8 @@ def a_ruta(token, cwd):
         if nombre in DEL_PROYECTO:
             return None
         return Path("/__variable_de_entorno__") if nombre in SISTEMA else None  # una variable desconocida no se puede juzgar
+    if len(t) > 2 and t[:2] in ("//", chr(92) * 2) and t[2] not in "/" + chr(92):  # ruta de red (UNC): siempre afuera, sin tocar la red
+        return Path("/__ruta_de_red__")
     if t.startswith("~"):
         t = str(Path.home()) + t[1:]
     m = re.match(r"^/([a-zA-Z])(/.*)?$", t)  # /c/Users/... de Git Bash
@@ -139,7 +150,7 @@ def objetivos_de_shell(comando):
         tokens = [t.strip("\"'") for t in TOKEN.findall(seg)]
         if not tokens:
             continue
-        verbo = Path(tokens[0].replace("\\", "/")).name.lower().removesuffix(".exe")
+        verbo = sin_exe(Path(tokens[0].replace("\\", "/")).name.lower())
         args = [t for t in tokens[1:] if not t.startswith("-") or t.startswith("-/")]
         if verbo in CREAN:
             res.extend(args)
@@ -149,10 +160,46 @@ def objetivos_de_shell(comando):
             for i, t in enumerate(tokens[1:-1], 1):
                 if t in OPCION_DESTINO or t.lower() in OPCION_DESTINO:
                     res.append(tokens[i + 1])
+        elif verbo == "sed" and any(re.match(r"^-[a-zA-Z]*i", t) or t.startswith("--in-place") for t in tokens[1:]):
+            posicionales = [t for t in tokens[1:] if not t.startswith("-")]
+            res.extend(posicionales[1:])  # el primero es el guion de sed
+        elif verbo in ("truncate", "shred", "install", "ln") and tokens[1:]:
+            res.extend(t for t in tokens[1:] if not t.startswith("-"))
+        elif verbo == "dd":
+            res.extend(t[3:] for t in tokens[1:] if t.startswith("of="))
         elif verbo == "git" and len(tokens) > 3 and tokens[1] == "clone":
             posicionales = [t for t in tokens[2:] if not t.startswith("-")]
             if len(posicionales) >= 2:
                 res.append(posicionales[-1])
+    return res
+
+
+# Lo que un intérprete escribe «por dentro» cuando el código va en el propio comando (python -c, node -e, heredoc):
+# solo se ve el destino cuando es un texto literal que es una ruta.
+INTERPRETE_EN_LINEA = re.compile(r"\b(?:python[\d.]*|py|node|php|perl|ruby|deno|bun)(?:\.exe)?\b")
+ESCRIBE_EN_CODIGO = re.compile(
+    r"\b(open|writeFileSync|writeFile|appendFileSync|appendFile|createWriteStream|file_put_contents|fopen|mkdirSync|mkdir|makedirs|"
+    r"copyFileSync|copyfile|copy2|rename|rmtree|unlink)\s*\(\s*[rbfu]?([\"'])(.+?)\2"
+    r"(?:\s*,\s*[\"']([^\"']*)[\"'])?")
+PATH_ESCRIBE = re.compile(r"Path\(\s*[rbfu]?([\"'])(.+?)\1\s*\)\.(?:write_text|write_bytes|mkdir|touch)")
+RUTA_ABSOLUTA = re.compile(r"^(?:[a-zA-Z]:[/\\]|/|~|//)")
+
+
+def escrituras_en_codigo(comando):
+    """Destinos literales de escrituras dentro de código que viaja en el comando (python -c, node -e, heredoc)."""
+    if not INTERPRETE_EN_LINEA.search(comando):
+        return []
+    res = []
+    for m in ESCRIBE_EN_CODIGO.finditer(comando):
+        modo = m.group(4)
+        if m.group(1) == "open" and (modo is None or not re.search(r"[wax+]", modo)):
+            continue  # open(ruta) y open(ruta, "r") solo leen
+        ruta = m.group(3).replace("\\\\", "/")
+        if RUTA_ABSOLUTA.match(ruta):
+            res.append(ruta)
+    for m in PATH_ESCRIBE.finditer(comando):
+        if RUTA_ABSOLUTA.match(m.group(2)):
+            res.append(m.group(2).replace("\\\\", "/"))
     return res
 
 
@@ -163,7 +210,7 @@ def fuera_del_proyecto(textos, cwd, raices, hermano=None):
         ruta = a_ruta(t, cwd)
         if ruta is None or de_claude(ruta) or any(adentro(ruta, r) for r in raices):
             continue
-        if hermano is not None and hermano(ruta):
+        if hermano is not None and not str(ruta).startswith(("/__", "\\__")) and hermano(ruta):
             continue
         fuera.append(t.strip("\"'"))
     return fuera
@@ -180,7 +227,7 @@ def toca_configuracion(herramienta, entrada, comando, nombre):
             tokens = [t.strip("\"'") for t in TOKEN.findall(seg)]
             while tokens and tokens[0].lower() in ("sudo", "env", "command", "time"):
                 tokens = tokens[1:]
-            verbo = Path(tokens[0].replace("\\", "/")).name.lower().removesuffix(".exe") if tokens else ""
+            verbo = sin_exe(Path(tokens[0].replace("\\", "/")).name.lower()) if tokens else ""
             if verbo in LECTURA and ">" not in seg:
                 continue
             return True
@@ -203,7 +250,7 @@ def main():
         elif herramienta in ("Bash", "PowerShell"):
             comando = str(entrada.get("command", ""))
             variables = variables_del_comando(comando)
-            textos = [sustituir(t, variables) for t in objetivos_de_shell(comando)]
+            textos = [sustituir(t, variables) for t in objetivos_de_shell(comando) + escrituras_en_codigo(comando)]
         else:
             return 0
         import modo_hooks
@@ -214,7 +261,9 @@ def main():
             return bool(config.get("hermanos", True)) and modo_hooks.proyecto_hermano(raiz, ruta)
         fuera = [] if toca_config else fuera_del_proyecto([t for t in textos if t], cwd, raices_propias(cwd, raiz), hermano)
         fuera = [t for t in fuera if not modo_hooks.esta_permitido(raiz, a_ruta(t, cwd))]
-    except Exception:  # noqa: BLE001 motivo: si algo falla, no se frena nada
+    except Exception:  # noqa: BLE001 motivo: si algo falla, no se frena nada (en las pruebas SENIOR_HOOK_DEPURAR=1 lo hace visible)
+        if os.environ.get("SENIOR_HOOK_DEPURAR") == "1":
+            raise
         return 0
     if toca_config:
         print(modo_hooks.respuesta_fija("deny", "Los permisos de los hooks de senior los configura el usuario (`permisos_hooks.py` o escribiendo "
