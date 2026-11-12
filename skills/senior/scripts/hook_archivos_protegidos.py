@@ -82,9 +82,9 @@ def main():
         env_gestion = (Path(__file__).resolve().parent / "env_gestion.py").as_posix()
         instruccion = ("un archivo de secretos se modifica con el permiso del usuario, y puede dártelo de antemano escribiendo en el chat `/permitir <ruta>` "
                        "(vos no podés). Mientras tanto: para declarar una variable nueva usá `python \"" + env_gestion + "\" declarar NOMBRE --comentario \"para qué sirve\"` "
-                       "(la agrega a `.env.example` con un valor falso y, si `.env` está autorizado, también a `.env` sin valor), y proponele al usuario lo que necesitás "
-                       "cambiar en `.env` (qué variables y para qué) para que lo autorice o lo complete él. Si trabajás sin supervisión, anotalo en `docs/pendientes.md` y "
-                       "seguí con el código leyendo la variable de entorno.")
+                       "(la agrega a `.env.example` con un valor falso y, si `.env` está autorizado, también a `.env` sin valor), y dejá anotado en `docs/pendientes.md` lo que necesitás "
+                       "cambiar en `.env` (qué variables y para qué) para que el usuario lo autorice o lo complete al volver. Seguí con el código leyendo la variable de entorno, "
+                       "sin esperar.")
     print(modo_hooks.respuesta(raiz, "archivos protegidos", f"se intentó editar {ruta}", pregunta, instruccion))
     return 0
 

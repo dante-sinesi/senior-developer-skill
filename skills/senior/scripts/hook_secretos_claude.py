@@ -54,17 +54,18 @@ def ignorada_por_git(ruta, cwd):
 
 def mensaje_lectura(ruta):
     return (f"{ruta} tiene secretos, y leerlo los pone en tu contexto y en el historial de la sesión. Para saber qué variables existen: "
-            f"`python \"{ENV_GESTION}\" estructura` (muestra los nombres, no los valores). Si de verdad necesitás leerlo, proponéselo al usuario "
-            "(qué necesitás ver y por qué): puede autorizarlo escribiendo en el chat `/permitir <ruta de ese archivo>` (vos no podés). "
-            "Si trabajás sin supervisión, anotalo en `docs/pendientes.md` y seguí sin leerlo.")
+            f"`python \"{ENV_GESTION}\" estructura` (muestra los nombres, no los valores). Si la tarea pide los valores, completala igual con los nombres "
+            "y poné `<definido en .env>` donde iría el valor: los valores reales los agrega el usuario. Si de verdad hace falta leer el archivo, dejalo anotado en "
+            "`docs/pendientes.md` (qué necesitás ver y por qué, y que el usuario puede autorizarlo con `/permitir <ruta de ese archivo>`; vos no podés) para que lo vea al volver, "
+            "y seguí con el resto de la tarea sin esperar.")
 
 
 def mensaje_escritura(ruta):
     return (f"{ruta} es un archivo de secretos y se toca con el permiso del usuario. Para declarar una variable nueva usá "
             f"`python \"{ENV_GESTION}\" declarar NOMBRE --comentario \"para qué sirve\"`: la agrega a `.env.example` con un valor falso y, si el usuario "
-            "autorizó `.env`, también a `.env` sin valor. Si necesitás estructurar o editar `.env` a mano, proponéselo al usuario (qué variables y "
-            "para qué): puede autorizarlo escribiendo en el chat `/permitir .env` (vos no podés). Si trabajás sin supervisión, anotalo en "
-            "`docs/pendientes.md` y seguí con el código leyendo la variable de entorno.")
+            "autorizó `.env`, también a `.env` sin valor. Si necesitás estructurar o editar `.env` a mano, dejalo anotado en "
+            "`docs/pendientes.md` (qué variables y para qué, y que el usuario puede autorizarlo con `/permitir .env`; vos no podés) para que lo vea al volver, "
+            "y seguí con el código leyendo la variable de entorno, sin esperar.")
 
 
 def mensaje_secreto(hallazgos, ruta):
@@ -128,7 +129,7 @@ def evaluar(herramienta, entrada, cwd, raiz):
                 if forzado or secretos_a_subir:
                     return "se intentó agregar a git un archivo de secretos o forzar lo que .gitignore excluye", \
                         ("`git add` de un archivo de secretos o con `-f` salta la protección de .gitignore. Lo que git ignora no se fuerza; "
-                         "si de verdad hay que versionarlo (por ejemplo, un archivo de ejemplo), proponéselo al usuario y que lo haga él.")
+                         "si de verdad hay que versionarlo (por ejemplo, un archivo de ejemplo), dejalo anotado en `docs/pendientes.md` para que lo haga el usuario y seguí sin ese paso.")
     return None
 
 
@@ -149,9 +150,8 @@ def main():
     if not resultado:
         return 0
     detalle, motivo = resultado
-    modo_hooks.registrar_bloqueo(raiz, "secretos", detalle)
-    print(modo_hooks.respuesta_fija("deny", f"BLOQUEADO por senior (secretos): {detalle}. No es una pregunta ni hay que esperar al usuario: {motivo} "  # senior-ignore: SEC-LOG-SENSIBLE motivo: mensaje fijo, no imprime valores
-                                            "Seguí con el resto del trabajo; lo bloqueado quedó registrado para que el usuario lo revise cuando vuelva."))
+    veces = modo_hooks.registrar_bloqueo(raiz, "secretos", detalle)
+    print(modo_hooks.respuesta_fija("deny", modo_hooks.razon_de_bloqueo("secretos", detalle, motivo, veces)))  # senior-ignore: SEC-LOG-SENSIBLE motivo: mensaje fijo, no imprime valores
     return 0
 
 

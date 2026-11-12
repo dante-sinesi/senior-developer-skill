@@ -234,9 +234,9 @@ def convertir(plan, raiz, destino_dir, forzar, silencioso=False):
         from markitdown import MarkItDown
     except ImportError:
         return 2, ['Falta `markitdown`, que es OBLIGATORIA: ningún documento externo se lee sin convertirlo antes.',
-                   'NO leer los originales como alternativa. Pedirle al usuario que apruebe la instalación (este script no instala nada por su cuenta) y, '
-                   f'si la aprueba, ejecutar exactamente: {comando_pip("markitdown[all]")} (o `python instalar.py --instalar-dependencias`, que instala las dos bibliotecas). '
-                   'Mientras no la apruebe, seguir sin ese documento y anotarlo en `docs/pendientes.md`.']
+                   'NO leer los originales como alternativa. La instalación necesita la aprobación del usuario (este script no instala nada por su cuenta): dejar anotado en '
+                   f'`docs/pendientes.md` el comando exacto {comando_pip("markitdown[all]")} (o `python instalar.py --instalar-dependencias`, que instala las dos bibliotecas) para que la apruebe '
+                   'cuando vuelva, y mientras tanto seguir sin ese documento, sin esperar.']
     conversor = MarkItDown()
     destino_dir.mkdir(parents=True, exist_ok=True)
     salida, avisos, hechos, omitidos, errores = [], [], 0, 0, 0
@@ -288,9 +288,9 @@ def reducir_imagenes(plan, raiz, destino_dir, max_px, forzar, silencioso=False):
         from PIL import Image, ImageOps
     except ImportError:
         return 2, ["Falta `Pillow`, que es OBLIGATORIA para las imágenes: ninguna imagen externa se lee sin reducirla antes.",
-                   "NO leer la imagen original como alternativa. Pedirle al usuario que apruebe la instalación (este script no instala nada por su cuenta) y, "
-                   f"si la aprueba, ejecutar exactamente: {comando_pip('pillow')} (o `python instalar.py --instalar-dependencias`, que instala las dos bibliotecas). "
-                   "Mientras no la apruebe, seguir sin esa imagen y anotarlo en `docs/pendientes.md`."]
+                   "NO leer la imagen original como alternativa. La instalación necesita la aprobación del usuario (este script no instala nada por su cuenta): dejar anotado en "
+                   f"`docs/pendientes.md` el comando exacto {comando_pip('pillow')} (o `python instalar.py --instalar-dependencias`, que instala las dos bibliotecas) para que la apruebe "
+                   "cuando vuelva, y mientras tanto seguir sin esa imagen, sin esperar."]
     dir_imagenes = destino_dir / SUBCARPETA_IMAGENES
     dir_imagenes.mkdir(parents=True, exist_ok=True)
     manifiesto = leer_manifiesto(dir_imagenes)

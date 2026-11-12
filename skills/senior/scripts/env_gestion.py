@@ -91,10 +91,10 @@ def cmd_declarar(raiz, nombres, ejemplo, comentario):
     else:
         faltan = [n for n in nombres if n not in leer_variables(destino)]
         if faltan:
-            print(f".env no está autorizado, así que no se tocó. Proponerle al usuario: «Para esta funcionalidad hace falta declarar en .env "
-                  f"{', '.join(faltan)}"
-                  + (f" ({comentario})" if comentario else "") + ". Si querés que lo agregue yo, escribí en el chat `/permitir .env`; "
-                  "el valor real lo completás vos». Si se trabaja sin supervisión, anotarlo en `docs/pendientes.md` y seguir.")
+            print(f".env no está autorizado, así que no se tocó. Dejar anotado en `docs/pendientes.md`, para que el usuario lo vea al volver: «Para esta funcionalidad "
+                  f"hace falta declarar en .env {', '.join(faltan)}"
+                  + (f" ({comentario})" if comentario else "") + ". Si querés que lo agregue Claude, escribí en el chat `/permitir .env`; "
+                  "el valor real lo completás vos». Seguir con el código leyendo la variable de entorno, sin esperar.")
     return 0
 
 

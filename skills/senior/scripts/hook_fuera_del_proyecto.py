@@ -280,7 +280,7 @@ def main():
                    "(git lo ignora; `temporal.py` la prepara; se crea sola al escribir ahí): ni la carpeta de trabajo del entorno "
                    "ni la temporal del sistema, y los comandos posteriores usan esa ruta nueva. Si de verdad hace falta salir del proyecto "
                    "(un servidor local, la carpeta de otro programa), seguí sin ese paso, anotalo en `docs/pendientes.md` (o en `.temporal/pendientes.md` "
-                   "si no hay docs/) y avisale al usuario, en tu resumen, que puede autorizarlo de antemano escribiendo en el chat "
+                   "si no hay docs/) y en tu resumen final dejá dicho que el usuario puede autorizarlo de antemano escribiendo en el chat "
                    "`/permitir <ruta>` (vos no podés).")
     print(modo_hooks.respuesta(raiz, "escritura fuera del proyecto", f"se intentó crear algo fuera del proyecto: {lista}", pregunta, instruccion))
     return 0

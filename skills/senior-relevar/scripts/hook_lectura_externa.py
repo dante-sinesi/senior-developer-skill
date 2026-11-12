@@ -147,8 +147,8 @@ def aviso_dependencia(ext):
     if modulo_instalado(modulo):
         return ""
     return (f"ANTES DE CONVERTIR: en esta máquina falta `{paquete}` y es obligatoria. Es una instalación que necesita la aprobación del usuario (nunca se instala sola): "
-            f"pedísela con el comando exacto `\"{sys.executable}\" -m pip install \"{paquete}\"` (o `python instalar.py --instalar-dependencias`, que instala las dos bibliotecas). "
-            "Mientras no la apruebe, seguí sin ese archivo y anotalo en `docs/pendientes.md`. ")
+            f"dejá anotado en `docs/pendientes.md` el comando exacto `\"{sys.executable}\" -m pip install \"{paquete}\"` (o `python instalar.py --instalar-dependencias`, que instala las dos bibliotecas) "
+            "para que la apruebe cuando vuelva, y mientras tanto seguí sin ese archivo, sin esperar. ")
 
 
 def decidir(ruta, cwd, es_shell=False):
@@ -167,7 +167,7 @@ def decidir(ruta, cwd, es_shell=False):
                 return None  # una imagen chica no pesa lo suficiente como para frenar el trabajo
             comando_img = f'python "{conversor().as_posix()}" --importar "{ruta}"'
             return "negar", (f"No se pudo medir la imagen {ruta.name} (formato no reconocido) y pesa más de 150 KB. Copiarla y reducirla con: {comando_img} "
-                             "y leer la copia de docs/fuentes/imagenes/. Si el conversor tampoco puede abrirla, decírselo al usuario en el resumen y seguir sin ella.")
+                             "y leer la copia de docs/fuentes/imagenes/. Si el conversor tampoco puede abrirla, dejalo anotado en `docs/pendientes.md` y seguí sin ella.")
         if max(d) <= MAX_PX:
             return None
         cubierto = True
@@ -184,7 +184,7 @@ def decidir(ruta, cwd, es_shell=False):
         d = dimensiones(ruta)
         return "negar", (aviso + f"La imagen {ruta.name} mide {d[0]}x{d[1]} px y las imágenes externas no se leen sin reducirlas "
                          f"a un máximo de {MAX_PX} px (ahorra entre 50 % y 75 % de tokens). Copiarla y reducirla con: {comando} "
-                         "y leer la copia de docs/fuentes/imagenes/. Si hace falta más detalle, pedirle al usuario un máximo "
+                         "y leer la copia de docs/fuentes/imagenes/. Si hace falta más detalle, dejá anotado en `docs/pendientes.md` que el usuario puede pedir un máximo "
                          "mayor con --max-px.")
     if ruta.exists() and en_carpeta(ruta, CARPETA):
         md, marca = estado_conversion(ruta, raiz)
@@ -196,7 +196,7 @@ def decidir(ruta, cwd, es_shell=False):
                              "(los documentos externos no se leen directo).")
     return "negar", (aviso + f"{ruta.name} es un documento externo y no se lee directo: primero se convierte. Copiarlo y convertirlo con: "
                      f"{comando} y leer el .md resultante en docs/fuentes/. Excepciones (PDF escaneado sin texto o diseño visual "
-                     "que importa): pedirle al usuario que autorice la lectura del original; no se resuelve por cuenta propia.")
+                     "que importa): dejá anotado en `docs/pendientes.md` que hace falta la lectura del original y seguí con el .md convertido; no se resuelve por cuenta propia.")
 
 
 def rutas_de_shell(comando, cwd):
