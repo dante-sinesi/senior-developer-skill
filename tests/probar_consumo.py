@@ -165,10 +165,11 @@ chequear("hook: una entrada rota deja pasar", p.returncode == 0 and p.stdout.str
 sys.path.insert(0, str(RAIZ / "skills" / "senior-git" / "scripts"))
 import guardia_autoria  # noqa: E402
 
-chequear("hook registrado en HOOKS_CLAUDE con el matcher correcto", any(
-    h_["script"] == "hook_archivos_protegidos.py" and h_["matcher"] == "Write|Edit|NotebookEdit" for h_ in guardia_autoria.HOOKS_CLAUDE))
-chequear("el script del hook existe donde lo busca la guardia", guardia_autoria.ruta_hook_claude(
-    next(h_ for h_ in guardia_autoria.HOOKS_CLAUDE if h_["script"] == "hook_archivos_protegidos.py")).exists())
+chequear("el hook de archivos protegidos corre dentro del despachador registrado, para Write, Edit y NotebookEdit", any(
+    h_["script"] == "hook_senior.py" and all(t in h_["matcher"] for t in ("Write", "Edit", "NotebookEdit")) for h_ in guardia_autoria.HOOKS_CLAUDE)
+    and any(s == "hook_archivos_protegidos.py" and {"Write", "Edit", "NotebookEdit"} <= t for _, s, t in __import__("hook_senior").HOOKS))
+chequear("el script del despachador existe donde lo busca la guardia", guardia_autoria.ruta_hook_claude(
+    next(h_ for h_ in guardia_autoria.HOOKS_CLAUDE if h_["script"] == "hook_senior.py")).exists())
 
 # ---------- 4. regla de dos fallas y documentación ----------
 senior = (RAIZ / "skills" / "senior" / "SKILL.md").read_text(encoding="utf-8")
@@ -180,7 +181,7 @@ chequear("es un punto de control", "Armar una barrera" in senior)
 chequear("cerrar-sesion lo comunica y no arma nada sin respuesta", "2e. **Reglas que fallaron dos veces**" in cerrar and "No se arma nada sin su respuesta" in cerrar)
 chequear("senior enlaza tokens.md y auditar-consumo", "references/tokens.md" in senior and "`auditar-consumo`" in senior)
 chequear("tokens.md existe y tiene lo esencial", all(x in (RAIZ / "skills" / "senior" / "references" / "tokens.md").read_text(encoding="utf-8") for x in ("Qué se paga", "Salidas de comandos", "auditar-consumo")))
-chequear("el README lo explica", "auditar-consumo" in readme and "hook_archivos_protegidos" in readme and "Cuando una regla falla dos veces" in readme and "cinco hooks globales" in readme)
+chequear("el README lo explica", "auditar-consumo" in readme and "hook_archivos_protegidos" in readme and "Cuando una regla falla dos veces" in readme and "dos hooks globales" in readme)
 chequear("el README no tiene texto ajeno al proyecto", verificar.contenido_ajeno(readme) == [])
 chequear("memoria: lo costoso de redescubrir y los tokens en consultar", "costoso de redescubrir" in (RAIZ / "skills" / "senior-memoria" / "SKILL.md").read_text(encoding="utf-8")
          and "tokens aproximados" in (RAIZ / "skills" / "senior-memoria" / "SKILL.md").read_text(encoding="utf-8"))

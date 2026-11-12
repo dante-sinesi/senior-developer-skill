@@ -299,9 +299,10 @@ chequear("el permiso de .env no abre las demás claves", r == "deniega", s)
 # ---------------- 6. el hook está registrado y la documentación lo explica
 sys.path.insert(0, str(RAIZ / "skills" / "senior-git" / "scripts"))
 import guardia_autoria  # noqa: E402
-reg = [h for h in guardia_autoria.HOOKS_CLAUDE if h["script"] == "hook_secretos_claude.py"]
-chequear("la guardia mantiene registrado el hook de secretos para leer, escribir y ejecutar", len(reg) == 1 and all(t in reg[0]["matcher"] for t in ("Read", "Write", "Edit", "Bash", "PowerShell")))
-chequear("el hook de secretos existe donde lo busca la guardia", guardia_autoria.ruta_hook_claude(reg[0]).exists())
+reg = [h for h in guardia_autoria.HOOKS_CLAUDE if h["script"] == "hook_senior.py"]
+chequear("la guardia mantiene registrado el despachador, que corre el hook de secretos para leer, escribir y ejecutar", len(reg) == 1 and all(t in reg[0]["matcher"] for t in ("Read", "Write", "Edit", "Bash", "PowerShell"))
+         and any(s == "hook_secretos_claude.py" and {"Read", "Write", "Edit", "Bash", "PowerShell"} <= t for _, s, t in __import__("hook_senior").HOOKS))
+chequear("el despachador existe donde lo busca la guardia", guardia_autoria.ruta_hook_claude(reg[0]).exists())
 
 sk = (RAIZ / "skills" / "senior" / "SKILL.md").read_text(encoding="utf-8")
 rd = (RAIZ / "README.md").read_text(encoding="utf-8")

@@ -11,7 +11,7 @@ Uso:
     python guardia_autoria.py instalar [--raiz .]                  # instala los hooks de Git de este repositorio
     python guardia_autoria.py identidad [--raiz .] [--nombre <usuario> --correo <correo>]
         # resuelve en nombre de quién se hacen los commits de este repositorio (ver más abajo)
-    python guardia_autoria.py asegurar [--raiz .] [--silencioso] [--solo-verificar]
+    python guardia_autoria.py asegurar [--raiz .] [--silencioso] [--solo-verificar]  # también avisa si lo instalado se desalineó del repositorio
         # comprueba que estén activos los hooks de Git del repositorio y el hook global de Claude Code
         # (~/.claude/settings.json: autoría y lectura de documentos externos) y, si falta alguno, lo activa. El usuario lo autorizó de forma permanente.
 
@@ -32,6 +32,7 @@ Códigos de salida: 0 sin problemas, 1 con problemas. Solo biblioteca estándar.
 """
 import argparse
 import contextlib
+import hashlib
 import io
 import json
 import os
@@ -39,6 +40,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 MARCA_HOOK = "# senior-guardia-autoria"
@@ -247,19 +249,30 @@ def cmd_instalar(raiz):
 
 
 HOOKS_CLAUDE = (  # hooks globales de Claude Code que esta guardia mantiene activos
-    {"script": "hook_autoria_claude.py", "skill": "senior-git", "matcher": "Bash|PowerShell",
-     "nombre": "de autoría"},
-    {"script": "hook_lectura_externa.py", "skill": "senior-relevar", "matcher": "Read|Bash|PowerShell|Write|Edit",
-     "nombre": "de lectura de documentos externos"},
-    {"script": "hook_fuera_del_proyecto.py", "skill": "senior", "matcher": "Write|Edit|NotebookEdit|Bash|PowerShell",
-     "nombre": "de escritura fuera del proyecto"},
-    {"script": "hook_archivos_protegidos.py", "skill": "senior", "matcher": "Write|Edit|NotebookEdit",
-     "nombre": "de archivos protegidos"},
-    {"script": "hook_secretos_claude.py", "skill": "senior", "matcher": "Read|Grep|Write|Edit|NotebookEdit|Bash|PowerShell",
-     "nombre": "de secretos y datos personales"},
+    # un solo proceso para los cinco controles de PreToolUse (autoría, documentos externos, fuera del proyecto, protegidos y secretos)
+    {"script": "hook_senior.py", "skill": "senior", "matcher": "Read|Grep|Write|Edit|NotebookEdit|Bash|PowerShell",
+     "nombre": "de control de acciones (autoría, documentos externos, escritura fuera del proyecto, archivos protegidos y secretos)"},
     {"script": "hook_permisos_chat.py", "skill": "senior", "evento": "UserPromptSubmit", "matcher": None,
      "nombre": "de permisos desde el chat"},
 )
+# hooks sueltos de versiones anteriores: los reemplaza el despachador y se sacan para que no corran dos veces
+HOOKS_SUELTOS = ("hook_autoria_claude.py", "hook_lectura_externa.py", "hook_fuera_del_proyecto.py", "hook_archivos_protegidos.py", "hook_secretos_claude.py")
+
+
+def sacar_sueltos(ajustes):
+    """Quita de PreToolUse los hooks sueltos que reemplaza el despachador. Devuelve cuántos sacó."""
+    sacados = 0
+    grupos = (ajustes.get("hooks") or {}).get("PreToolUse")
+    if not isinstance(grupos, list):
+        return 0
+    for g in grupos:
+        if not isinstance(g, dict):
+            continue
+        quedan = [h for h in g.get("hooks", []) if not any(s in str(h.get("command", "")) for s in HOOKS_SUELTOS)]
+        sacados += len(g.get("hooks", [])) - len(quedan)
+        g["hooks"] = quedan
+    ajustes["hooks"]["PreToolUse"] = [g for g in grupos if not (isinstance(g, dict) and not g.get("hooks"))]
+    return sacados
 
 
 def python_que_funciona():
@@ -357,6 +370,15 @@ def asegurar_claude(solo_verificar):
             previos.append(grupo_nuevo)
         lineas.append(f"activé el hook global de Claude Code {hook['nombre']} (se aplica al abrir una sesión nueva)")
         cambio = True
+    sueltos = sum(1 for g in (ajustes.get("hooks") or {}).get("PreToolUse", []) if isinstance(g, dict)
+                  for h in g.get("hooks", []) if any(s in str(h.get("command", "")) for s in HOOKS_SUELTOS))
+    if sueltos and solo_verificar:
+        lineas.append(f"FALTA migrar {sueltos} hooks sueltos de Claude Code al despachador (corren de a uno y suman casi un segundo por llamada)")
+        falta = True
+    elif sueltos:
+        sacar_sueltos(ajustes)
+        lineas.append(f"saqué {sueltos} hooks sueltos de Claude Code: los reemplaza el despachador (un proceso en lugar de cinco)")
+        cambio = True
     if cambio:
         destino.parent.mkdir(parents=True, exist_ok=True)
         respaldo = destino.with_name("settings.json.bak-senior")
@@ -364,6 +386,73 @@ def asegurar_claude(solo_verificar):
             shutil.copyfile(destino, respaldo)
         destino.write_text(json.dumps(ajustes, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     return lineas, falta
+
+
+SUFIJOS_TEXTO = {".py", ".md", ".json", ".html", ".css", ".js", ".txt", ".sh", ".yml", ".yaml"}
+
+
+def huella_archivo(ruta):
+    """Huella de un archivo con el fin de línea normalizado (así es como `instalar.py` lo copia)."""
+    datos = Path(ruta).read_bytes()
+    if Path(ruta).suffix.lower() in SUFIJOS_TEXTO:
+        datos = datos.replace(b"\r\n", b"\n")
+    return hashlib.sha256(datos).hexdigest()
+
+
+def huella_skill(carpeta):
+    h = hashlib.sha256()
+    for f in sorted(p for p in Path(carpeta).rglob("*") if p.is_file() and "__pycache__" not in p.parts):
+        h.update(f.relative_to(carpeta).as_posix().encode("utf-8"))
+        h.update(huella_archivo(f).encode())
+    return h.hexdigest()
+
+
+def huellas_de(carpeta, nombres=None):
+    """{skill: huella} de las skills de una carpeta (solo las de `nombres`, si se indican)."""
+    carpeta = Path(carpeta)
+    if not carpeta.is_dir():
+        return {}
+    return {d.name: huella_skill(d) for d in sorted(carpeta.iterdir()) if d.is_dir() and (nombres is None or d.name in nombres)}
+
+
+def ruta_manifiesto():
+    return Path.home() / ".claude" / "skills" / ".senior-instalacion.json"
+
+
+def escribir_manifiesto(skills_origen):
+    """Anota de dónde se instaló y la huella de cada skill, para poder avisar si el repositorio cambia o lo instalado se toca."""
+    skills_origen = Path(skills_origen).resolve()
+    datos = {"origen": skills_origen.parent.as_posix(), "fecha": time.strftime("%Y-%m-%d %H:%M"), "skills": huellas_de(skills_origen)}
+    destino = ruta_manifiesto()
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    destino.write_text(json.dumps(datos, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+
+
+def asegurar_instalacion():
+    """Líneas sobre si lo instalado en ~/.claude/skills coincide con el repositorio del que salió. Los hooks usan las copias instaladas."""
+    manifiesto = ruta_manifiesto()
+    if not manifiesto.exists():
+        return ["AVISO: la instalación de las skills no tiene registro, así que no se puede comprobar si está al día (se crea la próxima vez que se ejecute `python instalar.py`)"]
+    try:
+        datos = json.loads(manifiesto.read_text(encoding="utf-8-sig"))
+        registradas = dict(datos["skills"])
+        origen = Path(datos["origen"])
+    except (ValueError, KeyError, TypeError):
+        return ["AVISO: el registro de la instalación de las skills está dañado (se rehace con `python instalar.py`)"]
+    lineas = []
+    instaladas = huellas_de(manifiesto.parent, set(registradas))
+    a_mano = sorted(n for n in registradas if instaladas.get(n) != registradas[n])
+    if a_mano:
+        lineas.append("AVISO: hay skills instaladas que se modificaron después de instalarlas (" + ", ".join(a_mano[:5]) + "): los hooks usan esas copias; para volver a lo del repositorio, `python instalar.py`")
+    if not (origen / "skills").is_dir():
+        lineas.append(f"AVISO: no se encuentra el repositorio de origen de la instalación ({origen.as_posix()}), así que no se puede comprobar si hay cambios sin instalar")
+        return lineas
+    del_repo = huellas_de(origen / "skills")
+    cambiadas = sorted(n for n in del_repo if registradas.get(n) != del_repo[n])
+    if cambiadas:
+        lineas.append(f"AVISO: el repositorio de la skill ({origen.as_posix()}) tiene cambios que no están instalados (" + ", ".join(cambiadas[:6])
+                      + (f" y {len(cambiadas) - 6} más" if len(cambiadas) > 6 else "") + f"): los hooks siguen usando la versión instalada; ejecutar `python {(origen / 'instalar.py').as_posix()}`")
+    return lineas
 
 
 def git_config_local(raiz, clave):
@@ -428,7 +517,8 @@ def cmd_asegurar(raiz, silencioso, solo_verificar):
     for l, f in (asegurar_git(raiz, solo_verificar), asegurar_identidad(raiz, solo_verificar), asegurar_claude(solo_verificar)):
         lineas += l
         falta = falta or f
-    cambios = [l for l in lineas if l.startswith(("activé", "NO", "FALTA"))]
+    lineas += asegurar_instalacion()
+    cambios = [l for l in lineas if l.startswith(("activé", "NO", "FALTA", "AVISO"))]
     if silencioso and not cambios:
         return 0
     for l in (cambios if silencioso else lineas):
