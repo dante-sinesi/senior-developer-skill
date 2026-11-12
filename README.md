@@ -85,19 +85,19 @@ Cada skill de proceso (`senior`, `senior-tdd`, `senior-git`, `senior-seguridad`,
 ### Cómo está armado el paquete
 
 ```mermaid
-flowchart LR
-    U["Usuario"] --> S["senior: principios, flujo y puntos de control"]
-    S --> M["Método: tdd, refactor, docs, memoria, git, seguridad"]
-    S --> R["Relevar y documentar un proyecto existente"]
-    S --> D["Diseño: tarjeta de estilo, bosquejos y auditoría"]
-    S --> C["Comandos: adoptar, cerrar sesión, revisar cambio, auditar consumo"]
+flowchart TB
+    U["Usuario"] --> S["senior: principios, flujo y control"]
+    S --> M["Método: tdd, refactor, docs, git, seguridad"]
+    S --> R["Relevar y documentar"]
+    S --> D["Diseño"]
+    S --> C["Comandos"]
     M --> P["Proyecto: docs/, README y código"]
     R --> P
     D --> P
     C --> P
-    P --> V["verificar.py: chequeos sin gastar tokens"]
-    H["Hooks globales: autoría, fuera del proyecto, protegidos y documentos externos"] -.-> P
-    P --> G["GitHub: ramas, commits y Pull Requests"]
+    P --> V["verificar.py"]
+    P --> G["GitHub: ramas y PR"]
+    H["Hooks globales"] -.-> P
 ```
 <!-- /diagrama -->
 
@@ -107,17 +107,17 @@ flowchart LR
 ### Ciclo de trabajo de un cambio
 
 ```mermaid
-flowchart LR
-    A["Leer el estado y relevar si hace falta"] --> B["Acordar un plan breve"]
+flowchart TB
+    A["Leer estado y relevar"] --> B["Plan breve"]
     B --> C["Rama por cambio"]
-    C --> D["Test rojo desde la regla de negocio"]
+    C --> D["Test rojo"]
     D --> E["Código mínimo en verde"]
-    E --> F["Refactor con tests en verde"]
-    F --> G["Actualizar docs y README"]
+    E --> F["Refactor"]
+    F --> G["Docs y README"]
     G --> H["verificar.py"]
     H -->|hallazgos| E
-    H --> I["Pull Request con descripción completa"]
-    I --> J{"¿Lo aprueba el usuario?"}
+    H --> I["Pull Request"]
+    I --> J{"¿Aprobado?"}
     J -->|ajustes| E
     J -->|sí| K["Fusión y estado al día"]
 ```
