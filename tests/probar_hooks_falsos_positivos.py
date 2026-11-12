@@ -189,7 +189,7 @@ ajustes = json.loads((FALSO / ".claude" / "settings.json").read_text(encoding="u
 grupos = ajustes["hooks"].get("UserPromptSubmit", [])
 chequear("la guardia registra el hook del chat en UserPromptSubmit, sin matcher", len(grupos) == 1 and "matcher" not in grupos[0] and "hook_permisos_chat.py" in grupos[0]["hooks"][0]["command"], (p.stdout, p.stderr, ajustes))
 chequear("y conserva lo que ya había (otro hook y otros ajustes)", ajustes["model"] == "x" and any(h["command"] == "otro" for g_ in ajustes["hooks"]["PreToolUse"] for h in g_["hooks"]))
-chequear("los hooks de PreToolUse siguen en su evento", sum("hook_" in h["command"] for g_ in ajustes["hooks"]["PreToolUse"] for h in g_["hooks"]) >= 4)
+chequear("el despachador queda en PreToolUse, con la lista completa de herramientas", sum("hook_senior.py" in h["command"] for g_ in ajustes["hooks"]["PreToolUse"] for h in g_["hooks"]) == 1)
 p = subprocess.run([sys.executable, "-X", "utf8", "-c", codigo], capture_output=True, text=True, encoding="utf-8", env=env)
 ajustes2 = json.loads((FALSO / ".claude" / "settings.json").read_text(encoding="utf-8"))
 chequear("repetir no lo duplica", len(ajustes2["hooks"]["UserPromptSubmit"]) == 1)

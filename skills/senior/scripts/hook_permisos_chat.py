@@ -85,7 +85,9 @@ def main():
         import modo_hooks as mh
         raiz = mh.raiz_del_proyecto(datos.get("cwd") or os.getcwd())
         respuestas = [aplicar(mh, raiz, m.group(1), m.group(2)) for m in comandos]
-    except Exception:  # noqa: BLE001 motivo: si algo falla, el mensaje del usuario sigue su curso
+    except Exception:  # noqa: BLE001 motivo: si algo falla, el mensaje del usuario sigue su curso (con SENIOR_HOOK_DEPURAR=1 el error se ve)
+        if os.environ.get("SENIOR_HOOK_DEPURAR") == "1":
+            raise
         return 0
     contexto = ("senior (hook de permisos, ejecutado por lo que escribió el usuario): " + " ".join(respuestas) +
                 ("" if any(m.group(1).lower() == "permisos" for m in comandos) else " Confirmalo en una línea y seguí con el resto del mensaje."))
