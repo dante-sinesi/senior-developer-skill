@@ -61,7 +61,7 @@ Para dejar todo funcionando la primera vez, o en una máquina nueva, en este ord
    ```bash
    python instalar.py --instalar-dependencias
    ```
-   Copia las skills a `~/.claude/skills` (sin tocar las demás), registra en `~/.claude/settings.json` los cinco hooks globales de Claude Code (autoría, lectura de documentos externos, escritura fuera del proyecto, archivos protegidos y permisos desde el chat), instala `markitdown` y `Pillow` con pip y termina con un informe de qué quedó listo y qué falta. Sin `--instalar-dependencias` no instala nada con pip: solo avisa. Con `--verificar` solo informa, sin escribir.
+   Copia las skills a `~/.claude/skills` (sin tocar las demás), registra en `~/.claude/settings.json` los dos hooks globales de Claude Code: un despachador (`hook_senior.py`) que corre en un solo proceso los cinco controles de autoría, lectura de documentos externos, escritura fuera del proyecto, archivos protegidos y secretos, y el de permisos desde el chat (saca los hooks sueltos de versiones anteriores), instala `markitdown` y `Pillow` con pip y termina con un informe de qué quedó listo y qué falta. Sin `--instalar-dependencias` no instala nada con pip: solo avisa. Con `--verificar` solo informa, sin escribir.
 4. **Si se usa GitHub:** `gh auth login`.
 5. **En cada proyecto,** abrir una sesión de Claude Code: la skill activa sola el hook de Git del repositorio, crea `documentos-externos/` y resuelve en nombre de quién se hacen los commits: usa la identidad local del repositorio o la sesión de GitHub (`gh`) y, **si no hay ninguna, Claude te pregunta** tu nombre de usuario de GitHub y tu correo. La skill no trae ningún nombre fijo.
 6. **Abrir una sesión nueva** de Claude Code para que se apliquen los hooks globales.
@@ -297,6 +297,7 @@ Una pregunta en la interfaz detiene a Claude hasta que alguien responde, y quien
 - **Lo que de verdad necesita salir del proyecto** (un servidor local, la carpeta de otro programa) también se autoriza desde la terminal: `python ~/.claude/skills/senior/scripts/permisos_hooks.py permitir <ruta> --motivo "…"`. `bloqueos` muestra qué se frenó mientras no estaba y `estado` lo configurado.
 - **`modo preguntar`** devuelve el comportamiento anterior (preguntar en la interfaz y esperar), para quien trabaja delante de la pantalla.
 - **Qué ve el hook de escritura:** las rutas de `Write`, `Edit` y `NotebookEdit`; en Bash y PowerShell, las redirecciones, `cp`, `mv`, `tee`, `sed -i`, `dd of=`, descargas y `git clone`, y en el código que viaja dentro del comando (`python -c`, `node -e`, heredocs) las escrituras con una ruta literal. No ve lo que hace un script que está en un archivo ni rutas armadas con código: es una barrera contra descuidos, no contra una evasión deliberada.
+- **Un solo proceso por llamada:** los cinco controles de PreToolUse corren dentro de un único despachador (`hook_senior.py`) y deciden igual que cada hook por separado, pero una llamada de Bash tarda ~150 ms en lugar de ~400 ms. `guardia_autoria.py asegurar` migra los hooks sueltos de versiones anteriores.
 - **Claude no puede autorizarse solo:** los hooks deniegan cualquier intento de cambiar el modo, las rutas autorizadas o la configuración, también en modo preguntar.
 
 ## Cuando una regla falla dos veces
