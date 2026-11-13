@@ -17,6 +17,8 @@ def chequear(nombre, cond, extra=""):
 
 for s in SKILLS:
     t = (RAIZ / "skills" / s / "SKILL.md").read_text(encoding="utf-8")
+    if s == "senior":
+        t += (RAIZ / "skills" / s / "references" / "metodo-completo.md").read_text(encoding="utf-8")  # el núcleo es corto: las excusas viven en la capa completa
     m = re.search(r"^## Excusas frecuentes[^\n]*\n(.*?)(?=^## |\Z)", t, re.M | re.S)
     chequear(f"{s}: tiene la sección", bool(m))
     if not m:

@@ -103,7 +103,7 @@ Q2.mkdir(parents=True, exist_ok=True)
 subprocess.run(["git", "init", "-q"], cwd=Q2)
 chequear("con Token Diet no dice nada", "Token Diet (opcional)" not in correr(CARGAR, "--raiz", str(Q2), home=ok).stdout)
 sk = (RAIZ / "skills" / "senior" / "SKILL.md").read_text(encoding="utf-8")
-chequear("la skill senior declara que Token Diet es recomendada y no obligatoria", "## Token Diet (recomendada, no obligatoria)" in sk and "nunca se rechaza ni se frena por eso" in sk)
+chequear("la skill senior declara que Token Diet es recomendada y no obligatoria y que la lectura de PDF es suya", "recomendada y no obligatoria" in sk and "lee los PDF" in sk and "todo funciona igual" in sk)
 
 # 7. al migrar los hooks sueltos, el hook de lectura de Token Diet (mismo nombre de archivo) no se toca
 spec = importlib.util.spec_from_file_location("guardia", RAIZ / "skills" / "senior-git" / "scripts" / "guardia_autoria.py")

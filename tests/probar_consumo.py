@@ -172,7 +172,7 @@ chequear("el script del despachador existe donde lo busca la guardia", guardia_a
     next(h_ for h_ in guardia_autoria.HOOKS_CLAUDE if h_["script"] == "hook_senior.py")).exists())
 
 # ---------- 4. regla de dos fallas y documentación ----------
-senior = (RAIZ / "skills" / "senior" / "SKILL.md").read_text(encoding="utf-8")
+senior = ((RAIZ / "skills") / "senior" / "SKILL.md").read_text(encoding="utf-8") + (((RAIZ / "skills") / "senior" / "references" / "metodo-completo.md").read_text(encoding="utf-8"))
 cerrar = (RAIZ / "skills" / "cerrar-sesion" / "SKILL.md").read_text(encoding="utf-8")
 readme = (RAIZ / "README.md").read_text(encoding="utf-8")
 chequear("principio 17: dos fallas, barrera, y la decide el usuario", "17. **Una regla que falló dos veces" in senior and "solo se arma si el usuario dice que sí" in senior)

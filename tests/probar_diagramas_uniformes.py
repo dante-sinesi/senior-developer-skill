@@ -175,7 +175,7 @@ for f in sorted((RAIZ / "docs" / "diagramas").glob("*.md")):
 d7 = leer(SK / "senior-docs" / "references" / "diagramas.md")
 chequear("la referencia de diagramas fija la forma y el ancho con los datos medidos", "## 7. Forma y ancho de la página" in d7 and "2.875 px" in d7 and "773 × 123" in d7 and "815 × 665" in d7 and "flowchart TB" in d7)
 chequear("senior-docs enlaza la regla", "references/diagramas.md" in leer(SK / "senior-docs" / "SKILL.md") and "ancho de la página" in leer(SK / "senior-docs" / "SKILL.md"))
-sk = leer(SK / "senior" / "SKILL.md")
+sk = leer(SK / "senior" / "SKILL.md") + leer(SK / "senior" / "references" / "metodo-completo.md")
 chequear("senior manda a abrir con abrir_en_navegador.py y explica por qué", "abrir_en_navegador.py" in sk and "una pestaña por cada uno" in sk and "Start-Process" in sk)
 rm = leer(RAIZ / "README.md")
 chequear("el README lo explica", "abrir_en_navegador.py" in rm and "Pensados para el ancho de la página" in rm)

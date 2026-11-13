@@ -33,6 +33,20 @@ Si una nota baja (algo se rompió o se descubrió un problema), se anota igual: 
 - **Compatibilidad:** el README prometía Python 3.8, pero 15 scripts usaban `Path.write_text(newline=…)` (3.10+) y un hook usaba `str.removesuffix` (3.9). El CI de GitHub lo mostró en el primer intento. En una versión vieja el hook se rompía y, como un hook que falla no bloquea, dejaba de proteger sin avisar. El mínimo documentado es **Python 3.10**.
 - **Secretos:** la batería `tests/probar_secretos.py` arma claves falsas al vuelo y comprueba el detector, `.env` con y sin permiso, los hooks de git sobre un repositorio y un remoto de prueba y 27 casos del hook de Claude.
 
+### Costo y calidad de tener `senior` activado (2026-11-13, agentes reales)
+
+Tres tareas de código chicas en un proyecto Python de ejemplo (corregir un bug, agregar una función con reglas de negocio, agregar una función y documentarla), 3 repeticiones por rama, con pruebas ocultas para el éxito; el agente es el de la propia app (Claude Code 2.1.321), con `--disable-slash-commands` para la rama sin skills. Dólares estimados por el propio agente (nocionales en un plan de suscripción). El medidor no se sube (vive en `.temporal/`).
+
+| Rama | Éxito | Tests agregados | Documentación tocada | USD (9 corridas) |
+|---|---|---|---|---|
+| Sin skills | 9 de 9 | 6 de 9 | 3 de 9 | 0,69 |
+| `senior` completo (4.800 tokens al activarse) | 9 de 9 | 9 de 9 | 6 de 9 | 1,31 |
+| `senior` con núcleo corto (~570 palabras) | 9 de 9 | 9 de 9 | 6 de 9 | 1,26 |
+
+- **Calidad:** en una revisión a ciegas del usuario (3 pedidos, un resultado de cada rama por pedido) eligió la versión con `senior` en los tres.
+- **Costo:** `senior` cuesta ~1,9 veces más en tareas chicas; la diferencia grande está en el pedido de la función nueva (11 vueltas contra 2: sin `senior` el agente no escribió tests ni documentación). **Achicar el cuerpo de la skill de 4.800 a unos 800 tokens bajó solo ~4 %:** lo que cuesta es el trabajo que el método hace (tests, documentación, vueltas), no el tamaño del texto, porque leer contexto en caché es barato. Ahorrar de verdad exige menos vueltas, no menos palabras.
+- **Límites:** 3 tareas chicas, un solo modelo, un solo proyecto en Python, calidad medida por presencia de tests y documentación más un juicio humano de tres casos. No se revisó a ciegas el núcleo corto.
+
 ## Puntaje por parte, con su mejora
 
 | Parte | Nota inicial | Nota hoy | Mejora propuesta | Nota estimada con la mejora |
@@ -107,6 +121,7 @@ Si una nota baja (algo se rompió o se descubrió un problema), se anota igual: 
 | 2026-11-13 | Se quita la regla de imágenes y se acota la lectura obligatoria: el hook de lectura de `senior` bloquea solo el PDF y el HTML de `documentos-externos/` (ya no las imágenes, Word, Excel, JSON, CSV ni texto), `Pillow` deja de ser obligatoria y el chequeo `fuentes` cuenta solo PDF y HTML. Motivo: las mediciones con agentes reales muestran que bloquear imágenes costó +8 % y que compactar JSON o CSV no ahorra; Word y Excel el agente los abre con la terminal. El HTML se queda hasta que se mida. | Ninguna nota; punto 17 sigue reabierto. |
 | 2026-11-13 | Corrección: `guardia_autoria.py asegurar` trataba como «hook suelto» viejo de `senior` cualquier comando con `hook_lectura_externa.py`, y el hook de lectura de Token Diet se llama igual: lo borraba de `settings.json` en cada reinstalación (pasó dos veces). Ahora `es_suelto()` lo respeta, con prueba. | Ninguna nota. |
 | 2026-11-13 | Se saca la lectura de documentos de `senior` (decisión del usuario: si ya la hace Token Diet, `senior` no la nombra): se borran `convertir_fuentes.py`, `hook_lectura_externa.py`, el chequeo `fuentes`, la preparación de `documentos-externos/` al abrir la sesión, la dependencia `markitdown` del instalador y su fila en el registro de bloqueos; el despachador pasa de cinco a cuatro controles. Los textos mandan al PDF a Token Diet, que es quien lo mide. Costo: sin Token Diet un PDF se lee entero; el HTML deja de tener regla (sin medición). La migración de hooks sueltos sigue protegiendo el hook de Token Diet. | Ninguna nota; punto 17 sigue reabierto. |
+| 2026-11-13 | `senior` se parte en un núcleo corto (`SKILL.md`, ~570 palabras con lo que no se negocia y la tabla de tamaño) y una capa completa (`references/metodo-completo.md`, el cuerpo anterior sin cambios) que se lee en cambios medianos o grandes; se agrega `references/brief-delegacion.md` (diez líneas para un agente delegado: los subagentes no heredan las skills ya cargadas). Medido con agentes reales: mismo comportamiento (tests y documentación) y ~4 % menos de costo; la evidencia completa queda en «Costo y calidad de tener `senior` activado». | Ninguna nota. |
 | 2026-11-13 | Se registran las decisiones del traspaso: dependencia excluyente (`senior` no se usa sin Token Diet), sin frenar sesiones sin supervisión, bloqueo duro solo al final, y el índice de la memoria y la ceremonia proporcional también se traspasan. | Ninguna nota; punto 17 sigue en curso. |
 
 ### Detalle del PR #28 (revisión completa)
