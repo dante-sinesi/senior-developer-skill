@@ -39,7 +39,7 @@ chequear("la nota estimada nunca es menor que la de hoy", all(float(f[4].replace
 ciegos = filas("## Puntos ciegos")
 chequear("los puntos ciegos tienen 5 columnas", ciegos and all(len(f) == 5 for f in ciegos), [len(f) for f in ciegos])
 chequear("están numerados sin saltos", [f[0] for f in ciegos] == [str(i) for i in range(1, len(ciegos) + 1)], [f[0] for f in ciegos])
-chequear("cada uno tiene un estado válido", all(f[4].split(" ")[0] in ("Abierto", "En", "Parcial", "Resuelto") for f in ciegos), [f[4] for f in ciegos])
+chequear("cada uno tiene un estado válido", all(f[4].split(" ")[0] in ("Abierto", "En", "Parcial", "Resuelto", "Descartado") for f in ciegos), [f[4] for f in ciegos])
 
 historial = filas("## Historial")
 chequear("el historial tiene fecha, cambio y partes afectadas", historial and all(len(f) == 3 and re.fullmatch(r"\d{4}-\d{2}-\d{2}", f[0]) for f in historial), historial[:1])
