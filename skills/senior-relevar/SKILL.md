@@ -12,7 +12,7 @@ Cambiar un sistema que no se entiende es la causa más común de roturas. El rel
 1. **Memoria previa.** Si existe `docs/ESTADO.md` o `docs/INDEX.md`, leerlos primero (`senior-memoria`). Puede que el relevamiento ya esté hecho.
 2. **Inventario automático** (sin tokens):
    ```
-   python <token-diet>/scripts/relevar.py --out docs/relevamiento.md
+   python <esta-skill>/scripts/relevar.py --salida docs/relevamiento.md
    ```
    Entrega hechos: lenguajes, manifiestos, tests presentes, integración continua, documentación, historial git, archivos grandes y muy modificados, marcas TODO.
 3. **Mapa de conceptos.** Generar el índice con símbolos (`senior-memoria/scripts/indexar_docs.py indexar`) y consultarlo en lugar de leer archivos completos.
