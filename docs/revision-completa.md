@@ -43,9 +43,10 @@ Tres tareas de código chicas en un proyecto Python de ejemplo (corregir un bug,
 | `senior` completo (4.800 tokens al activarse) | 9 de 9 | 9 de 9 | 6 de 9 | 1,31 |
 | `senior` con núcleo corto (~570 palabras) | 9 de 9 | 9 de 9 | 6 de 9 | 1,26 |
 
-- **Calidad:** en una revisión a ciegas del usuario (3 pedidos, un resultado de cada rama por pedido) eligió la versión con `senior` en los tres.
+- **Calidad (dos revisiones a ciegas del usuario):** (1) `senior` completo contra sin skills, 3 pedidos: eligió la versión con `senior` en los 3. (2) núcleo corto contra sin skills, otra repetición, 3 pedidos: eligió el núcleo en los 3. En total 6 de 6 a favor de `senior`; un solo juez y tareas chicas, así que es una señal consistente y no una prueba.
 - **Costo:** `senior` cuesta ~1,9 veces más en tareas chicas; la diferencia grande está en el pedido de la función nueva (11 vueltas contra 2: sin `senior` el agente no escribió tests ni documentación). **Achicar el cuerpo de la skill de 4.800 a unos 800 tokens bajó solo ~4 %:** lo que cuesta es el trabajo que el método hace (tests, documentación, vueltas), no el tamaño del texto, porque leer contexto en caché es barato. Ahorrar de verdad exige menos vueltas, no menos palabras.
-- **Límites:** 3 tareas chicas, un solo modelo, un solo proyecto en Python, calidad medida por presencia de tests y documentación más un juicio humano de tres casos. No se revisó a ciegas el núcleo corto.
+- **Decisión:** con esa evidencia no se apaga `senior` por defecto (se descartó la idea de activarlo solo con un comando): el costo de ~1,8 veces compra tests, documentación y una calidad que el usuario distingue a ciegas.
+- **Límites:** 3 tareas chicas, un solo modelo, un solo proyecto en Python, calidad medida por presencia de tests y documentación más un juicio humano de seis casos con un solo juez.
 
 ## Puntaje por parte, con su mejora
 
@@ -122,6 +123,7 @@ Tres tareas de código chicas en un proyecto Python de ejemplo (corregir un bug,
 | 2026-11-13 | Corrección: `guardia_autoria.py asegurar` trataba como «hook suelto» viejo de `senior` cualquier comando con `hook_lectura_externa.py`, y el hook de lectura de Token Diet se llama igual: lo borraba de `settings.json` en cada reinstalación (pasó dos veces). Ahora `es_suelto()` lo respeta, con prueba. | Ninguna nota. |
 | 2026-11-13 | Se saca la lectura de documentos de `senior` (decisión del usuario: si ya la hace Token Diet, `senior` no la nombra): se borran `convertir_fuentes.py`, `hook_lectura_externa.py`, el chequeo `fuentes`, la preparación de `documentos-externos/` al abrir la sesión, la dependencia `markitdown` del instalador y su fila en el registro de bloqueos; el despachador pasa de cinco a cuatro controles. Los textos mandan al PDF a Token Diet, que es quien lo mide. Costo: sin Token Diet un PDF se lee entero; el HTML deja de tener regla (sin medición). La migración de hooks sueltos sigue protegiendo el hook de Token Diet. | Ninguna nota; punto 17 sigue reabierto. |
 | 2026-11-13 | `senior` se parte en un núcleo corto (`SKILL.md`, ~570 palabras con lo que no se negocia y la tabla de tamaño) y una capa completa (`references/metodo-completo.md`, el cuerpo anterior sin cambios) que se lee en cambios medianos o grandes; se agrega `references/brief-delegacion.md` (diez líneas para un agente delegado: los subagentes no heredan las skills ya cargadas). Medido con agentes reales: mismo comportamiento (tests y documentación) y ~4 % menos de costo; la evidencia completa queda en «Costo y calidad de tener `senior` activado». | Ninguna nota. |
+| 2026-11-13 | Revisiones a ciegas de la calidad de `senior`: el usuario eligió la versión con `senior` en 6 de 6 pedidos (completo contra sin skills y núcleo corto contra sin skills). Se descarta apagarlo por defecto. | Ninguna nota. |
 | 2026-11-13 | Se registran las decisiones del traspaso: dependencia excluyente (`senior` no se usa sin Token Diet), sin frenar sesiones sin supervisión, bloqueo duro solo al final, y el índice de la memoria y la ceremonia proporcional también se traspasan. | Ninguna nota; punto 17 sigue en curso. |
 
 ### Detalle del PR #28 (revisión completa)
