@@ -519,18 +519,35 @@ def cmd_identidad(raiz, nombre, correo):
     return 1 if falta else 0
 
 
+def asegurar_dependencia():
+    """Token Diet es obligatoria: si falta, está vieja o no tiene su hook de lectura, es un FALTA (senior no se usa sin ella)."""
+    import importlib.util
+    ruta = Path(__file__).resolve().parents[2] / "senior" / "scripts" / "token_diet.py"
+    if not ruta.exists():
+        return ["FALTA senior/scripts/token_diet.py: no se puede comprobar la dependencia de Token Diet"], True
+    espec = importlib.util.spec_from_file_location("senior_token_diet", ruta)
+    modulo = importlib.util.module_from_spec(espec)
+    espec.loader.exec_module(modulo)
+    aviso = modulo.aviso()
+    if aviso:
+        return [f"FALTA Token Diet (obligatoria; sin ella senior no se usa): {aviso}"], True
+    return [], False
+
+
 def cmd_asegurar(raiz, silencioso, solo_verificar):
     lineas, falta = [], False
     for l, f in (asegurar_git(raiz, solo_verificar), asegurar_identidad(raiz, solo_verificar), asegurar_claude(solo_verificar)):
         lineas += l
         falta = falta or f
     lineas += asegurar_instalacion()
+    l_td, falta_td = asegurar_dependencia()
+    lineas += l_td
     cambios = [l for l in lineas if l.startswith(("activé", "NO", "FALTA", "AVISO"))]
     if silencioso and not cambios:
         return 0
     for l in (cambios if silencioso else lineas):
         print(f"Guardia de autoría: {l}.")
-    return 1 if falta and solo_verificar else 0
+    return 1 if (falta and solo_verificar) or falta_td else 0
 
 
 def main():

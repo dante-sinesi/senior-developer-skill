@@ -45,7 +45,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 - Python 3.10 o superior (los scripts usan solo la biblioteca estándar).
 - Git. El CLI `gh` es necesario solo para trabajar con GitHub.
 - Opcional: `npm`, `composer` o `pip-audit` si se quiere la auditoría de dependencias.
-- **Token Diet** ([token-diet-skill](https://github.com/dante-sinesi/token-diet-skill)), la skill de ahorro de tokens: es el motor de este paquete (lectura de documentos e imágenes externos, capturas, auditoría). `instalar.py` avisa con el comando exacto si falta. Sus propias bibliotecas (`markitdown`, `Pillow`) se instalan con ella.
+- **Token Diet** ([token-diet-skill](https://github.com/dante-sinesi/token-diet-skill)), la skill de ahorro de tokens: **dependencia obligatoria**. Es el motor de este paquete (lectura de documentos e imágenes externos, capturas, resúmenes, auditoría y medición) y `senior` no se usa sin ella instalada y al día: `instalar.py` termina con «faltan cosas» y el comando exacto, `guardia_autoria.py asegurar` y `verificar.py dependencia` fallan, y al abrir una sesión sin ella `senior` no aplica su método y deja el comando en `docs/pendientes.md`, sin preguntar ni esperar. Los guardias de seguridad (autoría, escritura fuera del proyecto, archivos protegidos y secretos) siguen activos igual. Instalarla modifica la configuración de Claude Code y lo apruebas tú. Sus propias bibliotecas (`markitdown`, `Pillow`) se instalan con ella.
 
 ## Primeros pasos
 
@@ -195,7 +195,7 @@ python ~/.claude/skills/senior/scripts/verificar.py            # todo
 python ~/.claude/skills/senior/scripts/verificar.py readme     # un chequeo puntual
 ```
 
-Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `requisitos`, `diagramas`, `listones`, `escala`, `evidencia`, `autoria`, `diseno`, `secretos`, `tarjetas` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `abrir_en_navegador.py` (abre un archivo o una página en una sola pestaña, con la dirección codificada), `hook_archivos_protegidos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
+Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `requisitos`, `dependencia`, `diagramas`, `listones`, `escala`, `evidencia`, `autoria`, `diseno`, `secretos`, `tarjetas` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `abrir_en_navegador.py` (abre un archivo o una página en una sola pestaña, con la dirección codificada), `hook_archivos_protegidos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
 
 Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
 
