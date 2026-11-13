@@ -29,9 +29,9 @@ for f in sorted((RAIZ / "skills").rglob("*.py")):
     ok = not falta
     mal += 0 if ok else 1
     print(("ok   " if ok else "MAL  ") + f"{f.relative_to(RAIZ).as_posix()}: ignora la base común" + ("" if ok else f"  (le faltan {sorted(falta)})"))
-if vistos < 8:
+if vistos < 9:
     mal += 1
-    print(f"MAL  se esperaban al menos 8 scripts con IGNORAR y hay {vistos}")
+    print(f"MAL  se esperaban al menos 9 scripts con IGNORAR y hay {vistos}")
 
 print("Todo bien." if not mal else f"{mal} casos mal.")
 sys.exit(1 if mal else 0)
