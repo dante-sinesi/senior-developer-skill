@@ -11,6 +11,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parents[1]
 sys.stdout.reconfigure(encoding="utf-8")
 TD = RAIZ / "skills" / "senior" / "scripts" / "token_diet.py"
+CONSUMO = RAIZ / "skills" / "auditar-consumo" / "scripts" / "consumo.py"
 BASE = RAIZ / ".temporal" / "proy-token-diet"
 mal = 0
 
@@ -74,8 +75,11 @@ for retirado in ("senior-relevar/scripts/hook_lectura_externa.py", "senior-relev
 P = BASE / "proyecto"
 P.mkdir(parents=True, exist_ok=True)
 
-# 3. la auditoría de consumo tampoco es de senior
-chequear("consumo.py y la skill auditar-consumo ya no están en el paquete (los trae Token Diet)", not (RAIZ / "skills" / "auditar-consumo").exists())
+# 3. la auditoría de senior cede la referencia
+r = correr(CONSUMO, "--raiz", str(P), "--home", str(ok))
+chequear("auditoría: con Token Diet instalada indica que la suya es la de referencia", "su auditoría es la de referencia" in r.stdout, r.stdout[-400:])
+r = correr(CONSUMO, "--raiz", str(P), "--home", str(vacio))
+chequear("auditoría: sin Token Diet no agrega la nota", "referencia" not in r.stdout, r.stdout[-400:])
 
 # 4. el instalador avisa (no falla: la dependencia obligatoria llega al final del traspaso)
 r = correr(RAIZ / "instalar.py", "--verificar", home=vacio)

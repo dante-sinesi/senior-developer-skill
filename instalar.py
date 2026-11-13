@@ -19,7 +19,6 @@ repositorio (guardia_autoria.py asegurar). Solo biblioteca estándar. Código de
 """
 import argparse
 import hashlib
-import json
 import importlib.util
 import shutil
 import subprocess
@@ -71,23 +70,9 @@ def desactualizadas():
     return res
 
 
-def skills_retiradas():
-    """Skills que una instalación anterior de este paquete dejó registradas y que el repositorio ya no trae (se pasaron a otra skill)."""
-    registro = DESTINO / ".senior-instalacion.json"
-    try:
-        anteriores = set(json.loads(registro.read_text(encoding="utf-8-sig")).get("skills", {}))
-    except (OSError, ValueError, AttributeError):
-        return []
-    actuales = {d.name for d in SKILLS.iterdir() if d.is_dir()}
-    return sorted(n for n in anteriores - actuales if (DESTINO / n).is_dir())
-
-
 def instalar_skills():
     copiadas = []
     DESTINO.mkdir(parents=True, exist_ok=True)
-    for nombre in skills_retiradas():
-        shutil.rmtree(DESTINO / nombre)
-        print(f"Se retiró la skill `{nombre}`: este paquete ya no la trae (la cubre otra skill).")
     for origen in sorted(d for d in SKILLS.iterdir() if d.is_dir()):
         destino = DESTINO / origen.name
         if destino.exists():
@@ -169,7 +154,7 @@ def main():
     if aviso_td:
         avisos.append(aviso_td)
     else:
-        listo.append(f"Token Diet {modulo_td.estado()['version']} instalada y con su hook de lectura activo")
+        listo.append(f"Token Diet {modulo_td.estado()['version']} instalada y con su hook de lectura activo (el de senior se hace a un lado)")
 
     print("Primeros pasos: estado de la instalación\n")
     for l in listo:
