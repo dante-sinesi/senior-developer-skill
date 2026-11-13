@@ -7,7 +7,7 @@ corto, no los documentos completos:
   - docs/ESTADO.md (hasta 60 líneas)
   - fichas de cambio "en curso" con sus pasos abiertos
   - cantidad de pendientes en la bandeja
-  - pista de cómo consultar el mapa de conceptos (con Token Diet)
+  - pista de cómo consultar el mapa de conceptos
 
 Uso manual:
     python cargar_estado.py [--raiz .]
@@ -38,21 +38,18 @@ def asegurar_guardia(raiz):
         print(p.stdout.strip())
 
 
-def avisar_dependencia():
-    """Sin Token Diet (instalada y al día), senior no aplica su método: lo dice al abrir la sesión, sin preguntar ni esperar."""
-    import importlib.util
-    ruta = Path(__file__).resolve().parents[2] / "senior" / "scripts" / "token_diet.py"
-    try:
-        espec = importlib.util.spec_from_file_location("senior_token_diet", ruta)
-        modulo = importlib.util.module_from_spec(espec)
-        espec.loader.exec_module(modulo)
-        aviso = modulo.aviso()
-    except Exception:  # noqa: BLE001 - si no se puede comprobar, no se frena nada
+def iniciar_fuentes(raiz):
+    """Crea documentos-externos/ si falta y convierte lo pendiente (mudo si no hay nada que hacer)."""
+    conversor = Path(__file__).resolve().parents[2] / "senior-relevar" / "scripts" / "convertir_fuentes.py"
+    if not conversor.exists():
         return
-    if aviso:
-        print("# senior NO SE APLICA en esta sesión: falta su dependencia")
-        print(aviso)
-        print("Anotá ese comando en docs/pendientes.md (sin preguntar ni esperar) y seguí con lo que no necesite el método senior.\n")
+    try:
+        p = subprocess.run([sys.executable, "-I", str(conversor), "--iniciar", "--raiz", str(raiz)],
+                           capture_output=True, encoding="utf-8", errors="replace", timeout=300)
+    except (OSError, subprocess.TimeoutExpired):
+        return
+    if (p.stdout + p.stderr).strip():
+        print((p.stdout + p.stderr).strip())
 
 
 def main():
@@ -63,7 +60,7 @@ def main():
     args = ap.parse_args()
     raiz = Path(args.raiz).resolve()
     asegurar_guardia(raiz)
-    avisar_dependencia()
+    iniciar_fuentes(raiz)
     estado = raiz / "docs" / "ESTADO.md"
     if not estado.exists():
         return
@@ -86,8 +83,8 @@ def main():
         if n:
             print(f"\nBandeja de pendientes: {n} abiertos (docs/pendientes.md).")
     if (raiz / "docs" / ".grafo.json").exists():
-        print("\nMapa de conceptos disponible: consultar con indexar_docs.py query <términos> de Token Diet "
-              "(y vecinos <id> de senior-memoria) antes de leer documentos completos.")
+        print("\nMapa de conceptos disponible: consultar con senior-memoria/scripts/indexar_docs.py "
+              "(consultar <término> | vecinos <id>) antes de leer documentos completos.")
 
 
 if __name__ == "__main__":

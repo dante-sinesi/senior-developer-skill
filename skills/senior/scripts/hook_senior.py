@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Despachador de los hooks PreToolUse de senior: un solo proceso de Python en lugar de cuatro.
+"""Despachador de los hooks PreToolUse de senior: un solo proceso de Python en lugar de cinco.
 
-Cada llamada de Claude a una herramienta (leer, escribir, ejecutar un comando) pasaba por hasta cuatro procesos de Python, uno por hook,
+Cada llamada de Claude a una herramienta (leer, escribir, ejecutar un comando) pasaba por hasta cinco procesos de Python, uno por hook,
 y cada uno cuesta unos 180 ms: casi un segundo de espera por llamada. Este despachador se registra una sola vez, lee la llamada una vez y
 corre los controles que corresponden a esa herramienta dentro del mismo proceso:
 
   autoría (`hook_autoria_claude.py`)                      Bash, PowerShell
+  lectura de documentos externos (`hook_lectura_externa.py`)   Read, Bash, PowerShell, Write, Edit
   escritura fuera del proyecto (`hook_fuera_del_proyecto.py`)  Write, Edit, NotebookEdit, Bash, PowerShell
   archivos protegidos (`hook_archivos_protegidos.py`)     Write, Edit, NotebookEdit
   secretos y datos personales (`hook_secretos_claude.py`) Read, Grep, Write, Edit, NotebookEdit, Bash, PowerShell
@@ -25,6 +26,7 @@ from pathlib import Path
 SKILLS = Path(__file__).resolve().parents[2]
 HOOKS = (  # (skill, archivo, herramientas a las que aplica), en el orden en que se consultan
     ("senior-git", "hook_autoria_claude.py", {"Bash", "PowerShell"}),
+    ("senior-relevar", "hook_lectura_externa.py", {"Read", "Bash", "PowerShell", "Write", "Edit"}),
     ("senior", "hook_fuera_del_proyecto.py", {"Write", "Edit", "NotebookEdit", "Bash", "PowerShell"}),
     ("senior", "hook_archivos_protegidos.py", {"Write", "Edit", "NotebookEdit"}),
     ("senior", "hook_secretos_claude.py", {"Read", "Grep", "Write", "Edit", "NotebookEdit", "Bash", "PowerShell"}),

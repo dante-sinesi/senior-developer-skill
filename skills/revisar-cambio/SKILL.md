@@ -11,8 +11,8 @@ Es un informe que el usuario pidió, así que se entrega completo. **No cambia c
 
 ## 1. Entender primero
 
-1. **Armar el expediente con el script de Token Diet**, que ahorra la parte mecánica: `python <token-diet>/scripts/contexto.py [--staged | --base main --head <rama>]`. Sin opciones revisa los cambios sin commit (con `--base` y `--head`, una rama o un Pull Request ya traído). Devuelve los archivos tocados, los símbolos modificados con quién los usa, si hay tests y documentación y qué mirar primero. Es el material para la revisión, no la revisión.
-2. **Leer el diff y después el código que toca:** los llamadores de cada función cambiada, las funciones que llama, los tests y el README. Para un símbolo en particular: `python <token-diet>/scripts/impacto.py <símbolo>`.
+1. **Armar el expediente con el script**, que ahorra la parte mecánica: `python <esta-skill>/scripts/contexto.py [sin-guardar | preparado | rama | pr <número> | <archivos>]`. Sin objetivo revisa los cambios sin commit y, si no hay, el último commit. Devuelve los archivos tocados, los símbolos modificados con quién los usa fuera de su archivo, si hay tests y documentación, señales de riesgo en las líneas nuevas y pistas de la carga esperada.
+2. **Leer el diff y después el código que toca:** los llamadores de cada función cambiada, las funciones que llama, los tests y el README. Para un símbolo en particular: `python <senior>/scripts/impacto.py <símbolo>`.
 3. **Trazar el flujo real:** por dónde entran los datos, qué se guarda, qué sale.
 4. **Un cambio puede romper código que no toca.** Si cambia una firma, un valor de retorno o un comportamiento, se buscan todos los llamadores.
 5. **Averiguar la carga esperada** (README, despliegue): una persona corriendo un script, o muchos usuarios y procesos a la vez. La escala se juzga contra eso, y se dice qué carga se asumió.
@@ -27,7 +27,7 @@ Es un informe que el usuario pidió, así que se entrega completo. **No cambia c
 6. **Velocidad:** las lentitudes grandes son problemas; las mejoras chicas, sugerencias.
 7. **Sobrante:** lo que no debería existir o debería ser más chico:
    - borrar: código muerto, opciones sin uso, funciones especulativas;
-   - reusar: el proyecto ya tiene esa función (nombrar la ruta; buscar por las palabras clave y `impacto.py <nombre>` de Token Diet ayudan);
+   - reusar: el proyecto ya tiene esa función (nombrar la ruta; `impacto.py --existe <palabras>` ayuda);
    - estándar o plataforma: la biblioteca estándar ya lo hace, o una dependencia nueva para pocas líneas;
    - una abstracción con una sola implementación, o configuración que nadie usa;
    - fusionar copias casi iguales que deben cambiar juntas;

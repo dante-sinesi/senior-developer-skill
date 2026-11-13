@@ -17,13 +17,17 @@ Chequeos (sin argumento corre "todo"):
   evidencia   las citas archivo:línea de la documentación inferida del código existen (ver documentar-proyecto)
   docs        marca requisitos sin test e IDs sin documento (solo lectura: el
               índice se regenera aparte con senior-memoria/scripts/indexar_docs.py indexar)
-  dependencia Token Diet, la skill de ahorro de tokens, está instalada y al día (obligatoria: sin ella senior no se usa)
+  fuentes     documentos e imágenes de documentos-externos/ sin procesar (convertir a Markdown o reducir a 1024 px)
+              (se leen solo los .md de docs/fuentes/; ver senior-relevar/scripts/convertir_fuentes.py)
   requisitos  calidad del texto de docs/requisitos/: encabezado, IDs, enlaces, ejemplos verificables,
               palabras ambiguas y estado (ver senior-docs/scripts/revisar_requisitos.py)
   readme      el README.md de GitHub existe, está completo, enlaza a docs/,
               menciona cada carpeta, se actualizó con el cambio (sin excepciones)
               y no contiene texto ajeno al proyecto (consultas, configuración personal)
+  texto       límites de extensión, párrafos repetidos, secciones vacías e
+              información perdida en docs/ (ver texto.py)
   diagramas   legibilidad de los diagramas Mermaid (ver diagramas.py)
+  comentarios calidad de los comentarios del código modificado (ver comentarios.py)
   diseno      si el proyecto tiene docs/diseno/, comprueba que el código use las variables de diseño
               (sin copiar sus valores) y las etiquetas del contrato de campos; si no, no dice nada
   listones    el cambio no afloja controles para pasar: umbrales, tests salteados o borrados, supresiones
@@ -45,11 +49,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import atajos  # noqa: E402
+import comentarios  # noqa: E402
 import diagramas  # noqa: E402
 import escala  # noqa: E402 motivo: sys.path se ajusta antes, igual que los imports vecinos
 import guardia_listones  # noqa: E402 motivo: sys.path se ajusta antes, igual que los imports vecinos
 import secretos  # noqa: E402
 import seguridad  # noqa: E402
+import texto  # noqa: E402
 
 MARCAS_DEUDA = re.compile(r"\b(TODO|FIXME|HACK|XXX)\b")
 EXT_CODIGO = {".py", ".js", ".ts", ".tsx", ".jsx", ".php", ".java", ".kt", ".cs", ".go", ".rs", ".rb",
@@ -484,16 +490,53 @@ def chequeo_tarjetas(raiz, args):
     return modulo.verificar(raiz, "docs/tarjetas", "docs/img")
 
 
-def chequeo_dependencia(raiz, args):
-    """Token Diet es el motor de este paquete: sin ella instalada y al día, senior no se usa."""
+def chequeo_fuentes(raiz, args):
+    """Documentos externos: ninguno se lee sin convertirlo antes (carpeta documentos-externos/)."""
+    conversor = Path(__file__).resolve().parents[2] / "senior-relevar" / "scripts" / "convertir_fuentes.py"
+    if not conversor.exists():
+        return [], True
     import importlib.util
-    espec = importlib.util.spec_from_file_location("senior_token_diet", Path(__file__).resolve().with_name("token_diet.py"))
+    espec = importlib.util.spec_from_file_location("convertir_fuentes", conversor)
     modulo = importlib.util.module_from_spec(espec)
-    espec.loader.exec_module(modulo)
-    aviso = modulo.aviso()
-    if aviso:
-        return [f"Dependencia: {aviso}"], False
-    return [f"Dependencia: Token Diet {modulo.estado()['version']} instalada y con su hook de lectura activo."], True
+    try:
+        espec.loader.exec_module(modulo)
+        pendientes, total = modulo.estado_de_fuentes(raiz)
+    except Exception as e:  # noqa: BLE001 - se informa cualquier fallo del conversor
+        return [f"Fuentes: no se pudo revisar: {str(e)[:150]}"], False
+    if not total:
+        return [], True
+    if pendientes:
+        nombres = ", ".join(o.name for o, _ in pendientes[:4])
+        return [f"Fuentes: {len(pendientes)} de {total} documentos externos sin convertir o cambiados ({nombres}). "
+                "No leerlos directo: correr senior-relevar/scripts/convertir_fuentes.py y leer docs/fuentes/."], False
+    return [f"Fuentes: {total} documentos externos convertidos y al día."], True
+
+
+def chequeo_comentarios(raiz, args):
+    hallazgos, revisados, modo = comentarios.analizar(raiz, args.base)
+    if modo == "sin-git":
+        return ["Comentarios: no es un repositorio git (usar comentarios.py --todo)."], True
+    if not hallazgos:
+        return [f"Comentarios: {revisados} archivos modificados revisados, sin marcas."], True
+    salida = [f"Comentarios: {len(hallazgos)} marcas en el código modificado:"]
+    salida += [f"  {i} {r}:{l} — {m}" for i, r, l, m in hallazgos[:10]]
+    if len(hallazgos) > 10:
+        salida.append(f"  … y {len(hallazgos) - 10} más (ejecutar comentarios.py).")
+    return salida, False
+
+
+def chequeo_texto(raiz, args):
+    carpeta = raiz / "docs"
+    if not carpeta.is_dir():
+        return ["Texto: no existe docs/ (se omite)."], True
+    hallazgos = texto.analizar(raiz, carpeta, args.base)
+    if not hallazgos:
+        return ["Texto: documentos dentro de límites, sin repetición ni información perdida."], True
+    salida = [f"Texto: {len(hallazgos)} avisos:"]
+    salida += [f"  {i} {r} — {m}" for i, r, m in hallazgos[:10]]
+    if len(hallazgos) > 10:
+        salida.append(f"  … y {len(hallazgos) - 10} más (ejecutar texto.py).")
+    return salida, False
 
 
 def chequeo_seguridad(raiz, args):
@@ -514,8 +557,8 @@ def chequeo_seguridad(raiz, args):
 
 CHEQUEOS = {
     "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado, "escala": chequeo_escala, "evidencia": chequeo_evidencia,
-    "docs": chequeo_docs, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "dependencia": chequeo_dependencia, "diagramas": chequeo_diagramas,
-    "listones": chequeo_listones, "autoria": chequeo_autoria,
+    "docs": chequeo_docs, "fuentes": chequeo_fuentes, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
+    "comentarios": chequeo_comentarios, "listones": chequeo_listones, "autoria": chequeo_autoria,
     "diseno": chequeo_diseno, "seguridad": chequeo_seguridad, "secretos": chequeo_secretos, "tarjetas": chequeo_tarjetas,
 }
 

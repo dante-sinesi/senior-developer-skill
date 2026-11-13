@@ -8,7 +8,6 @@ Uso:
 Cada batería es un script `probar_*.py` que imprime «ok»/«MAL» por caso y sale con 1 si hay alguno mal. Lo que crean
 va en `.temporal/` (git lo ignora). Solo biblioteca estándar.
 """
-import json
 import os
 import subprocess
 import sys
@@ -16,18 +15,6 @@ import time
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-
-
-def casa_con_token_diet():
-    """Carpeta de inicio de mentira con Token Diet instalada (manifiesto y hook registrado): `senior` no se usa sin ella y las baterías
-    no deben depender de lo que haya en la máquina. Las que prueban la dependencia usan su propia carpeta."""
-    casa = AQUI.parent / ".temporal" / "casa-token-diet"
-    skill = casa / ".claude" / "skills" / "token-diet"
-    skill.mkdir(parents=True, exist_ok=True)
-    (skill / ".install.json").write_text(json.dumps({"version": "1.0.0", "files": {}, "hooks": []}), encoding="utf-8")
-    orden = f'python "{(skill / "scripts").as_posix()}/hook_lectura_externa.py"'
-    (casa / ".claude" / "settings.json").write_text(json.dumps({"hooks": {"PreToolUse": [{"matcher": "Read|Grep", "hooks": [{"type": "command", "command": orden}]}]}}), encoding="utf-8")
-    return casa
 
 
 def main():
@@ -38,7 +25,11 @@ def main():
     if not baterias:
         sys.exit("No hay baterías que coincidan.")
     fallan = []
-    entorno = {**os.environ, "SENIOR_TOKEN_DIET_HOME": str(casa_con_token_diet())}
+    # las baterías no deben depender de lo que haya instalado en la máquina (por ejemplo Token Diet: con ella el hook de lectura de senior cede):
+    # corren con una carpeta de inicio vacía; las que prueban Token Diet usan la suya
+    vacia = AQUI.parent / ".temporal" / "casa-vacia"
+    vacia.mkdir(parents=True, exist_ok=True)
+    entorno = {**os.environ, "SENIOR_TOKEN_DIET_HOME": str(vacia)}
     for b in baterias:
         t = time.perf_counter()
         r = subprocess.run([sys.executable, str(b)], capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=AQUI.parent, env=entorno)

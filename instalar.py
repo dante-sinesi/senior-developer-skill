@@ -3,15 +3,17 @@
 
 Uso:
     python instalar.py                         # instala las skills y registra los hooks, y dice qué falta
+    python instalar.py --instalar-dependencias # además instala markitdown y Pillow (tu aprobación explícita)
     python instalar.py --verificar             # solo informa el estado (incluye si lo instalado está al día con este repositorio); no escribe nada
 
 Qué hace:
   1. Comprueba Python 3.10 o superior, Git, el CLI `gh` (opcional, para GitHub) y `pip`.
   2. Copia las skills de este repositorio a ~/.claude/skills, reemplazando las del paquete (no toca ninguna otra
      skill) y pasando los archivos de texto a fin de línea de Unix.
-  3. Registra en ~/.claude/settings.json los hooks globales de Claude Code (autoría, escritura fuera del proyecto,
-     archivos protegidos, secretos y permisos desde el chat), conservando los ajustes que ya haya y con una copia de seguridad.
-  4. Comprueba que Token Diet esté instalada (la lectura de documentos e imágenes externos y el ahorro de tokens son suyos).
+  3. Registra en ~/.claude/settings.json los cinco hooks globales de Claude Code (autoría, lectura de documentos
+     externos, escritura fuera del proyecto, archivos protegidos y permisos desde el chat), conservando los ajustes que ya haya y con una copia de seguridad.
+  4. Comprueba las dos bibliotecas de Python obligatorias para documentos e imágenes externos: `markitdown` y
+     `Pillow`. Solo las instala con --instalar-dependencias: nunca lo hace por su cuenta.
   5. Imprime un informe con lo que quedó listo y los pasos que faltan (por ejemplo `gh auth login` y la identidad
      de Git de cada repositorio).
 Los hooks de Git de cada proyecto no se instalan aquí: la skill los activa sola la primera vez que se usa en cada
@@ -19,7 +21,6 @@ repositorio (guardia_autoria.py asegurar). Solo biblioteca estándar. Código de
 """
 import argparse
 import hashlib
-import json
 import importlib.util
 import shutil
 import subprocess
@@ -30,7 +31,8 @@ RAIZ = Path(__file__).resolve().parent
 SKILLS = RAIZ / "skills"
 DESTINO = Path.home() / ".claude" / "skills"
 TEXTO = {".py", ".md", ".json", ".html", ".css", ".js", ".txt", ".sh", ".yml", ".yaml"}
-
+DEPENDENCIAS = (("markitdown", 'markitdown[all]', "documentos externos (PDF, Word, Excel, PowerPoint, HTML, JSON…)"),
+                ("PIL", "pillow", "imágenes externas (reducción a 1024 px)"))
 
 
 def cargar_guardia():
@@ -71,23 +73,9 @@ def desactualizadas():
     return res
 
 
-def skills_retiradas():
-    """Skills que una instalación anterior de este paquete dejó registradas y que el repositorio ya no trae (se pasaron a otra skill)."""
-    registro = DESTINO / ".senior-instalacion.json"
-    try:
-        anteriores = set(json.loads(registro.read_text(encoding="utf-8-sig")).get("skills", {}))
-    except (OSError, ValueError, AttributeError):
-        return []
-    actuales = {d.name for d in SKILLS.iterdir() if d.is_dir()}
-    return sorted(n for n in anteriores - actuales if (DESTINO / n).is_dir())
-
-
 def instalar_skills():
     copiadas = []
     DESTINO.mkdir(parents=True, exist_ok=True)
-    for nombre in skills_retiradas():
-        shutil.rmtree(DESTINO / nombre)
-        print(f"Se retiró la skill `{nombre}`: este paquete ya no la trae (la cubre otra skill).")
     for origen in sorted(d for d in SKILLS.iterdir() if d.is_dir()):
         destino = DESTINO / origen.name
         if destino.exists():
@@ -99,6 +87,13 @@ def instalar_skills():
             shutil.copystat(f, salida)
         copiadas.append(origen.name)
     return copiadas
+
+
+def modulo_disponible(py, modulo):
+    try:
+        return subprocess.run([py, "-c", f"import {modulo}"], capture_output=True, timeout=60).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
 
 
 def programa(nombre, *args):
@@ -117,6 +112,7 @@ def main():
         sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--verificar", action="store_true", help="solo informar; no escribir nada")
+    ap.add_argument("--instalar-dependencias", action="store_true", help="instalar markitdown y Pillow con pip")
     ap.add_argument("--python", default=None, help="intérprete a usar para los hooks y las dependencias")
     args = ap.parse_args()
     listo, falta, avisos = [], [], []
@@ -161,15 +157,29 @@ def main():
     else:
         py = args.python or sys.executable
 
-    # Token Diet es obligatoria: sin ella instalada y al día, el paquete no termina bien y senior no se usa.
+    faltantes = [(m, p, para) for m, p, para in DEPENDENCIAS if not modulo_disponible(py, m)]
+    if faltantes and args.instalar_dependencias and not args.verificar:
+        paquetes = [p for _, p, _ in faltantes]
+        print(f"Instalando con pip (aprobado con --instalar-dependencias): {', '.join(paquetes)}")
+        p = subprocess.run([py, "-m", "pip", "install", *paquetes], encoding="utf-8", errors="replace")
+        if p.returncode != 0:
+            avisos.append("pip no pudo instalar alguna dependencia: revisar el mensaje de arriba")
+        faltantes = [(m, pk, para) for m, pk, para in DEPENDENCIAS if not modulo_disponible(py, m)]
+    for m, p, para in DEPENDENCIAS:
+        if (m, p, para) in faltantes:
+            falta.append(f"biblioteca `{p}` para {para}: `{py} -m pip install \"{p}\"` o `python instalar.py --instalar-dependencias`")
+        else:
+            listo.append(f"biblioteca `{p}` disponible")
+
+    # Token Diet: por ahora solo se avisa (la dependencia obligatoria llega al final del traspaso de mecánicas).
     espec_td = importlib.util.spec_from_file_location("senior_token_diet", RAIZ / "skills" / "senior" / "scripts" / "token_diet.py")
     modulo_td = importlib.util.module_from_spec(espec_td)
     espec_td.loader.exec_module(modulo_td)
     aviso_td = modulo_td.aviso()
     if aviso_td:
-        falta.append(f"Token Diet es obligatoria (es el motor de este paquete: lectura, resúmenes y ahorro de tokens; sin ella senior no se usa). {aviso_td}")
+        avisos.append(aviso_td)
     else:
-        listo.append(f"Token Diet {modulo_td.estado()['version']} instalada y con su hook de lectura activo")
+        listo.append(f"Token Diet {modulo_td.estado()['version']} instalada y con su hook de lectura activo (el de senior se hace a un lado)")
 
     print("Primeros pasos: estado de la instalación\n")
     for l in listo:

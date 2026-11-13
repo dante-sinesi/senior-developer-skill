@@ -34,6 +34,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 | `senior-lenguajes` | Perfiles de PHP, JavaScript/TypeScript, CSS, SQL y HTML; alta de lenguajes nuevos |
 | `senior-diseno` | Diseño de interfaces: tarjeta de estilo, método (tres alternativas, feedback, evolución) y reglas objetivas con script; el estilo es libre |
 | `documentar-proyecto` | Comando `/documentar-proyecto`: genera la documentación que falta de un proyecto existente, provisoria y con evidencia |
+| `auditar-consumo` | Comando `/auditar-consumo`: mide cuánto contexto consumen las skills, `CLAUDE.md` y la memoria, y propone qué recortar |
 | `auditar-diseno` | Comando `/auditar-diseno`: revisa la interfaz de un proyecto existente sin modificarlo |
 | `adoptar-proyecto` | Comando `/adoptar-proyecto`: plan, aprobación y creación de la base documental |
 | `cerrar-sesion` | Comando `/cerrar-sesion`: cierre ordenado opcional |
@@ -45,7 +46,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 - Python 3.10 o superior (los scripts usan solo la biblioteca estándar).
 - Git. El CLI `gh` es necesario solo para trabajar con GitHub.
 - Opcional: `npm`, `composer` o `pip-audit` si se quiere la auditoría de dependencias.
-- **Token Diet** ([token-diet-skill](https://github.com/dante-sinesi/token-diet-skill)), la skill de ahorro de tokens: **dependencia obligatoria**. Es el motor de este paquete (lectura de documentos e imágenes externos, capturas, resúmenes, auditoría y medición) y `senior` no se usa sin ella instalada y al día: `instalar.py` termina con «faltan cosas» y el comando exacto, `guardia_autoria.py asegurar` y `verificar.py dependencia` fallan, y al abrir una sesión sin ella `senior` no aplica su método y deja el comando en `docs/pendientes.md`, sin preguntar ni esperar. Los guardias de seguridad (autoría, escritura fuera del proyecto, archivos protegidos y secretos) siguen activos igual. Instalarla modifica la configuración de Claude Code y lo apruebas tú. Sus propias bibliotecas (`markitdown`, `Pillow`) se instalan con ella.
+- **Obligatorias para documentos e imágenes externos:** `markitdown` (`pip install "markitdown[all]"`) para los documentos y `Pillow` (`pip install pillow`) para las imágenes. Nunca se instalan solas: si falta una, se pide aprobación. Si falta alguna, el primer bloqueo de un documento o una imagen ya lo avisa y da el comando exacto de instalación para que lo apruebes; nunca se instalan solas.
 
 ## Primeros pasos
 
@@ -59,11 +60,11 @@ Para dejar todo funcionando la primera vez, o en una máquina nueva, en este ord
    ```
 3. **Ejecutar el instalador:**
    ```bash
-   python instalar.py
+   python instalar.py --instalar-dependencias
    ```
-   Copia las skills a `~/.claude/skills` (sin tocar las demás), registra en `~/.claude/settings.json` los dos hooks globales de Claude Code: un despachador (`hook_senior.py`) que corre en un solo proceso los cuatro controles de autoría, escritura fuera del proyecto, archivos protegidos y secretos, y el de permisos desde el chat (saca los hooks sueltos de versiones anteriores), y termina con un informe de qué quedó listo y qué falta, incluida Token Diet. No instala nada con pip. Con `--verificar` solo informa, sin escribir.
+   Copia las skills a `~/.claude/skills` (sin tocar las demás), registra en `~/.claude/settings.json` los dos hooks globales de Claude Code: un despachador (`hook_senior.py`) que corre en un solo proceso los cinco controles de autoría, lectura de documentos externos, escritura fuera del proyecto, archivos protegidos y secretos, y el de permisos desde el chat (saca los hooks sueltos de versiones anteriores), instala `markitdown` y `Pillow` con pip y termina con un informe de qué quedó listo y qué falta. Sin `--instalar-dependencias` no instala nada con pip: solo avisa. Con `--verificar` solo informa, sin escribir.
 4. **Si se usa GitHub:** `gh auth login`.
-5. **En cada proyecto,** abrir una sesión de Claude Code: la skill activa sola el hook de Git del repositorio y resuelve en nombre de quién se hacen los commits: usa la identidad local del repositorio o la sesión de GitHub (`gh`) y, **si no hay ninguna, Claude te pregunta** tu nombre de usuario de GitHub y tu correo. La skill no trae ningún nombre fijo.
+5. **En cada proyecto,** abrir una sesión de Claude Code: la skill activa sola el hook de Git del repositorio, crea `documentos-externos/` y resuelve en nombre de quién se hacen los commits: usa la identidad local del repositorio o la sesión de GitHub (`gh`) y, **si no hay ninguna, Claude te pregunta** tu nombre de usuario de GitHub y tu correo. La skill no trae ningún nombre fijo.
 6. **Abrir una sesión nueva** de Claude Code para que se apliquen los hooks globales.
 
 Instalación manual, si se prefiere: copiar las carpetas de `skills/` a `~/.claude/skills`, **todas juntas**, porque algunos scripts localizan a sus hermanas por ruta relativa.
@@ -195,7 +196,7 @@ python ~/.claude/skills/senior/scripts/verificar.py            # todo
 python ~/.claude/skills/senior/scripts/verificar.py readme     # un chequeo puntual
 ```
 
-Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `requisitos`, `dependencia`, `diagramas`, `listones`, `escala`, `evidencia`, `autoria`, `diseno`, `secretos`, `tarjetas` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `abrir_en_navegador.py` (abre un archivo o una página en una sola pestaña, con la dirección codificada), `hook_archivos_protegidos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
+Chequeos: `tamano`, `alcance`, `deuda`, `estado`, `docs`, `readme`, `fuentes`, `requisitos`, `texto`, `diagramas`, `comentarios`, `listones`, `escala`, `evidencia`, `autoria`, `diseno`, `secretos`, `tarjetas` y `seguridad` (con `--auditar` suma las dependencias). `diseno` solo dice algo si el proyecto tiene una carpeta `docs/diseno/`. Los demás scripts (`indexar_docs.py`, `relevar.py`, `duplicados.py`, `impacto.py`, `atajos.py`, `abrir_en_navegador.py` (abre un archivo o una página en una sola pestaña, con la dirección codificada), `hook_archivos_protegidos.py`, `repo_meta.py`, `temporal.py`, `hook_fuera_del_proyecto.py`, `guardia_bd_prueba.py`, `validar_commits.py`, `plan_adopcion.py`, entre otros) están en la carpeta `scripts/` de cada skill.
 
 Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
 
@@ -207,11 +208,21 @@ Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
 
 Está prohibido leer directamente un PDF, DOCX, XLSX, PPTX, HTML, JSON u otro documento externo, y una imagen sin reducirla: **siempre se procesan antes**. Es obligatorio.
 
-- **Los lee Token Diet:** `convertir_fuentes.py` de esa skill pasa los documentos a Markdown y reduce las imágenes a un máximo de **1024 px** en el lado más largo; se lee lo que deja en `.token-diet/sources/`. Lo que se manda por el chat pasa por el mismo comando.
-- Un **hook global de Claude Code**, también de Token Diet, lo hace obligatorio: bloquea la lectura directa y da el comando exacto.
-- Este paquete ya no trae esa mecánica: depende de Token Diet para todo lo que tiene que ver con el consumo de tokens.
+- La carpeta es **`documentos-externos/`**, en la raíz del proyecto. Se crea sola al iniciar y ahí se dejan los archivos.
+- Se ejecuta `senior-relevar/scripts/convertir_fuentes.py`: los documentos pasan a Markdown (se lee `docs/fuentes/`) y las imágenes se reducen a un máximo de **1024 px** en el lado más largo (se lee `docs/fuentes/imagenes/`).
+- Lo que se manda por el chat no se lee: se copia a la carpeta con `convertir_fuentes.py --importar <archivos>`, se procesa y se lee el resultado.
+- Un **hook global de Claude Code** lo hace obligatorio (lo registra `guardia_autoria.py asegurar`): bloquea la lectura directa y, en los casos de excepción, lo frena sin interrumpir o le pregunta al usuario, según el modo.
 
-Las cifras de ahorro y los casos que no se convierten (un PDF escaneado sin texto, un documento donde importa el diseño visual) los documenta Token Diet, que es quien los mide.
+Ahorro aproximado frente al original:
+- HTML o web, de 65 % a 87 %
+- PDF con diseño o tablas, de 40 % a 75 %
+- DOCX, XLSX o PPTX, de 30 % a 60 %
+- JSON y datos, de 15 % a 30 %
+- imágenes reducidas a 1024 px, de 50 % a 75 % de los tokens de visión.
+
+**No se aplica** a los PDF escaneados como imagen (sin texto embebido, haría falta OCR) ni a los documentos donde importa el diseño visual (ahí se usa el original o capturas)
+
+Los SVG y las imágenes de 1024 px o menos se leen directo. `verificar.py fuentes` avisa si hay archivos sin procesar.
 
 ## Diseño de interfaces
 
@@ -221,7 +232,7 @@ La skill `senior-diseno` forma parte del paquete: un **método** (briefing, tres
 - **Tarjeta de estilo (antes de las pantallas):** en proyectos medianos y grandes con interfaz, primero se define la identidad gráfica con tres alternativas de estilo (A, B y C) y feedback del usuario; la elegida queda como **tarjeta viva** (`senior-diseno/scripts/tarjeta_estilo.py`): una página que usa las variables reales del sistema y muestra la paleta, la tipografía y las piezas firma en todos sus estados. Las tres alternativas de estructura se diseñan después con ese estilo. Cada componente nuevo se agrega a la tarjeta en el mismo cambio, y `verificar.py diseno` falla si queda vieja. La tarjeta es un catálogo de estados y no una pantalla, así que la no saturación (cantidad de acciones y de campos) no se le aplica; sí el contraste, las etiquetas, los estados y la tipografía. En un juego o programa que no es una página, la tarjeta es una muestra dentro del propio programa (por ejemplo una escena de Godot con su tema); esa muestra la construye quien implementa y no se verifica por script, solo su tabla de componentes.
 - Los bosquejos no llevan tests; el TDD empieza al implementar la pantalla.
 - Al implementar, `verificar.py diseno` comprueba que el código use las variables de diseño y las etiquetas del contrato de campos.
-- **Consumo de contexto:** medir lo que se paga en cada sesión (descripciones de skills, `CLAUDE.md`, índice de la memoria) y la guía para cuidarlo son de Token Diet (`consumo.py` y `references/tokens.md` de esa skill); este paquete ya no trae su propia auditoría.
+- `/auditar-consumo` mide, sin modificar nada, cuánto contexto se paga en cada sesión (descripciones de skills, `CLAUDE.md`, índice de la memoria, `ESTADO.md`), cuánto al activarse una skill y qué conviene recortar primero. Las reglas para cuidar el contexto día a día están en `senior/references/tokens.md`. Con `--repo` mide las skills de la carpeta `skills/` del proyecto en lugar de las instaladas, para ver el efecto de un recorte sin reinstalar.
 - `/auditar-diseno` revisa un proyecto existente sin modificarlo: informe automático más una lectura de diseño (especificidad, diez heurísticas de 0 a 4, carga cognitiva).
 - **Paquete de inicio:** las reglas de diseño se pueden escribir como 10 requisitos no funcionales provisorios (`senior-diseno/scripts/paquete_interfaz.py`), propuestos al adoptar un proyecto con interfaz. El usuario acepta, cambia o descarta cada uno, y la trazabilidad los reconoce como verificados por el chequeo que declaran.
 
@@ -294,7 +305,7 @@ Primero muestra un plan sin escribir nada; con `--aplicar` lo hace. Invocar el c
 
 ## Trabajo sin supervisión
 
-Una pregunta en la interfaz detiene a Claude hasta que alguien responde, y quien lo deja trabajando horas no puede responder. Por eso los hooks que preguntaban (escritura fuera del proyecto y archivos protegidos) **por defecto no interrumpen**: bloquean la acción, le explican a Claude en el mismo mensaje qué hacer (escribir en `.temporal/`, anotar el pendiente en `docs/pendientes.md` y seguir) y dejan registrado lo bloqueado en `.git/senior-hooks.json`, que git no sube.
+Una pregunta en la interfaz detiene a Claude hasta que alguien responde, y quien lo deja trabajando horas no puede responder. Por eso los hooks que preguntaban (escritura fuera del proyecto, archivos protegidos y lectura directa de documentos externos) **por defecto no interrumpen**: bloquean la acción, le explican a Claude en el mismo mensaje qué hacer (escribir en `.temporal/`, anotar el pendiente en `docs/pendientes.md` y seguir) y dejan registrado lo bloqueado en `.git/senior-hooks.json`, que git no sube.
 
 - **Sin falsos positivos:** cuentan como «dentro del proyecto» la raíz de la sesión, el repositorio del directorio de trabajo y los **proyectos hermanos** (otros repositorios git de la misma carpeta, para quien trabaja en varios a la vez; `/hooks-hermanos no` lo apaga). Las variables del propio comando (`D=.temporal/x; cp a $D/b`) se resuelven, y una que no se puede resolver no se juzga. Una imagen que no se puede medir se lee si es chica y, si no, se bloquea con el comando para reducirla.
 - **Autorizar desde el chat:** escribir `/permitir <ruta>` (con comillas si tiene espacios; `-- motivo` opcional) autoriza de antemano una carpeta y todo lo que contiene, sin terminal ni sesión nueva. `/quitar-permiso <ruta>`, `/hooks-modo denegar|preguntar`, `/hooks-hermanos si|no` y `/permisos` completan el set. Lo recoge un hook de `UserPromptSubmit`, que solo se dispara con lo que escribe el usuario: Claude no puede usarlo. No acepta discos enteros ni la carpeta del usuario.
@@ -304,7 +315,7 @@ Una pregunta en la interfaz detiene a Claude hasta que alguien responde, y quien
 - **Entender qué pasó:** `/permisos` (o `permisos_hooks.py estado`) explica qué frena cada hook, cómo se autoriza, lo que ya está autorizado y lo bloqueado. `/cerrar-sesion` corre `permisos_hooks.py resumen`, que agrupa los bloqueos por hook, para decidir si autorizar algo; es un aviso al cerrar y no interrumpe el trabajo.
 - **Segunda capa:** el hook es una lista de patrones, así que no cubre un script guardado en un archivo ni una ruta armada con código; es una barrera contra descuidos, no contra una evasión deliberada. Claude Code trae dos defensas propias y `python ~/.claude/skills/senior/scripts/capas_extra.py` te dice cuál tenés activa, sin cambiar nada: `permissions.blockWritesOutsideWorkingDirectories` (Write, Edit y NotebookEdit; no limita los comandos de shell y también frena `/permitir` y los proyectos hermanos, que habría que agregar con `/add-dir`) y el `sandbox` (cubre cualquier comando de Bash o PowerShell, pero no existe en Windows nativo: hace falta correr Claude Code en WSL2). Las reglas `deny` de Bash no sirven como frontera. Activarlas es decisión tuya.
 - **Instalación desactualizada:** los hooks usan las copias de `~/.claude/skills`, así que si se cambia el repositorio y no se reinstala, protege la versión vieja. `instalar.py` anota de dónde instaló y la huella de cada skill (`~/.claude/skills/.senior-instalacion.json`), y `guardia_autoria.py asegurar` avisa cuando el repositorio tiene cambios sin instalar o cuando lo instalado se modificó a mano; `instalar.py --verificar` también lo informa sin escribir nada.
-- **Un solo proceso por llamada:** los cuatro controles de PreToolUse corren dentro de un único despachador (`hook_senior.py`) y deciden igual que cada hook por separado, pero una llamada de Bash tarda ~150 ms en lugar de ~400 ms. `guardia_autoria.py asegurar` migra los hooks sueltos de versiones anteriores.
+- **Un solo proceso por llamada:** los cinco controles de PreToolUse corren dentro de un único despachador (`hook_senior.py`) y deciden igual que cada hook por separado, pero una llamada de Bash tarda ~150 ms en lugar de ~400 ms. `guardia_autoria.py asegurar` migra los hooks sueltos de versiones anteriores.
 - **Un hook que falla por dentro no frena nada** (es lo correcto para no trabar el trabajo), pero ese silencio ya engañó dos veces. Con la variable `SENIOR_HOOK_DEPURAR=1` todos los hooks muestran el error en lugar de dejar pasar, y `tests/probar_depuracion.py` lo comprueba con una entrada que los rompe.
 - **Un bloqueo nunca manda a parar.** Pensado para sesiones largas sin supervisión: ningún mensaje de los hooks le pide a Claude que le pregunte al usuario, le avise o lo espere. Lo que necesita una decisión del usuario (autorizar `.env`, instalar una biblioteca, leer un original) se anota en `docs/pendientes.md` con el comando exacto para cuando vuelva, y el trabajo sigue; cuando la tarea pedía un secreto, se completa igual con los nombres y `<definido en .env>`. Si Claude insiste con el mismo intento, el registro lo cuenta y a la tercera vez el mensaje pone la alternativa primero, dice que repetir no sirve y manda a seguir; los que reinciden se resumen en `/cerrar-sesion`. Se probó con agentes reales sin supervisión: ninguno repitió un intento bloqueado, y `tests/probar_reincidencia.py` vigila que ningún mensaje vuelva a mandar a parar.
 - **Mencionar no es cambiar:** el hook protege la configuración de los hooks solo cuando es el **destino de un cambio** (una redirección, `tee`, `cp`, `mv`, `rm`, `sed -i`, `permisos_hooks.py permitir` o un script que escribe sobre ella). Un texto que solo la menciona (el cuerpo de un Pull Request, un mensaje de commit, un heredoc, un `echo`) no se bloquea, y tampoco se analiza como comando lo que va dentro de un heredoc que es solo texto.

@@ -15,6 +15,7 @@ import modo_hooks as mh  # noqa: E402
 
 FUERA = SK / "senior" / "scripts" / "hook_fuera_del_proyecto.py"
 PROT = SK / "senior" / "scripts" / "hook_archivos_protegidos.py"
+LECT = SK / "senior-relevar" / "scripts" / "hook_lectura_externa.py"
 PERM = SK / "senior" / "scripts" / "permisos_hooks.py"
 BASE = RAIZ / ".temporal" / "proy-hooks"
 mal = 0
@@ -140,6 +141,18 @@ r2, _ = hook(PROT, A, "Write", file_path=".env.production")
 chequear("un archivo protegido autorizado de antemano pasa y los demás no", r == "pasa" and r2 == "deniega", (r, r2))
 r, _ = hook(PROT, A, "Edit", file_path=".env.local")
 chequear("una ruta relativa se resuelve contra el proyecto", r == "deniega")
+
+# ---------- lectura de documentos externos (modificar la lista de lectura directa)
+r, msg = hook(LECT, A, "Write", file_path=str(A / "documentos-externos" / ".lectura-directa"))
+chequear("modificar la lista de lectura directa se deniega sin preguntar", r == "deniega" and "autorización del usuario" in msg, (r, msg))
+cli(A, "modo", "preguntar")
+r, _ = hook(LECT, A, "Write", file_path=str(A / "documentos-externos" / ".lectura-directa"))
+chequear("en modo preguntar pregunta", r == "pregunta")
+cli(A, "modo", "denegar")
+(A / "documentos-externos").mkdir()
+(A / "documentos-externos" / "informe.pdf").write_bytes(b"%PDF-1.4 x")
+r, msg = hook(LECT, A, "Read", file_path=str(A / "documentos-externos" / "informe.pdf"))
+chequear("leer un PDF externo sigue bloqueándose como antes (con el comando para convertirlo)", r == "bloquea" and "convertir_fuentes.py" in msg, (r, msg))
 
 # ---------- robustez
 B = crear("b", con_git=False)

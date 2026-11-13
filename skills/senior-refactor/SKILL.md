@@ -9,7 +9,7 @@ El código repetido no falla hoy: falla el día que hay que cambiar una de las c
 
 ## Antes de escribir algo nuevo
 
-El mejor refactor es el que no hace falta: antes de crear una función o un componente, se busca si el proyecto ya tiene algo parecido para reusar (ver «la escalera» en `senior`; `impacto.py <nombre>` de Token Diet para un nombre exacto).
+El mejor refactor es el que no hace falta: antes de crear una función o un componente, `senior/scripts/impacto.py --existe <palabras>` dice si el proyecto ya tiene algo parecido para reusar (ver «la escalera» en `senior`).
 
 ## Reglas
 
@@ -23,14 +23,14 @@ El mejor refactor es el que no hace falta: antes de crear una función o un comp
 ## Detectar duplicación (script)
 
 ```
-python <token-diet>/scripts/duplicados.py [--min-lines 6] [--ext py,js] [rutas]
+python <esta-skill>/scripts/duplicados.py [--lineas 6] [--minimo 2]
 ```
 
 Busca bloques de N o más líneas idénticas (salvo espacios y comentarios) en dos o más lugares y devuelve los grupos con sus ubicaciones. Solo detecta repetición literal; son **candidatos**: el criterio de extraer o no es de quien refactoriza. Para repetición con nombres cambiados, leer los candidatos y buscar patrones a mano con el mapa de conceptos.
 
 ## Procedimiento
 
-1. Ejecutar `duplicados.py` de Token Diet y elegir el grupo de mayor valor (más copias, lógica de negocio, zonas que se van a tocar).
+1. Ejecutar `duplicados.py` y elegir el grupo de mayor valor (más copias, lógica de negocio, zonas que se van a tocar).
 2. Confirmar que los tests de esa zona están en verde.
 3. Proponer al usuario la extracción (nombre, firma, dónde vive).
 4. Extraer en pasos mínimos: crear la función nueva, reemplazar una copia, correr tests, reemplazar la siguiente, correr tests.
@@ -39,7 +39,7 @@ Busca bloques de N o más líneas idénticas (salvo espacios y comentarios) en d
 
 ## Limpieza de comentarios
 
-Los comentarios de código que no se está modificando no se tocan. Si hay mucho por limpiar (código comentado, banners, comentarios que repiten el código), `python <token-diet>/scripts/comentarios.py <carpeta>` arma la lista; se anota en `docs/pendientes.md` y se propone como cambio aparte, con commit `refactor:` propio.
+Los comentarios de código que no se está modificando no se tocan. Si hay mucho por limpiar (código comentado, banners, comentarios que repiten el código), `python <ruta-de-senior>/scripts/comentarios.py --todo` arma la lista; se anota en `docs/pendientes.md` y se propone como cambio aparte, con commit `refactor:` propio.
 
 ## Excusas frecuentes y qué se responde
 

@@ -33,7 +33,7 @@ Documentación viva: se actualiza con cada cambio y se indexa automáticamente.
 - `diagramas/`: diagramas Mermaid, uno por pregunta.
 - `cambios/`: fichas de cambios medianos y grandes.
 - `historial/`: lo que sale de ESTADO.md por antigüedad (un archivo por mes) y fichas cerradas.
-- `fuentes/`: documentos externos convertidos a Markdown; es lo único que se lee de ellos. Los convierte `convertir_fuentes.py` de Token Diet.
+- `fuentes/`: documentos externos convertidos a Markdown; es lo único que se lee de ellos, junto con las imágenes reducidas de `fuentes/imagenes/` (se crea al procesar lo de `documentos-externos/`).
 - `consultas/`: cuestionarios de elicitación que el usuario responde en el propio archivo (opcional, se crea con `consultas.py`).
 """
 

@@ -64,11 +64,11 @@ python tarjeta_estilo.py elegir <estilo-x.html>         # la elegida pasa a ser 
 python tarjeta_estilo.py componente "Nombre" --variantes a,b --estados x,y   # componente nuevo: inventario y tarjeta
 python tarjeta_estilo.py estado                         # ¿la tarjeta está al día?
 python revisar_diseno.py todo docs/diseno/rondas/<ronda>/*.html [--tipo sitio|app] [--sitio] --capturas
-python <token-diet>/scripts/capturar.py <archivo.html>   # solo capturas, si hace falta por separado (Token Diet)
+python capturar.py <archivo.html>        # solo capturas, si hace falta por separado
 python colores.py "#1a1a1a" "#ffffff"
 ```
 
-`revisar_diseno.py` acepta los chequeos `base`, `tipografia`, `saturacion`, `interaccion`, `estados`, `etiquetas`, `contraste` y `sistema`; ninguno juzga el aspecto. FALLA incumple una regla estricta; una excepción se justifica por escrito dentro de la pantalla con `<!-- excepcion-saturacion: motivo -->` (o `excepcion-tipografia`). Son heurísticas: marcan qué mirar. `--capturas` saca PNG de desktop y mobile con `capturar.py` de Token Diet (usa el Edge o Chrome instalados), que se leen como imágenes.
+`revisar_diseno.py` acepta los chequeos `base`, `tipografia`, `saturacion`, `interaccion`, `estados`, `etiquetas`, `contraste` y `sistema`; ninguno juzga el aspecto. FALLA incumple una regla estricta; una excepción se justifica por escrito dentro de la pantalla con `<!-- excepcion-saturacion: motivo -->` (o `excepcion-tipografia`). Son heurísticas: marcan qué mirar. `capturar.py` usa el Edge o Chrome instalados para sacar PNG de desktop y mobile, que se leen como imágenes.
 
 ## Otros modos
 
