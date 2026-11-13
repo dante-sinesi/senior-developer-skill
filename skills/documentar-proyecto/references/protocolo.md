@@ -5,7 +5,7 @@ Cómo se escriben los requisitos funcionales y los diagramas de secuencia de un 
 ## Requisitos funcionales (RF) por módulo
 
 1. **Elegir el módulo** de `documentar.py progreso` (primero los más grandes y los más centrales en `docs/diagramas/modulos.md`).
-2. **Leer con foco**, no todo: los puntos de entrada del módulo, sus clases públicas y los archivos que el índice (`indexar_docs.py consultar`) o el relevamiento marcan como centrales. Ver `senior/references/tokens.md` para leer por partes.
+2. **Leer con foco**, no todo: los puntos de entrada del módulo, sus clases públicas y los archivos que el índice (`indexar_docs.py consultar`) o el relevamiento marcan como centrales. Para leer por partes, ver la guía `references/tokens.md` de Token Diet.
 3. **Escribir de 3 a 8 RF por módulo**, uno por cosa que el módulo hace para quien lo usa, con `documentar.py requisito --tipo RF --modulo <módulo> --titulo "…" --descripcion "…" --evidencia archivo:línea`. Cada uno:
    - **Un verbo y un objeto** en el título («Facturar un pedido», no «Facturación»).
    - **Descripción en una o dos oraciones**, con «debe» o en presente («El sistema calcula…»), sobre lo que el código hace, sin decir por qué.
