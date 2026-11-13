@@ -88,8 +88,8 @@ def construir_plan(info, tipo):
         plan.append(("propuesta", "Requisitos de interfaz iniciales (si el proyecto tendrá interfaz): 10 requisitos no funcionales "
                                   "provisorios con las reglas de diseño (tipografía, etiquetas, campos, contraste, foco…) con "
                                   "senior-diseno/scripts/paquete_interfaz.py; el usuario acepta, cambia o descarta cada uno"))
-    plan.append(("auto", "Preparar documentos-externos/ y procesar lo que haya: documentos a Markdown e imágenes reducidas a 1024 px "
-                         "(obligatorio: ningún documento ni imagen externos se leen directo; el usuario deja ahí los archivos, o lo que llegue por el chat se copia ahí; excepciones: PDF "
+    plan.append(("auto", "Preparar documentos-externos/ y convertir lo que haya (PDF y HTML a Markdown) "
+                         "(obligatorio: un PDF o un HTML externo no se lee directo; el usuario deja ahí los archivos, o lo que llegue por el chat se copia ahí; excepciones: PDF "
                          "escaneados y diseño visual)"))
     if info.get("documentos"):
         plan.append(("manual", f"Hay {info['documentos']} documentos externos sueltos en el proyecto (PDF, Word, etc.): moverlos a "

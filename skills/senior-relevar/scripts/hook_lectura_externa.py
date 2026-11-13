@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Hook de Claude Code (PreToolUse): impide leer directamente documentos e imágenes externos.
+"""Hook de Claude Code (PreToolUse): impide leer directamente un PDF o un HTML externo.
 
-Regla del paquete senior: ningún documento externo se lee sin convertirlo antes (convertir_fuentes.py) ni ninguna
-imagen grande sin reducirla. Este hook lo hace obligatorio para la herramienta Read y, de forma aproximada, para
-comandos de lectura de Bash y PowerShell (cat, type, Get-Content, head, tail, pdftotext…).
+Regla del paquete senior (acotada según las mediciones con agentes reales de Token Diet 1.0.2): un PDF o un HTML externo no se lee
+sin convertirlo antes (convertir_fuentes.py). Leer un PDF entero cuesta 4 veces más y convertirlo ahorra ~74 %. NO se bloquean las
+imágenes (la lectura nativa ya las reduce; bloquearlas costó +8 %), ni Word y Excel (el agente los abre con la terminal y esta regla
+no los alcanza), ni JSON, CSV o texto (compactarlos antes no ahorra). Con Token Diet 1.0.2 o posterior instalada y su hook activo, el PDF
+lo bloquea ella y este hook se hace a un lado. Cubre la herramienta Read y, de forma aproximada, los comandos de lectura de Bash y PowerShell.
 
 Qué cubre:
-  - PDF, Word, Excel, PowerPoint, EPUB, RTF y OpenDocument: siempre (nunca son código).
-  - HTML, JSON, CSV, XML, TXT y MD: solo dentro de una carpeta `documentos-externos/` (fuera de ella son código
-    o configuración del proyecto y se leen normalmente).
-  - Imágenes: las de más de 1024 px en su lado más largo (las chicas pasan; las reducidas por el conversor, también).
-  - Siempre se puede leer lo que está en docs/fuentes/ (los .md convertidos y las imágenes reducidas).
+  - PDF: siempre (nunca es código).
+  - HTML: solo dentro de una carpeta `documentos-externos/` (fuera de ella es código del proyecto y se lee normalmente).
+  - Siempre se puede leer lo que está en docs/fuentes/ (los .md convertidos).
 
 Qué decide:
   - Bloquea (código 2) y le dice a Claude qué comando usar: `convertir_fuentes.py --importar <ruta>`, o leer el .md
@@ -32,8 +32,8 @@ import struct
 import sys
 from pathlib import Path
 
-BINARIOS = {".pdf", ".docx", ".doc", ".xlsx", ".xls", ".pptx", ".ppt", ".epub", ".rtf", ".odt", ".ods", ".odp"}
-TEXTUALES = {".html", ".htm", ".json", ".csv", ".xml", ".txt", ".md"}
+BINARIOS = {".pdf"}  # lo único que mostró ahorro medido con agentes reales; Word y Excel el agente los abre con la terminal
+TEXTUALES = {".html", ".htm"}  # el HTML sigue siendo de senior hasta que se mida; JSON, CSV y texto no ahorran al compactarse
 IMAGENES = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".tif", ".tiff"}
 CARPETA = "documentos-externos"
 MAX_PX = 1024
@@ -143,7 +143,7 @@ def modulo_instalado(nombre):
 
 def aviso_dependencia(ext):
     """Si falta la biblioteca que el conversor necesita, lo dice en el primer bloqueo, con el comando exacto, en lugar de esperar a que el conversor falle."""
-    modulo, paquete = ("PIL", "pillow") if ext in IMAGENES else ("markitdown", "markitdown[all]")
+    modulo, paquete = "markitdown", "markitdown[all]"
     if modulo_instalado(modulo):
         return ""
     return (f"ANTES DE CONVERTIR: en esta máquina falta `{paquete}` y es obligatoria. Es una instalación que necesita la aprobación del usuario (nunca se instala sola): "
@@ -162,17 +162,6 @@ def decidir(ruta, cwd, es_shell=False):
         cubierto = True
     elif ext in TEXTUALES:
         cubierto = en_carpeta(ruta, CARPETA) and ruta.name.lower() != "leeme.md"
-    elif ext in IMAGENES and not es_shell:
-        d = dimensiones(ruta)
-        if d is None:
-            if ruta.exists() and ruta.stat().st_size <= 150_000:
-                return None  # una imagen chica no pesa lo suficiente como para frenar el trabajo
-            comando_img = f'python "{conversor().as_posix()}" --importar "{ruta}"'
-            return "negar", (f"No se pudo medir la imagen {ruta.name} (formato no reconocido) y pesa más de 150 KB. Copiarla y reducirla con: {comando_img} "
-                             "y leer la copia de docs/fuentes/imagenes/. Si el conversor tampoco puede abrirla, dejalo anotado en `docs/pendientes.md` y seguí sin ella.")
-        if max(d) <= MAX_PX:
-            return None
-        cubierto = True
     else:
         cubierto = False
     if not cubierto:
@@ -182,12 +171,6 @@ def decidir(ruta, cwd, es_shell=False):
         return None
     comando = f'python "{conversor().as_posix()}" --importar "{ruta}"'
     aviso = aviso_dependencia(ext)
-    if ext in IMAGENES:
-        d = dimensiones(ruta)
-        return "negar", (aviso + f"La imagen {ruta.name} mide {d[0]}x{d[1]} px y las imágenes externas no se leen sin reducirlas "
-                         f"a un máximo de {MAX_PX} px (ahorra entre 50 % y 75 % de tokens). Copiarla y reducirla con: {comando} "
-                         "y leer la copia de docs/fuentes/imagenes/. Si hace falta más detalle, dejá anotado en `docs/pendientes.md` que el usuario puede pedir un máximo "
-                         "mayor con --max-px.")
     if ruta.exists() and en_carpeta(ruta, CARPETA):
         md, marca = estado_conversion(ruta, raiz)
         if md is not None and marca:

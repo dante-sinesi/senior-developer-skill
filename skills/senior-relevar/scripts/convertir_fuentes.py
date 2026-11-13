@@ -180,8 +180,9 @@ def plan_de_imagenes(imagenes, destino_dir):
 def estado_de_fuentes(raiz, salida="docs/fuentes"):
     """(archivos sin procesar o cambiados, total) de la carpeta de entrada; para verificar.py."""
     carpeta = raiz / CARPETA_ENTRADA
-    archivos, imagenes, _, _ = recolectar([carpeta] if carpeta.is_dir() else [])
-    plan = plan_de_conversion(archivos, raiz / salida) + plan_de_imagenes(imagenes, raiz / salida)
+    archivos, _, _, _ = recolectar([carpeta] if carpeta.is_dir() else [])
+    archivos = [a for a in archivos if a.suffix.lower() in (".pdf", ".html", ".htm")]  # la regla obligatoria alcanza solo a PDF y HTML
+    plan = plan_de_conversion(archivos, raiz / salida)
     return [(o, e) for o, _, e in plan if e != "al-dia"], len(plan)
 
 
@@ -287,10 +288,8 @@ def reducir_imagenes(plan, raiz, destino_dir, max_px, forzar, silencioso=False):
     try:
         from PIL import Image, ImageOps
     except ImportError:
-        return 2, ["Falta `Pillow`, que es OBLIGATORIA para las imágenes: ninguna imagen externa se lee sin reducirla antes.",
-                   "NO leer la imagen original como alternativa. La instalación necesita la aprobación del usuario (este script no instala nada por su cuenta): dejar anotado en "
-                   f"`docs/pendientes.md` el comando exacto {comando_pip('pillow')} (o `python instalar.py --instalar-dependencias`, que instala las dos bibliotecas) para que la apruebe "
-                   "cuando vuelva, y mientras tanto seguir sin esa imagen, sin esperar."]
+        # Pillow ya no es obligatoria: la lectura nativa de imágenes de Claude ya las reduce (bloquearlas costó +8 % en las mediciones)
+        return 0, ([] if silencioso else ["Imágenes: sin reducir (Pillow no está instalada y ya no es obligatoria)."])
     dir_imagenes = destino_dir / SUBCARPETA_IMAGENES
     dir_imagenes.mkdir(parents=True, exist_ok=True)
     manifiesto = leer_manifiesto(dir_imagenes)

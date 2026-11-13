@@ -3,7 +3,7 @@
 
 Uso:
     python instalar.py                         # instala las skills y registra los hooks, y dice qué falta
-    python instalar.py --instalar-dependencias # además instala markitdown y Pillow (tu aprobación explícita)
+    python instalar.py --instalar-dependencias # además instala markitdown (tu aprobación explícita)
     python instalar.py --verificar             # solo informa el estado (incluye si lo instalado está al día con este repositorio); no escribe nada
 
 Qué hace:
@@ -12,8 +12,8 @@ Qué hace:
      skill) y pasando los archivos de texto a fin de línea de Unix.
   3. Registra en ~/.claude/settings.json los cinco hooks globales de Claude Code (autoría, lectura de documentos
      externos, escritura fuera del proyecto, archivos protegidos y permisos desde el chat), conservando los ajustes que ya haya y con una copia de seguridad.
-  4. Comprueba las dos bibliotecas de Python obligatorias para documentos e imágenes externos: `markitdown` y
-     `Pillow`. Solo las instala con --instalar-dependencias: nunca lo hace por su cuenta.
+  4. Comprueba la biblioteca de Python que convierte los PDF y HTML externos: `markitdown`. Solo la instala con
+     --instalar-dependencias: nunca lo hace por su cuenta. (`Pillow` ya no es obligatoria.)
   5. Imprime un informe con lo que quedó listo y los pasos que faltan (por ejemplo `gh auth login` y la identidad
      de Git de cada repositorio).
 Los hooks de Git de cada proyecto no se instalan aquí: la skill los activa sola la primera vez que se usa en cada
@@ -31,8 +31,7 @@ RAIZ = Path(__file__).resolve().parent
 SKILLS = RAIZ / "skills"
 DESTINO = Path.home() / ".claude" / "skills"
 TEXTO = {".py", ".md", ".json", ".html", ".css", ".js", ".txt", ".sh", ".yml", ".yaml"}
-DEPENDENCIAS = (("markitdown", 'markitdown[all]', "documentos externos (PDF, Word, Excel, PowerPoint, HTML, JSON…)"),
-                ("PIL", "pillow", "imágenes externas (reducción a 1024 px)"))
+DEPENDENCIAS = (("markitdown", 'markitdown[all]', "PDF y HTML externos"),)
 
 
 def cargar_guardia():
@@ -112,7 +111,7 @@ def main():
         sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--verificar", action="store_true", help="solo informar; no escribir nada")
-    ap.add_argument("--instalar-dependencias", action="store_true", help="instalar markitdown y Pillow con pip")
+    ap.add_argument("--instalar-dependencias", action="store_true", help="instalar markitdown con pip")
     ap.add_argument("--python", default=None, help="intérprete a usar para los hooks y las dependencias")
     args = ap.parse_args()
     listo, falta, avisos = [], [], []
