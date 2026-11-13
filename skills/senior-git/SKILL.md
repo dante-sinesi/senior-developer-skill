@@ -86,7 +86,7 @@ Atajos que se ofrecen solos cuando el trabajo aprieta. Si aparece uno de estos p
 
 ## Brevedad
 
-El asunto del commit alcanza; el cuerpo se agrega solo cuando el porqué no es evidente. La descripción del PR no pasa de unas 30 líneas (`texto.py --pr pr.md` lo mide): enlaza a la ficha, los requisitos y los ADR en lugar de copiarlos.
+El asunto del commit alcanza; el cuerpo se agrega solo cuando el porqué no es evidente. La descripción del PR no pasa de unas 30 líneas (`texto.py check pr.md` de Token Diet lo mide): enlaza a la ficha, los requisitos y los ADR en lugar de copiarlos.
 
 Antes de abrir el PR conviene correr `/revisar-cambio rama`: el informe de hallazgos numerados ayuda a completar la sección de seguridad y de riesgos de la descripción.
 

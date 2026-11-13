@@ -9,6 +9,10 @@
 | Mediano | hasta 10 archivos y 300 líneas | Ficha de cambio propia con alcance y lista de pasos. Documentación afectada al día. Diagrama de secuencia si cruza capas. Revisión de seguridad con la lista de `senior-seguridad`. PR con descripción completa. |
 | Grande | más que lo anterior | Todo lo del nivel mediano, y además: plantear al usuario si conviene dividirlo en cambios menores, presentar el plan antes de empezar y consultar el uso de agentes en paralelo (con su costo en tokens). |
 
+## No es el perfil de dieta de Token Diet
+
+Esta tabla y la escala del proyecto fijan **cuánto método** lleva el trabajo (tests, fichas, documentación, seguridad). El perfil de dieta de Token Diet (`modo.py profile light|standard|strict`) fija **cuánto se gasta** en leer y en resúmenes. Son independientes: uno no reemplaza al otro.
+
 ## La escala del proyecto es otra cosa
 
 Esta tabla mide **un cambio**. La escala (`escala.py niveles`: pequeño, mediano o grande) mide **el proyecto entero** y fija el piso de método desde el primer día: arquitectura antes de código, requisitos, seguridad formal y cobertura mínima en el nivel grande. Se pregunta una sola vez al empezar y queda en `docs/ESTADO.md`; si el proyecto crece, sube sola, sin preguntar ni bajar. Un cambio chico en un proyecto grande sigue siendo chico, pero se hace sobre ese piso.

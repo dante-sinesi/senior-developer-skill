@@ -39,7 +39,7 @@ Busca bloques de N o más líneas idénticas (salvo espacios y comentarios) en d
 
 ## Limpieza de comentarios
 
-Los comentarios de código que no se está modificando no se tocan. Si hay mucho por limpiar (código comentado, banners, comentarios que repiten el código), `python <ruta-de-senior>/scripts/comentarios.py --todo` arma la lista; se anota en `docs/pendientes.md` y se propone como cambio aparte, con commit `refactor:` propio.
+Los comentarios de código que no se está modificando no se tocan. Si hay mucho por limpiar (código comentado, banners, comentarios que repiten el código), `python <token-diet>/scripts/comentarios.py <carpeta>` arma la lista; se anota en `docs/pendientes.md` y se propone como cambio aparte, con commit `refactor:` propio.
 
 ## Excusas frecuentes y qué se responde
 

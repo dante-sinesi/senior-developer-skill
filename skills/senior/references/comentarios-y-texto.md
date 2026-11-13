@@ -63,7 +63,7 @@ Lo que excede no se borra: se clasifica y va a su lugar propio, dejando un enlac
 | PR | Enlazar a la ficha, los requisitos y los ADR en vez de repetirlos. |
 | Comentario largo | Explicación a un ADR y comentario de una línea que lo cite. |
 
-Procedimiento: (1) clasificar lo que sobra: repetido (se reemplaza por un enlace), detalle distinto (se mueve a su lugar), histórico (se archiva), obsoleto (se elimina; git lo conserva); (2) dejar en el original un enlace o un resumen de una línea; (3) correr `verificar.py texto` para comprobar que nada se perdió.
+Procedimiento: (1) clasificar lo que sobra: repetido (se reemplaza por un enlace), detalle distinto (se mueve a su lugar), histórico (se archiva), obsoleto (se elimina; git lo conserva); (2) dejar en el original un enlace o un resumen de una línea; (3) correr `texto.py check` y `texto.py compare` de Token Diet para comprobar que nada se perdió.
 
 ## 4. Un dato, un lugar
 
@@ -89,10 +89,11 @@ Si el mismo párrafo aparece en dos documentos, se deja en el de referencia y se
 ## 6. Vigilancia automática
 
 ```
-python <esta-skill>/scripts/verificar.py comentarios    # solo el código modificado
-python <esta-skill>/scripts/verificar.py texto          # límites, repetidos, vacías, información perdida
-python <esta-skill>/scripts/comentarios.py --todo       # todo el proyecto, para proponer una limpieza aparte
-python <esta-skill>/scripts/texto.py --pr pr.md         # medir la descripción de un PR
+python <token-diet>/scripts/comentarios.py --changed       # solo el código modificado
+python <token-diet>/scripts/texto.py check docs            # límites, repetidos, información perdida
+python <token-diet>/scripts/comentarios.py <carpeta>       # todo un árbol, para proponer una limpieza aparte
+python <token-diet>/scripts/texto.py check pr.md           # medir la descripción de un PR
+python <token-diet>/scripts/texto.py compare ANTERIOR NUEVO  # al mover o recortar texto: qué información se perdió
 ```
 
 Son heurísticas: marcan candidatos a revisar. `texto` compara con la versión anterior en git y avisa si un párrafo desapareció sin aparecer en otro documento (posible información perdida); no detecta reescrituras con otras palabras.
