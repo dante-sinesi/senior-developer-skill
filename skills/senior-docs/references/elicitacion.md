@@ -24,7 +24,7 @@ Cómo pasar de una idea o un pedido a requisitos confiables cuando todavía no e
 ## 2. Antes de preguntar
 
 Todo lo que se pueda averiguar sin molestar al usuario, se averigua primero:
-1. **Leer lo que ya existe:** documentos, planillas, formularios, capturas, correos pegados, el código si lo hay. Los documentos externos **siempre** se convierten antes, con `senior-relevar/scripts/convertir_fuentes.py` y las imágenes se reducen antes de leerlas (regla obligatoria de `senior-relevar`).
+1. **Leer lo que ya existe:** documentos, planillas, formularios, capturas, correos pegados, el código si lo hay. Un PDF largo conviene leerlo con Token Diet (convertirlo antes ahorra ~74 %) en lugar de entero.
 2. **Inferir lo razonable.** Lo que un proyecto de este tipo casi siempre necesita no se pregunta: se **propone** como supuesto y el usuario corrige solo si no le sirve.
 3. **Identificar quiénes importan:** quien usa, quien paga, quien opera, quien recibe resultados, quien audita. Cada uno ve algo distinto; si hay más de uno, el lote pregunta por cada uno.
 4. **Anotar el vocabulario** del usuario y usarlo en las preguntas, no términos técnicos.

@@ -47,7 +47,6 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 - Git. El CLI `gh` es necesario solo para trabajar con GitHub.
 - Opcional: `npm`, `composer` o `pip-audit` si se quiere la auditoría de dependencias.
 - Opcional, recomendada: **Token Diet** ([token-diet-skill](https://github.com/dante-sinesi/token-diet-skill), 1.0.2 o posterior), la skill de ahorro de tokens. Con ella instalada, su hook de lectura de PDF y su auditoría ceden el paso a las de ella (un PDF entero cuesta 4 veces más y convertirlo antes ahorra ~74 %, medido con agentes reales). Sin ella todo funciona igual y el paquete lo avisa una sola vez por proyecto.
-- **Obligatoria para convertir PDF y HTML externos:** `markitdown` (`pip install "markitdown[all]"`). `Pillow` ya no es obligatoria. Nunca se instalan solas: si falta una, se pide aprobación. Si falta alguna, el primer bloqueo de un documento o una imagen ya lo avisa y da el comando exacto de instalación para que lo apruebes; nunca se instalan solas.
 
 ## Primeros pasos
 
@@ -63,9 +62,9 @@ Para dejar todo funcionando la primera vez, o en una máquina nueva, en este ord
    ```bash
    python instalar.py --instalar-dependencias
    ```
-   Copia las skills a `~/.claude/skills` (sin tocar las demás), registra en `~/.claude/settings.json` los dos hooks globales de Claude Code: un despachador (`hook_senior.py`) que corre en un solo proceso los cinco controles de autoría, lectura de documentos externos, escritura fuera del proyecto, archivos protegidos y secretos, y el de permisos desde el chat (saca los hooks sueltos de versiones anteriores), instala `markitdown` y `Pillow` con pip y termina con un informe de qué quedó listo y qué falta. Sin `--instalar-dependencias` no instala nada con pip: solo avisa. Con `--verificar` solo informa, sin escribir.
+   Copia las skills a `~/.claude/skills` (sin tocar las demás), registra en `~/.claude/settings.json` los dos hooks globales de Claude Code: un despachador (`hook_senior.py`) que corre en un solo proceso los cuatro controles de autoría, escritura fuera del proyecto, archivos protegidos y secretos, y el de permisos desde el chat (saca los hooks sueltos de versiones anteriores), y termina con un informe de qué quedó listo y qué falta. No instala nada con pip. Con `--verificar` solo informa, sin escribir.
 4. **Si se usa GitHub:** `gh auth login`.
-5. **En cada proyecto,** abrir una sesión de Claude Code: la skill activa sola el hook de Git del repositorio, crea `documentos-externos/` y resuelve en nombre de quién se hacen los commits: usa la identidad local del repositorio o la sesión de GitHub (`gh`) y, **si no hay ninguna, Claude te pregunta** tu nombre de usuario de GitHub y tu correo. La skill no trae ningún nombre fijo.
+5. **En cada proyecto,** abrir una sesión de Claude Code: la skill activa sola el hook de Git del repositorio y resuelve en nombre de quién se hacen los commits: usa la identidad local del repositorio o la sesión de GitHub (`gh`) y, **si no hay ninguna, Claude te pregunta** tu nombre de usuario de GitHub y tu correo. La skill no trae ningún nombre fijo.
 6. **Abrir una sesión nueva** de Claude Code para que se apliquen los hooks globales.
 
 Instalación manual, si se prefiere: copiar las carpetas de `skills/` a `~/.claude/skills`, **todas juntas**, porque algunos scripts localizan a sus hermanas por ruta relativa.
@@ -205,16 +204,9 @@ Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
 
 `listones` (`senior/scripts/guardia_listones.py`) mira el diff y avisa cuando un cambio **afloja un control para pasar en verde**: umbrales de cobertura o de largo de línea movidos, `strict` apagado, `continue-on-error` o `|| true` en la integración continua, tests salteados, borrados o con menos verificaciones, supresiones nuevas (`# noqa`, `# type: ignore`, `eslint-disable`, `@ts-ignore`, `# nosec`), trabajo a medias (`NotImplementedError`, `except: pass`, `TODO` nuevos) y atajos nuevos. Endurecer un control es silencioso: solo se informa lo que afloja. Una excepción pasa si lleva su `motivo: …` escrito en la misma línea o en la anterior. Antes de un PR se corre con `--base main` para mirar toda la rama.
 
-## PDF y HTML externos
+## Lectura de PDF y documentos externos
 
-Un PDF o un HTML externo no se lee directo: **se convierte antes**. Está medido con agentes reales (Token Diet 1.0.2): un PDF entero cuesta 4 veces más y convertirlo antes ahorra ~74 %. No se aplica a las imágenes (la lectura nativa ya las reduce; bloquearlas costó +8 %), a Word y Excel ni a JSON, CSV y texto: esos se leen como siempre.
-
-- La carpeta es **`documentos-externos/`**, en la raíz del proyecto. Se crea sola al iniciar y ahí se dejan los archivos.
-- Se ejecuta `senior-relevar/scripts/convertir_fuentes.py`: el PDF o el HTML pasa a Markdown y se lee `docs/fuentes/`. Lo que se manda por el chat no se lee: se copia con `convertir_fuentes.py --importar <archivos>`.
-- Un **hook global de Claude Code** lo hace obligatorio (lo registra `guardia_autoria.py asegurar`): bloquea la lectura directa y, en los casos de excepción, lo frena sin interrumpir o le pregunta al usuario. Con Token Diet 1.0.2 o posterior instalada, el PDF lo bloquea ella.
-- Obligatoria para convertir: `markitdown`. Nunca se instala sola.
-
-**No se aplica** a los PDF escaneados como imagen (sin texto embebido, haría falta OCR) ni a los documentos donde importa el diseño visual (ahí se usa el original o capturas). Los SVG se leen directo. `verificar.py fuentes` avisa si hay PDF o HTML sin convertir.
+Esa mecánica es de **Token Diet** ([token-diet-skill](https://github.com/dante-sinesi/token-diet-skill)), la skill de ahorro de tokens: leer un PDF entero cuesta 4 veces más y convertirlo antes ahorra ~74 % (medido con agentes reales). Este paquete **no trae** conversor ni hook de lectura. Con Token Diet 1.0.2 o posterior instalada, un PDF se bloquea una sola vez y con el comando exacto; sin ella, el PDF se lee entero. Al abrir la primera sesión de un proyecto, el paquete avisa una vez cómo instalarla.
 
 ## Diseño de interfaces
 

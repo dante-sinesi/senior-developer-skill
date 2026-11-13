@@ -10,7 +10,6 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
 sys.stdout.reconfigure(encoding="utf-8")
-HOOK = RAIZ / "skills" / "senior-relevar" / "scripts" / "hook_lectura_externa.py"
 TD = RAIZ / "skills" / "senior" / "scripts" / "token_diet.py"
 CONSUMO = RAIZ / "skills" / "auditar-consumo" / "scripts" / "consumo.py"
 BASE = RAIZ / ".temporal" / "proy-token-diet"
@@ -55,38 +54,27 @@ espec = importlib.util.spec_from_file_location("token_diet", TD)
 td = importlib.util.module_from_spec(espec)
 espec.loader.exec_module(td)
 vacio = inicio("vacio")
-chequear("sin instalar: no cede y avisa cómo instalarla", not td.cede_lectura(vacio) and "no está instalada" in td.aviso(vacio) and "instalar.py install" in td.aviso(vacio), td.aviso(vacio))
+chequear("sin instalar: no cede y avisa cómo instalarla", "no está instalada" in td.aviso(vacio) and "instalar.py install" in td.aviso(vacio), td.aviso(vacio))
 ok = inicio("ok", "1.0.2")
-chequear("instalada 1.0.2 con su hook: cede y no avisa", td.cede_lectura(ok) and td.aviso(ok) == "", td.estado(ok))
+chequear("instalada 1.0.2 con su hook: cede y no avisa", td.estado(ok)["al_dia"] and td.aviso(ok) == "", td.estado(ok))
 viejo = inicio("viejo", "0.9.2")
-chequear("versión vieja: no cede y pide actualizar", not td.cede_lectura(viejo) and "anterior" in td.aviso(viejo), td.aviso(viejo))
+chequear("versión vieja: no cede y pide actualizar", "anterior" in td.aviso(viejo), td.aviso(viejo))
 v100 = inicio("v100", "1.0.0")
-chequear("1.0.0 es anterior a la mínima (1.0.2): no cede y pide actualizar", not td.cede_lectura(v100) and "anterior" in td.aviso(v100), td.aviso(v100))
+chequear("1.0.0 es anterior a la mínima (1.0.2): no cede y pide actualizar", "anterior" in td.aviso(v100), td.aviso(v100))
 sin_hook = inicio("sinhook", "1.0.2", hook=False)
-chequear("instalada sin hook registrado: no cede y lo dice", not td.cede_lectura(sin_hook) and "hook de lectura" in td.aviso(sin_hook), td.aviso(sin_hook))
+chequear("instalada sin hook registrado: no cede y lo dice", "hook de lectura" in td.aviso(sin_hook), td.aviso(sin_hook))
 roto = inicio("roto", "1.0.2", hook=False)
 (roto / ".claude" / "settings.json").write_text("{no es json", encoding="utf-8")
-chequear("settings ilegible: no rompe, no cede", not td.cede_lectura(roto))
+chequear("settings ilegible: no rompe y no cuenta el hook", not td.estado(roto)["hook_lectura"])
 nueva = inicio("mayor", "1.10.0")
-chequear("1.10.0 cuenta como mayor que 1.0.2 (no se compara como texto)", td.cede_lectura(nueva))
+chequear("1.10.0 cuenta como mayor que 1.0.2 (no se compara como texto)", td.estado(nueva)["al_dia"])
 
-# 2. el hook de senior: cede con Token Diet activa y bloquea sin ella
+# 2. senior ya no trae ni conversor ni hook de lectura: la lectura de PDF es de Token Diet
+for retirado in ("senior-relevar/scripts/hook_lectura_externa.py", "senior-relevar/scripts/convertir_fuentes.py"):
+    chequear(f"{retirado} ya no está en el paquete (lo hace Token Diet)", not (RAIZ / "skills" / retirado).exists())
+
 P = BASE / "proyecto"
-(P / "documentos-externos").mkdir(parents=True)
-subprocess.run(["git", "init", "-q"], cwd=P)
-pdf = P / "documentos-externos" / "manual.pdf"
-pdf.write_bytes(b"%PDF-1.4\n" + b"0" * 200)
-entrada = json.dumps({"tool_name": "Read", "tool_input": {"file_path": str(pdf)}, "cwd": str(P)})
-r = correr(HOOK, home=vacio, entrada=entrada)
-chequear("sin Token Diet: el hook de senior bloquea la lectura directa", "deny" in r.stdout or r.returncode == 2, (r.stdout, r.stderr))
-r = correr(HOOK, home=ok, entrada=entrada)
-chequear("con Token Diet activa (1.0.2): el PDF lo bloquea ella y el hook de senior no dice nada", r.returncode == 0 and not r.stdout.strip(), (r.stdout, r.stderr))
-html = P / "documentos-externos" / "pagina.html"
-html.write_text("<html><body>hola</body></html>", encoding="utf-8")
-r = correr(HOOK, home=ok, entrada=json.dumps({"tool_name": "Read", "tool_input": {"file_path": str(html)}, "cwd": str(P)}))
-chequear("con Token Diet activa el HTML sigue siendo de senior (no está medido en Token Diet)", "deny" in r.stdout or r.returncode == 2, (r.stdout, r.stderr))
-r = correr(HOOK, home=v100, entrada=entrada)
-chequear("con Token Diet 1.0.0 (vieja): senior sigue bloqueando el PDF", "deny" in r.stdout or r.returncode == 2, (r.stdout, r.stderr))
+P.mkdir(parents=True, exist_ok=True)
 
 # 3. la auditoría de senior cede la referencia
 r = correr(CONSUMO, "--raiz", str(P), "--home", str(ok))

@@ -3,7 +3,6 @@
 
 Uso:
     python instalar.py                         # instala las skills y registra los hooks, y dice qué falta
-    python instalar.py --instalar-dependencias # además instala markitdown (tu aprobación explícita)
     python instalar.py --verificar             # solo informa el estado (incluye si lo instalado está al día con este repositorio); no escribe nada
 
 Qué hace:
@@ -12,8 +11,7 @@ Qué hace:
      skill) y pasando los archivos de texto a fin de línea de Unix.
   3. Registra en ~/.claude/settings.json los cinco hooks globales de Claude Code (autoría, lectura de documentos
      externos, escritura fuera del proyecto, archivos protegidos y permisos desde el chat), conservando los ajustes que ya haya y con una copia de seguridad.
-  4. Comprueba la biblioteca de Python que convierte los PDF y HTML externos: `markitdown`. Solo la instala con
-     --instalar-dependencias: nunca lo hace por su cuenta. (`Pillow` ya no es obligatoria.)
+  4. Comprueba si Token Diet (skill de ahorro de tokens, recomendada, no obligatoria) está instalada y lo informa.
   5. Imprime un informe con lo que quedó listo y los pasos que faltan (por ejemplo `gh auth login` y la identidad
      de Git de cada repositorio).
 Los hooks de Git de cada proyecto no se instalan aquí: la skill los activa sola la primera vez que se usa en cada
@@ -31,7 +29,7 @@ RAIZ = Path(__file__).resolve().parent
 SKILLS = RAIZ / "skills"
 DESTINO = Path.home() / ".claude" / "skills"
 TEXTO = {".py", ".md", ".json", ".html", ".css", ".js", ".txt", ".sh", ".yml", ".yaml"}
-DEPENDENCIAS = (("markitdown", 'markitdown[all]', "PDF y HTML externos"),)
+
 
 
 def cargar_guardia():
@@ -88,13 +86,6 @@ def instalar_skills():
     return copiadas
 
 
-def modulo_disponible(py, modulo):
-    try:
-        return subprocess.run([py, "-c", f"import {modulo}"], capture_output=True, timeout=60).returncode == 0
-    except (OSError, subprocess.TimeoutExpired):
-        return False
-
-
 def programa(nombre, *args):
     ruta = shutil.which(nombre)
     if not ruta:
@@ -111,7 +102,6 @@ def main():
         sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--verificar", action="store_true", help="solo informar; no escribir nada")
-    ap.add_argument("--instalar-dependencias", action="store_true", help="instalar markitdown con pip")
     ap.add_argument("--python", default=None, help="intérprete a usar para los hooks y las dependencias")
     args = ap.parse_args()
     listo, falta, avisos = [], [], []
@@ -156,20 +146,6 @@ def main():
     else:
         py = args.python or sys.executable
 
-    faltantes = [(m, p, para) for m, p, para in DEPENDENCIAS if not modulo_disponible(py, m)]
-    if faltantes and args.instalar_dependencias and not args.verificar:
-        paquetes = [p for _, p, _ in faltantes]
-        print(f"Instalando con pip (aprobado con --instalar-dependencias): {', '.join(paquetes)}")
-        p = subprocess.run([py, "-m", "pip", "install", *paquetes], encoding="utf-8", errors="replace")
-        if p.returncode != 0:
-            avisos.append("pip no pudo instalar alguna dependencia: revisar el mensaje de arriba")
-        faltantes = [(m, pk, para) for m, pk, para in DEPENDENCIAS if not modulo_disponible(py, m)]
-    for m, p, para in DEPENDENCIAS:
-        if (m, p, para) in faltantes:
-            falta.append(f"biblioteca `{p}` para {para}: `{py} -m pip install \"{p}\"` o `python instalar.py --instalar-dependencias`")
-        else:
-            listo.append(f"biblioteca `{p}` disponible")
-
     # Token Diet es una dependencia blanda: si falta o es anterior a la 1.0.2 solo se avisa; senior sigue funcionando con lo suyo.
     espec_td = importlib.util.spec_from_file_location("senior_token_diet", RAIZ / "skills" / "senior" / "scripts" / "token_diet.py")
     modulo_td = importlib.util.module_from_spec(espec_td)
@@ -178,7 +154,7 @@ def main():
     if aviso_td:
         avisos.append(aviso_td)
     else:
-        listo.append(f"Token Diet {modulo_td.estado()['version']} instalada y con su hook de lectura activo (senior le cede los PDF y la auditoría)")
+        listo.append(f"Token Diet {modulo_td.estado()['version']} instalada y con su hook de lectura activo (ella lee los PDF; senior le cede la auditoría)")
 
     print("Primeros pasos: estado de la instalación\n")
     for l in listo:
@@ -190,7 +166,7 @@ def main():
     print("\nPasos que quedan en cada proyecto (los hace la skill o se hacen una vez por repositorio):")
     print("  - Identidad de Git, solo local, en cada repositorio: la skill usa la sesión de GitHub (gh auth login) y, si no")
     print("    hay ninguna, Claude pregunta en nombre de quién se hace el trabajo. No se usa la configuración global.")
-    print("  - Los hooks de Git y la carpeta documentos-externos/ los prepara la skill al iniciar el proyecto.")
+    print("  - Los hooks de Git los prepara la skill al iniciar el proyecto.")
     print("  - Los hooks de Claude Code se aplican al abrir una sesión nueva si se registraron en esta ejecución.")
     if falta:
         print("\nResultado: faltan cosas (ver FALTA).")

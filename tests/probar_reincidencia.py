@@ -93,24 +93,8 @@ mensajes.append(hook(SCRIPTS / "hook_secretos_claude.py", "Bash", command="git a
 mensajes.append(hook(SCRIPTS / "hook_secretos_claude.py", "Bash", command="echo X=1 " + GT + " .env"))
 mensajes.append(hook(SCRIPTS / "hook_secretos_claude.py", "Write", file_path="app.py", content="K = '" + "AKIA" + "QWERTYUIOPASDFGH" + "'\n"))
 mensajes.append(hook(SCRIPTS / "hook_senior.py", "Read", file_path=".env") if (SCRIPTS / "hook_senior.py").exists() else "")
-espec = importlib.util.spec_from_file_location("hle", RAIZ / "skills" / "senior-relevar" / "scripts" / "hook_lectura_externa.py")
-hle = importlib.util.module_from_spec(espec)
-espec.loader.exec_module(hle)
-hle.modulo_instalado = lambda nombre: False
-mensajes.append(hle.decidir(P / "manual.pdf", str(P))[1])
-shim = P / "sim"
-(shim / "PIL").mkdir(parents=True)
-(shim / "markitdown.py").write_text('raise ImportError("simulado")\n', encoding="utf-8")
-(shim / "PIL" / "__init__.py").write_text('raise ImportError("simulado")\n', encoding="utf-8")
-(P / "documentos-externos").mkdir()
-(P / "documentos-externos" / "m.pdf").write_bytes(b"%PDF-1.4\n" + b"0" * 100)
-(P / "documentos-externos" / "f.png").write_bytes(b"\x89PNG\r\n\x1a\n" + b"0" * 100)
-for archivo in ("documentos-externos/m.pdf",):
-    r = subprocess.run([sys.executable, str(RAIZ / "skills" / "senior-relevar" / "scripts" / "convertir_fuentes.py"), "--raiz", str(P), archivo], capture_output=True, text=True,
-                       encoding="utf-8", errors="replace", env={**os.environ, "PYTHONPATH": str(shim)}, cwd=P)
-    mensajes.append(r.stdout + r.stderr)
 mensajes = [m for m in mensajes if m]
-chequear(f"se juntaron los mensajes de todos los hooks ({len(mensajes)})", len(mensajes) >= 14, len(mensajes))
+chequear(f"se juntaron los mensajes de todos los hooks ({len(mensajes)})", len(mensajes) >= 10, len(mensajes))
 malos = [(PROHIBIDAS.search(m).group(0), m[:120]) for m in mensajes if PROHIBIDAS.search(m)]
 chequear("ningún mensaje de bloqueo manda a proponerle, pedirle, avisarle ni preguntarle al usuario, ni a parar o esperar", not malos, malos[:3])
 chequear("todo lo que necesita al usuario se anota en docs/pendientes.md y se sigue", all("pendientes.md" in m for m in mensajes if "/permitir" in m or "aprobaci" in m), [m[:100] for m in mensajes if ("/permitir" in m or "aprobaci" in m) and "pendientes.md" not in m][:2])
