@@ -617,6 +617,20 @@ def analizar(rutas, chequeos=None, tipo="sitio", incluir_css=False, sitio=False)
     return todos
 
 
+def capturar_con_token_diet(archivo, ancho, alto):
+    """Saca la captura con `capturar.py` de Token Diet (la dependencia del paquete); devuelve lo que ella informa o la razón por la que no pudo."""
+    import os
+    import subprocess
+    inicio = Path(os.environ.get("SENIOR_TOKEN_DIET_HOME") or Path.home())
+    script = inicio / ".claude" / "skills" / "token-diet" / "scripts" / "capturar.py"
+    if not script.is_file():
+        return "Token Diet no está instalada (se instala desde https://github.com/dante-sinesi/token-diet-skill con `python instalar.py install`)."
+    p = subprocess.run([sys.executable, str(script), str(archivo), "--width", str(ancho), "--height", str(alto)],
+                       capture_output=True, encoding="utf-8", errors="replace", timeout=180)
+    texto = (p.stdout + p.stderr).strip()
+    return texto.splitlines()[0] if texto else "sin salida"
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -625,7 +639,7 @@ def main():
     ap.add_argument("rutas", nargs="+")
     ap.add_argument("--tipo", choices=["sitio", "app"], default="sitio")
     ap.add_argument("--sitio", action="store_true", help="la regla de tipografía cuenta en el conjunto de archivos (un sitio completo)")
-    ap.add_argument("--capturas", action="store_true", help="además saca capturas de desktop y mobile de cada HTML (usa capturar.py)")
+    ap.add_argument("--capturas", action="store_true", help="además saca capturas de desktop y mobile de cada HTML (con capturar.py de Token Diet)")
     ap.add_argument("--max", type=int, default=30)
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
@@ -647,17 +661,10 @@ def main():
             if len(hallazgos) > args.max:
                 print(f"  … y {len(hallazgos) - args.max} más (usar --max o --json).")
     if args.capturas and not args.json:
-        import capturar  # noqa: E402
         for f in [x for x in archivos_de(args.rutas) if x.suffix.lower() in (".html", ".htm")]:
-            try:
-                png = capturar.capturar_archivo(f)
-            except RuntimeError as e:
-                print(f"Capturas: {e}")
-                break
-            if png:
-                print(f"Capturas de {f.name}: " + ", ".join(p.name for p in png) + f" (en {png[0].parent.as_posix()})")
-            else:
-                print(f"Capturas de {f.name}: no se pudo sacar ninguna (probar capturar.py por separado)")
+            print(f"Capturas de {f.name}:")
+            for nombre, ancho, alto in (("desktop", 1280, 800), ("mobile", 390, 844)):
+                print(f"  {nombre}: " + capturar_con_token_diet(f, ancho, alto))
     sys.exit(1 if any(h["sev"] == "FALLA" for h in hallazgos) else 0)
 
 

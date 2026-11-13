@@ -2,8 +2,7 @@
 """Detecta si Token Diet (skill independiente de ahorro de tokens) está instalada y activa.
 
 `senior` depende de Token Diet para todo lo que tiene que ver con el consumo de tokens (objetivo principal del
-paquete). Mientras las mecánicas propias siguen en `senior`, este módulo decide cuándo ceder el paso para que no
-haya dos bloqueadores con instrucciones distintas ante la misma lectura.
+paquete): la lectura de documentos e imágenes, su hook de lectura, las capturas y la auditoría son suyos.
 
 Se considera instalada si existe `~/.claude/skills/token-diet/.install.json` con una versión igual o mayor que la
 mínima. Se considera que su hook de lectura está activo si `~/.claude/settings.json` lo registra.
@@ -54,12 +53,6 @@ def estado(home=None):
     except (OSError, ValueError, AttributeError):
         pass
     return res
-
-
-def cede_lectura(home=None):
-    """True si el hook de lectura de Token Diet está instalado, al día y registrado: el de `senior` se hace a un lado."""
-    e = estado(home)
-    return e["instalada"] and e["al_dia"] and e["hook_lectura"]
 
 
 def aviso(home=None):

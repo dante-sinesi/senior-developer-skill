@@ -249,14 +249,21 @@ def cmd_instalar(raiz):
 
 
 HOOKS_CLAUDE = (  # hooks globales de Claude Code que esta guardia mantiene activos
-    # un solo proceso para los cinco controles de PreToolUse (autoría, documentos externos, fuera del proyecto, protegidos y secretos)
+    # un solo proceso para los cuatro controles de PreToolUse (autoría, fuera del proyecto, protegidos y secretos)
     {"script": "hook_senior.py", "skill": "senior", "matcher": "Read|Grep|Write|Edit|NotebookEdit|Bash|PowerShell",
-     "nombre": "de control de acciones (autoría, documentos externos, escritura fuera del proyecto, archivos protegidos y secretos)"},
+     "nombre": "de control de acciones (autoría, escritura fuera del proyecto, archivos protegidos y secretos)"},
     {"script": "hook_permisos_chat.py", "skill": "senior", "evento": "UserPromptSubmit", "matcher": None,
      "nombre": "de permisos desde el chat"},
 )
 # hooks sueltos de versiones anteriores: los reemplaza el despachador y se sacan para que no corran dos veces
 HOOKS_SUELTOS = ("hook_autoria_claude.py", "hook_lectura_externa.py", "hook_fuera_del_proyecto.py", "hook_archivos_protegidos.py", "hook_secretos_claude.py")
+
+
+def es_suelto(comando):
+    """True si el comando es uno de los hooks sueltos de senior que reemplaza el despachador. El hook de lectura de Token Diet se llama
+    igual que el que tuvo este paquete (`hook_lectura_externa.py`) pero es de otra skill: nunca se toca."""
+    comando = str(comando)
+    return any(s in comando for s in HOOKS_SUELTOS) and "token-diet" not in comando.lower().replace("\\", "/")
 
 
 def sacar_sueltos(ajustes):
@@ -268,7 +275,7 @@ def sacar_sueltos(ajustes):
     for g in grupos:
         if not isinstance(g, dict):
             continue
-        quedan = [h for h in g.get("hooks", []) if not any(s in str(h.get("command", "")) for s in HOOKS_SUELTOS)]
+        quedan = [h for h in g.get("hooks", []) if not es_suelto(h.get("command", ""))]
         sacados += len(g.get("hooks", [])) - len(quedan)
         g["hooks"] = quedan
     ajustes["hooks"]["PreToolUse"] = [g for g in grupos if not (isinstance(g, dict) and not g.get("hooks"))]
@@ -371,7 +378,7 @@ def asegurar_claude(solo_verificar):
         lineas.append(f"activé el hook global de Claude Code {hook['nombre']} (se aplica al abrir una sesión nueva)")
         cambio = True
     sueltos = sum(1 for g in (ajustes.get("hooks") or {}).get("PreToolUse", []) if isinstance(g, dict)
-                  for h in g.get("hooks", []) if any(s in str(h.get("command", "")) for s in HOOKS_SUELTOS))
+                  for h in g.get("hooks", []) if es_suelto(h.get("command", "")))
     if sueltos and solo_verificar:
         lineas.append(f"FALTA migrar {sueltos} hooks sueltos de Claude Code al despachador (corren de a uno y suman casi un segundo por llamada)")
         falta = True

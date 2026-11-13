@@ -57,7 +57,7 @@ Antes de entregar cualquier versión:
 
 1. **Reglas y capturas en un solo paso:** `python scripts/revisar_diseno.py todo <archivos> --capturas`. Sin FALLA, o con excepciones justificadas por escrito.
 2. **Corregir con el cambio mínimo.** Si falta una etiqueta, se agrega la etiqueta; si el contraste de un botón es bajo, se ajusta ese par de colores. **No se rediseña para pasar un chequeo.** Si la regla choca con una idea artística fuerte, se justifica la excepción.
-3. **Mirar el render:** leer las capturas de desktop y mobile que dejó el paso anterior (o `python scripts/capturar.py <archivo>`). Revisar que nada se rompa (desbordes, texto cortado, imágenes que no cargan, encoding). Si no hay navegador disponible, **decirlo** en la entrega: "no se vio renderizado".
+3. **Mirar el render:** leer las capturas de desktop y mobile que dejó el paso anterior (o `capturar.py <archivo>` de Token Diet). Revisar que nada se rompa (desbordes, texto cortado, imágenes que no cargan, encoding). Si no hay navegador disponible, **decirlo** en la entrega: "no se vio renderizado".
 
 ## 6. Interfaces de juego y de aplicación
 

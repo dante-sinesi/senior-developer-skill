@@ -88,12 +88,9 @@ def construir_plan(info, tipo):
         plan.append(("propuesta", "Requisitos de interfaz iniciales (si el proyecto tendrá interfaz): 10 requisitos no funcionales "
                                   "provisorios con las reglas de diseño (tipografía, etiquetas, campos, contraste, foco…) con "
                                   "senior-diseno/scripts/paquete_interfaz.py; el usuario acepta, cambia o descarta cada uno"))
-    plan.append(("auto", "Preparar documentos-externos/ y procesar lo que haya: documentos a Markdown e imágenes reducidas a 1024 px "
-                         "(obligatorio: ningún documento ni imagen externos se leen directo; el usuario deja ahí los archivos, o lo que llegue por el chat se copia ahí; excepciones: PDF "
-                         "escaneados y diseño visual)"))
     if info.get("documentos"):
-        plan.append(("manual", f"Hay {info['documentos']} documentos externos sueltos en el proyecto (PDF, Word, etc.): moverlos a "
-                               "documentos-externos/ para convertirlos antes de leerlos"))
+        plan.append(("manual", f"Hay {info['documentos']} documentos externos sueltos en el proyecto (PDF, Word, etc.): convertirlos con "
+                               "Token Diet (`convertir_fuentes.py`) antes de leerlos; nunca se leen directo"))
     plan.append(("auto", "Activar la guardia de autoría (hooks de Git del repositorio y hook global de Claude Code, si faltan): "
                          "impide subir commits con Claude o coautores; en GitHub figura solo el usuario"))
     plan.append(("auto", "Proteger los secretos: completar el .gitignore (.env, claves, certificados, bases locales) y activar los hooks de Git que frenan "
@@ -124,9 +121,6 @@ def aplicar(raiz, info, tipo):
         if relevar.exists() and not destino.exists():
             salidas.append(correr([sys.executable, "-I", str(relevar), "--raiz", str(raiz),
                                    "--salida", "docs/relevamiento.md"], raiz))
-    conversor = SKILLS / "senior-relevar" / "scripts" / "convertir_fuentes.py"
-    if conversor.exists():
-        salidas.append(correr([sys.executable, "-I", str(conversor), "--iniciar", "--raiz", str(raiz)], raiz))
     guardia = SKILLS / "senior-git" / "scripts" / "guardia_autoria.py"
     if guardia.exists() and (raiz / ".git").exists():
         salidas.append(correr([sys.executable, "-I", str(guardia), "asegurar", "--raiz", str(raiz)], raiz))
