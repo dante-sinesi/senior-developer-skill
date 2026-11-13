@@ -25,6 +25,7 @@ Salida: 0 sin hallazgos, 1 con hallazgos. Solo biblioteca estándar.
 """
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -283,24 +284,63 @@ def imprimir(hallazgos, salida=None):
         print(f"  {h['id']} {donde}{commit}: {h['descripcion']}{extracto}", file=salida)
 
 
-def estado_de_github(raiz):
-    """(líneas, ok): ¿el repositorio tiene el escaneo de secretos y la protección de subida de GitHub? Consulta la API con `gh`."""
-    r = subprocess.run(["gh", "api", "repos/{owner}/{repo}", "--jq", ".security_and_analysis"], cwd=raiz, capture_output=True, text=True,
-                       encoding="utf-8", errors="replace")
+def gh_cmd():
+    """El `gh` a usar: SENIOR_GH (lista JSON, para las pruebas) o el de la máquina."""
+    env = os.environ.get("SENIOR_GH")
+    if env:
+        try:
+            return list(json.loads(env))
+        except ValueError:
+            pass
+    return ["gh"]
+
+
+def _consultar_repo(raiz):
+    """(datos, error): la respuesta de la API del repositorio al que apunta origin."""
+    r = subprocess.run([*gh_cmd(), "api", "repos/{owner}/{repo}"], cwd=raiz, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if r.returncode != 0:
-        return ["No se pudo consultar GitHub (¿está `gh` instalado y con sesión iniciada?). Se revisa en Settings → Code security."], False
+        return None, (r.stderr or r.stdout).strip()[:200]
     try:
-        datos = json.loads(r.stdout or "null") or {}
+        return json.loads(r.stdout or "{}"), ""
     except ValueError:
-        datos = {}
+        return None, "respuesta ilegible"
+
+
+def estado_de_github(raiz):
+    """(líneas, ok): ¿el repositorio tiene el escaneo de secretos y la protección de subida de GitHub? Consulta la API con `gh`.
+    En un repositorio privado GitHub solo los ofrece con «GitHub Secret Protection» (de pago): se dice tal cual y no es un fallo que se pueda corregir."""
+    datos, error = _consultar_repo(raiz)
+    if datos is None:
+        return ["No se pudo consultar GitHub (¿está `gh` instalado y con sesión iniciada?). Se revisa en Settings → Code security."], False
+
     def estado(clave):
-        return (datos.get(clave) or {}).get("status", "sin información")
+        return ((datos.get("security_and_analysis") or {}).get(clave) or {}).get("status", "sin información")
     escaneo, proteccion = estado("secret_scanning"), estado("secret_scanning_push_protection")
     lineas = [f"GitHub: escaneo de secretos {escaneo}; protección de subida {proteccion}."]
-    ok = escaneo == "enabled" and proteccion == "enabled"
-    if not ok:
-        lineas.append("Activar ambos en Settings → Code security (en repositorios públicos son gratis). Es la única barrera que no se saltea con `git push --no-verify`.")
-    return lineas, ok
+    if escaneo == "enabled" and proteccion == "enabled":
+        return lineas, True
+    if datos.get("private"):
+        lineas.append("AVISO: es un repositorio privado y GitHub solo ofrece ambas protecciones con «GitHub Secret Protection» (de pago). Hasta entonces las barreras "
+                      "son locales: los hooks de git (que `--no-verify` saltearía) y el hook de Claude, que lo impide. Hacer público el repositorio o contratar el servicio las activa.")
+        return lineas, True  # no hay nada que corregir sin decidir lo anterior
+    lineas.append("Activarlas con `secretos.py github --activar` o en Settings → Code security (en repositorios públicos son gratis). Es la única barrera que no se saltea con `git push --no-verify`.")
+    return lineas, False
+
+
+def activar_en_github(raiz):
+    """(líneas, ok): activa el escaneo de secretos y la protección de subida en un repositorio público. Cambia la configuración del repositorio en GitHub."""
+    datos, error = _consultar_repo(raiz)
+    if datos is None:
+        return [f"No se pudo consultar GitHub: {error}"], False
+    if datos.get("private"):
+        return ["El repositorio es privado: GitHub solo ofrece el escaneo de secretos y la protección de subida con «GitHub Secret Protection» (de pago); no se activó nada."], False
+    cuerpo = json.dumps({"security_and_analysis": {"secret_scanning": {"status": "enabled"}, "secret_scanning_push_protection": {"status": "enabled"}}})
+    r = subprocess.run([*gh_cmd(), "api", "-X", "PATCH", "repos/{owner}/{repo}", "--input", "-"], cwd=raiz, input=cuerpo, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
+    if r.returncode != 0:
+        return [f"GitHub no la activó: {(r.stderr or r.stdout).strip()[:200]}"], False
+    lineas, ok = estado_de_github(raiz)
+    return ["Activada la protección de subida y el escaneo de secretos de GitHub."] + lineas, ok
 
 
 def main():
@@ -309,6 +349,7 @@ def main():
             flujo.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("modo", choices=["staged", "rango", "todo", "gitignore", "github"])
+    ap.add_argument("--activar", action="store_true", help="con «github»: activa el escaneo de secretos y la protección de subida (cambia la configuración del repositorio en GitHub)")
     ap.add_argument("resto", nargs="*", help="argumentos de git log (solo con «rango»)")
     ap.add_argument("--raiz", default=".")
     ap.add_argument("--aplicar", action="store_true")
@@ -326,7 +367,7 @@ def main():
         print(f"Al .gitignore le faltan {len(faltan)} líneas: {', '.join(faltan)}. Con --aplicar se agregan.")
         return 1
     if args.modo == "github":
-        lineas, ok = estado_de_github(raiz)
+        lineas, ok = activar_en_github(raiz) if args.activar else estado_de_github(raiz)
         print("\n".join(lineas))
         return 0 if ok else 1
     if args.modo == "staged":

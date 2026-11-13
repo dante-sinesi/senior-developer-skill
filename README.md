@@ -258,7 +258,7 @@ Ninguna clave, contraseña, token, certificado ni dato personal (tarjetas, docum
 1. **`.gitignore`:** `secretos.py gitignore --aplicar` completa los patrones (`.env`, claves, certificados, bases locales) y `verificar.py secretos` avisa si faltan o si un archivo así ya está versionado.
 2. **Hook de Claude** (`hook_secretos_claude.py`): frena escribir una clave en el código, leer `.env`, `git add -f` y una clave en un mensaje de commit o de Pull Request.
 3. **Hooks de git** (`pre-commit` y `pre-push`): revisan lo que se commitea y **todo el historial que se sube**, commit por commit, aunque la clave se haya borrado después. Se saltean con `--no-verify`.
-4. **GitHub:** escaneo de secretos y protección de subida, que no se saltean (`secretos.py github` comprueba si están activos).
+4. **GitHub:** escaneo de secretos y protección de subida, que no se saltean (`secretos.py github` comprueba si están activos y `--activar` los enciende; `/inicializar-repositorio` los activa en los repositorios públicos nuevos). Son gratis en repositorios públicos; en uno privado GitHub los ofrece solo con «GitHub Secret Protection» (de pago). Claude no puede saltear los hooks de git: `--no-verify`, `-n` de `commit` y `core.hooksPath` se bloquean.
 
 **`.env` se puede leer y modificar con permiso del usuario, y Claude lo propone.** Sin permiso trabaja con `env_gestion.py`: `estructura` muestra los nombres de las variables con los valores ocultos y `declarar NOMBRE` las agrega a `.env.example`. Cuando hace falta tocar `.env`, le plantea al usuario qué variables y para qué, y él lo autoriza escribiendo en el chat `/permitir .env`; el valor real de un secreto siempre lo completa el usuario.
 
