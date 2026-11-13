@@ -46,6 +46,7 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 - Python 3.10 o superior (los scripts usan solo la biblioteca estándar).
 - Git. El CLI `gh` es necesario solo para trabajar con GitHub.
 - Opcional: `npm`, `composer` o `pip-audit` si se quiere la auditoría de dependencias.
+- Opcional, recomendada: **Token Diet** ([token-diet-skill](https://github.com/dante-sinesi/token-diet-skill), 1.0.2 o posterior), la skill de ahorro de tokens. Con ella instalada, su hook de lectura de PDF y su auditoría ceden el paso a las de ella (un PDF entero cuesta 4 veces más y convertirlo antes ahorra ~74 %, medido con agentes reales). Sin ella todo funciona igual y el paquete lo avisa una sola vez por proyecto.
 - **Obligatorias para documentos e imágenes externos:** `markitdown` (`pip install "markitdown[all]"`) para los documentos y `Pillow` (`pip install pillow`) para las imágenes. Nunca se instalan solas: si falta una, se pide aprobación. Si falta alguna, el primer bloqueo de un documento o una imagen ya lo avisa y da el comando exacto de instalación para que lo apruebes; nunca se instalan solas.
 
 ## Primeros pasos

@@ -56,17 +56,19 @@ td = importlib.util.module_from_spec(espec)
 espec.loader.exec_module(td)
 vacio = inicio("vacio")
 chequear("sin instalar: no cede y avisa cómo instalarla", not td.cede_lectura(vacio) and "no está instalada" in td.aviso(vacio) and "instalar.py install" in td.aviso(vacio), td.aviso(vacio))
-ok = inicio("ok", "1.0.0")
-chequear("instalada 1.0.0 con su hook: cede y no avisa", td.cede_lectura(ok) and td.aviso(ok) == "", td.estado(ok))
+ok = inicio("ok", "1.0.2")
+chequear("instalada 1.0.2 con su hook: cede y no avisa", td.cede_lectura(ok) and td.aviso(ok) == "", td.estado(ok))
 viejo = inicio("viejo", "0.9.2")
 chequear("versión vieja: no cede y pide actualizar", not td.cede_lectura(viejo) and "anterior" in td.aviso(viejo), td.aviso(viejo))
-sin_hook = inicio("sinhook", "1.0.0", hook=False)
+v100 = inicio("v100", "1.0.0")
+chequear("1.0.0 es anterior a la mínima (1.0.2): no cede y pide actualizar", not td.cede_lectura(v100) and "anterior" in td.aviso(v100), td.aviso(v100))
+sin_hook = inicio("sinhook", "1.0.2", hook=False)
 chequear("instalada sin hook registrado: no cede y lo dice", not td.cede_lectura(sin_hook) and "hook de lectura" in td.aviso(sin_hook), td.aviso(sin_hook))
-roto = inicio("roto", "1.0.0", hook=False)
+roto = inicio("roto", "1.0.2", hook=False)
 (roto / ".claude" / "settings.json").write_text("{no es json", encoding="utf-8")
 chequear("settings ilegible: no rompe, no cede", not td.cede_lectura(roto))
 nueva = inicio("mayor", "1.10.0")
-chequear("1.10.0 cuenta como mayor que 1.0.0 (no se compara como texto)", td.cede_lectura(nueva))
+chequear("1.10.0 cuenta como mayor que 1.0.2 (no se compara como texto)", td.cede_lectura(nueva))
 
 # 2. el hook de senior: cede con Token Diet activa y bloquea sin ella
 P = BASE / "proyecto"
@@ -78,9 +80,13 @@ entrada = json.dumps({"tool_name": "Read", "tool_input": {"file_path": str(pdf)}
 r = correr(HOOK, home=vacio, entrada=entrada)
 chequear("sin Token Diet: el hook de senior bloquea la lectura directa", "deny" in r.stdout or r.returncode == 2, (r.stdout, r.stderr))
 r = correr(HOOK, home=ok, entrada=entrada)
-chequear("con Token Diet activa: el hook de senior no dice nada (bloquea una sola)", r.returncode == 0 and not r.stdout.strip(), (r.stdout, r.stderr))
-r = correr(HOOK, home=viejo, entrada=entrada)
-chequear("con Token Diet vieja: senior sigue bloqueando", "deny" in r.stdout or r.returncode == 2, (r.stdout, r.stderr))
+chequear("con Token Diet activa (1.0.2): el PDF lo bloquea ella y el hook de senior no dice nada", r.returncode == 0 and not r.stdout.strip(), (r.stdout, r.stderr))
+html = P / "documentos-externos" / "pagina.html"
+html.write_text("<html><body>hola</body></html>", encoding="utf-8")
+r = correr(HOOK, home=ok, entrada=json.dumps({"tool_name": "Read", "tool_input": {"file_path": str(html)}, "cwd": str(P)}))
+chequear("con Token Diet activa el HTML sigue siendo de senior (no está medido en Token Diet)", "deny" in r.stdout or r.returncode == 2, (r.stdout, r.stderr))
+r = correr(HOOK, home=v100, entrada=entrada)
+chequear("con Token Diet 1.0.0 (vieja): senior sigue bloqueando el PDF", "deny" in r.stdout or r.returncode == 2, (r.stdout, r.stderr))
 
 # 3. la auditoría de senior cede la referencia
 r = correr(CONSUMO, "--raiz", str(P), "--home", str(ok))
@@ -92,7 +98,23 @@ chequear("auditoría: sin Token Diet no agrega la nota", "referencia" not in r.s
 r = correr(RAIZ / "instalar.py", "--verificar", home=vacio)
 chequear("instalador: sin Token Diet muestra el aviso con el comando", "Token Diet no está instalada" in r.stdout, r.stdout[-600:])
 r = correr(RAIZ / "instalar.py", "--verificar", home=ok)
-chequear("instalador: con Token Diet lo da por listo", "Token Diet 1.0.0 instalada" in r.stdout, r.stdout[-600:])
+chequear("instalador: con Token Diet lo da por listo", "Token Diet 1.0.2 instalada" in r.stdout, r.stdout[-600:])
 chequear("la guardia del estado imprime y sale con 1 si falta", correr(TD, home=vacio).returncode == 1 and correr(TD, home=ok).returncode == 0)
+
+# 6. el aviso al abrir la sesión: una sola vez por proyecto, sin obligar a nada
+CARGAR = RAIZ / "skills" / "senior-memoria" / "scripts" / "cargar_estado.py"
+Q = BASE / "proyecto-aviso"
+Q.mkdir(parents=True, exist_ok=True)
+subprocess.run(["git", "init", "-q"], cwd=Q)
+r1 = correr(CARGAR, "--raiz", str(Q), home=vacio)
+r2 = correr(CARGAR, "--raiz", str(Q), home=vacio)
+chequear("sin Token Diet, al abrir la sesión avisa que es opcional y que senior sigue", "Token Diet (opcional)" in r1.stdout and "senior sigue funcionando" in r1.stdout, r1.stdout[-300:])
+chequear("el aviso sale una sola vez por proyecto", "Token Diet (opcional)" not in r2.stdout, r2.stdout[-300:])
+Q2 = BASE / "proyecto-con"
+Q2.mkdir(parents=True, exist_ok=True)
+subprocess.run(["git", "init", "-q"], cwd=Q2)
+chequear("con Token Diet no dice nada", "Token Diet (opcional)" not in correr(CARGAR, "--raiz", str(Q2), home=ok).stdout)
+sk = (RAIZ / "skills" / "senior" / "SKILL.md").read_text(encoding="utf-8")
+chequear("la skill senior declara que Token Diet es recomendada y no obligatoria", "## Token Diet (recomendada, no obligatoria)" in sk and "nunca se rechaza ni se frena por eso" in sk)
 
 sys.exit(1 if mal else 0)
