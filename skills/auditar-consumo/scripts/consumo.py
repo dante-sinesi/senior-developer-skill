@@ -263,6 +263,24 @@ def informe_md(r, raiz):
     return "\n".join(l) + "\n"
 
 
+def nota_token_diet(home):
+    """Si Token Diet está instalada y al día, esta auditoría cede: el informe de referencia es el suyo (un solo juego de instrucciones)."""
+    try:
+        import importlib.util
+        ruta = Path(__file__).resolve().parents[2] / "senior" / "scripts" / "token_diet.py"
+        espec = importlib.util.spec_from_file_location("senior_token_diet", ruta)
+        modulo = importlib.util.module_from_spec(espec)
+        espec.loader.exec_module(modulo)
+        e = modulo.estado(home)
+        if e["instalada"] and e["al_dia"]:
+            destino = (Path(home) / ".claude" / "skills" / "token-diet" / "scripts" / "consumo.py").as_posix()
+            return (f"\nToken Diet {e['version']} está instalada: su auditoría es la de referencia y la que se mantiene "
+                    f"(`python \"{destino}\"`). Esta queda solo como respaldo hasta el traspaso.")
+    except Exception:  # noqa: BLE001 - es solo una nota
+        pass
+    return ""
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -289,6 +307,9 @@ def main():
         print(json.dumps(r, ensure_ascii=False, indent=1))
     else:
         print("\n".join(resumen(r, args.top)))
+        nota = nota_token_diet(home)
+        if nota:
+            print(nota)
         if args.salida:
             print(f"Informe completo: {Path(args.salida).as_posix()}")
     sys.exit(1 if r["hallazgos"] else 0)

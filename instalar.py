@@ -171,6 +171,16 @@ def main():
         else:
             listo.append(f"biblioteca `{p}` disponible")
 
+    # Token Diet: por ahora solo se avisa (la dependencia obligatoria llega al final del traspaso de mecánicas).
+    espec_td = importlib.util.spec_from_file_location("senior_token_diet", RAIZ / "skills" / "senior" / "scripts" / "token_diet.py")
+    modulo_td = importlib.util.module_from_spec(espec_td)
+    espec_td.loader.exec_module(modulo_td)
+    aviso_td = modulo_td.aviso()
+    if aviso_td:
+        avisos.append(aviso_td)
+    else:
+        listo.append(f"Token Diet {modulo_td.estado()['version']} instalada y con su hook de lectura activo (el de senior se hace a un lado)")
+
     print("Primeros pasos: estado de la instalación\n")
     for l in listo:
         print(f"  LISTO  {l}")

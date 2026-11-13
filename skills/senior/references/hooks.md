@@ -7,3 +7,7 @@ Detalle del principio 16 de `SKILL.md`, que se lee solo cuando hace falta diagno
 ## Segunda capa
 
 El hook de escritura fuera del proyecto es una lista de patrones: no ve un script guardado en un archivo ni una ruta armada con código. `scripts/capas_extra.py` (solo lee) informa si el usuario tiene activas las defensas propias de Claude Code: `permissions.blockWritesOutsideWorkingDirectories` (herramientas de archivos; frena también `/permitir` y los proyectos hermanos) y el `sandbox` (cualquier comando de shell; no existe en Windows nativo, solo macOS, Linux y WSL2). Las reglas `deny` de Bash no son una frontera. Activarlas es decisión del usuario: Claude no cambia ajustes de seguridad.
+
+## Con Token Diet instalada
+
+Si Token Diet (skill independiente de ahorro de tokens) está instalada, es de la versión 1.0.0 o posterior y tiene registrado su hook de lectura, el hook de lectura de documentos externos de `senior` se hace a un lado: bloquea una sola, con un solo juego de instrucciones. Si falta o es más vieja, `senior` sigue bloqueando como siempre y `instalar.py --verificar` avisa cómo instalarla. La detección está en `skills/senior/scripts/token_diet.py` (solo lee). Es el primer paso del traspaso descrito en `docs/revision-completa.md`.
