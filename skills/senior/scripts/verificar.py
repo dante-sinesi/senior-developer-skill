@@ -33,6 +33,7 @@ Chequeos (sin argumento corre "todo"):
   autoria     REGLA INVIOLABLE: en los commits nuevos solo figura el usuario; sin
               Claude, coautores ni pies de atribución (ver senior-git/scripts/guardia_autoria.py)
   seguridad   alertas por lenguaje, secretos, logs sensibles (ver seguridad.py)
+  peso        solo en un paquete de skills (carpeta skills/): tope de peso por skill, scripts sin caso de uso y skills fuera del README (ver peso.py)
               con --auditar suma el chequeo de dependencias (usa la red)
 
 Código de salida: 0 todo bien, 1 hay algo para revisar. Solo biblioteca estándar.
@@ -476,6 +477,23 @@ def chequeo_secretos(raiz, args):
     return salida, not hallazgos and not faltan
 
 
+def chequeo_peso(raiz, args):
+    """Tope de peso de las skills de un paquete (solo si el proyecto tiene skills/)."""
+    import importlib.util
+    espec = importlib.util.spec_from_file_location("senior_peso", Path(__file__).resolve().with_name("peso.py"))
+    modulo = importlib.util.module_from_spec(espec)
+    espec.loader.exec_module(modulo)
+    hallazgos, resumen = modulo.analizar(raiz)
+    if hallazgos is None:
+        return [], True
+    fallas = [h for h in hallazgos if h[0] == "FALLA"]
+    if not hallazgos:
+        return [f"Peso: {resumen['skills']} skills dentro de los topes (descripciones {resumen['descripciones_caracteres']} de {modulo.MAX_DESCRIPCIONES} caracteres)."], True
+    salida = [f"Peso: {len(fallas)} fallas y {len(hallazgos) - len(fallas)} justificadas en {resumen['skills']} skills:"]
+    salida += [f"  {sev} {skill}: {msg}" for sev, skill, msg in hallazgos[:10]]
+    return salida, not fallas
+
+
 def chequeo_tarjetas(raiz, args):
     """Si el proyecto usa tarjetas SVG en el README (docs/tarjetas): que estén al día respecto de sus JSON y estilo, con su pie de foto, y sin SVG hechos a mano."""
     ruta = Path(__file__).resolve().parents[2] / "senior-docs" / "scripts" / "readme_tarjetas.py"
@@ -535,7 +553,7 @@ CHEQUEOS = {
     "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado, "escala": chequeo_escala, "evidencia": chequeo_evidencia,
     "docs": chequeo_docs, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
     "comentarios": chequeo_comentarios, "listones": chequeo_listones, "autoria": chequeo_autoria,
-    "diseno": chequeo_diseno, "seguridad": chequeo_seguridad, "secretos": chequeo_secretos, "tarjetas": chequeo_tarjetas,
+    "diseno": chequeo_diseno, "seguridad": chequeo_seguridad, "secretos": chequeo_secretos, "tarjetas": chequeo_tarjetas, "peso": chequeo_peso,
 }
 
 
