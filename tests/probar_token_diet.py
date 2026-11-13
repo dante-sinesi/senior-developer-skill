@@ -117,4 +117,16 @@ chequear("con Token Diet no dice nada", "Token Diet (opcional)" not in correr(CA
 sk = (RAIZ / "skills" / "senior" / "SKILL.md").read_text(encoding="utf-8")
 chequear("la skill senior declara que Token Diet es recomendada y no obligatoria", "## Token Diet (recomendada, no obligatoria)" in sk and "nunca se rechaza ni se frena por eso" in sk)
 
+# 7. al migrar los hooks sueltos, el hook de lectura de Token Diet (mismo nombre de archivo) no se toca
+spec = importlib.util.spec_from_file_location("guardia", RAIZ / "skills" / "senior-git" / "scripts" / "guardia_autoria.py")
+guardia = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(guardia)
+td_cmd = 'python "C:/Users/x/.claude/skills/token-diet/scripts/hook_lectura_externa.py"'
+sr_cmd = 'python "C:/Users/x/.claude/skills/senior-relevar/scripts/hook_lectura_externa.py"'
+ajustes = {"hooks": {"PreToolUse": [{"matcher": "Read", "hooks": [{"type": "command", "command": td_cmd}, {"type": "command", "command": sr_cmd}]}]}}
+sacados = guardia.sacar_sueltos(ajustes)
+quedan = [h["command"] for g in ajustes["hooks"]["PreToolUse"] for h in g["hooks"]]
+chequear("migrar sueltos saca el hook viejo de senior y deja el de Token Diet", sacados == 1 and quedan == [td_cmd], (sacados, quedan))
+chequear("con backslashes de Windows también se reconoce el de Token Diet", not guardia.es_suelto(td_cmd.replace("/", chr(92))))
+
 sys.exit(1 if mal else 0)
