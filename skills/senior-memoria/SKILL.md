@@ -24,11 +24,13 @@ Las plantillas están en `plantillas/`. Si el proyecto no tiene `docs/`, `senior
 
 1. Leer `docs/ESTADO.md`. Si está instalado el hook de apertura, ya llegó como contexto.
 2. Si hay una ficha "en curso", leer solo sus pasos abiertos.
-3. Para ubicar un concepto, **no leer documentos completos**: consultar el mapa. Cada resultado indica los tokens aproximados de abrirlo: lo chico se lee entero, lo grande por partes.
+3. Para ubicar un concepto, **no leer documentos completos**: consultar el índice de Token Diet. Cada resultado indica los tokens aproximados de abrirlo: lo chico se lee entero, lo grande por partes.
    ```
-   python <esta-skill>/scripts/indexar_docs.py consultar <término>
-   python <esta-skill>/scripts/indexar_docs.py vecinos <id>
+   python <token-diet>/scripts/indexar_docs.py build        # una vez, o si cambió la documentación
+   python <token-diet>/scripts/indexar_docs.py query <términos>
+   python <esta-skill>/scripts/indexar_docs.py vecinos <id>   # qué enlaza a un requisito, test o código
    ```
+   Token Diet también muestra al abrir la sesión la **nota de continuidad** (`note show`), un solo archivo con tope de tokens; `/cerrar-sesion` la actualiza.
 4. Resumir al usuario en dos o tres líneas dónde se quedó y proponer el siguiente paso.
 
 ## Guardado continuo (cada hito, no al final)
@@ -58,11 +60,11 @@ Si se nota una duplicación, un bug o una mejora mientras se trabaja en otra cos
 - Cambio trivial o chico: una línea en la sección "Cambios chicos recientes" de `ESTADO.md`.
 - Cambio mediano o grande: ficha propia con `## Alcance` y pasos. La ficha pasa a `Estado: terminado` al cerrarse.
 
-## Índice y mapa de conceptos
+## Índice y trazabilidad
 
 `scripts/indexar_docs.py` (solo biblioteca estándar):
 - `indexar`: genera `docs/INDEX.md` y `docs/.grafo.json`. Une documentos, requisitos (RN-001, RF-012…), tests y código por enlaces `[[id]]` y por IDs citados en el código; suma clases, funciones y tablas detectadas con los perfiles de `senior-lenguajes`. Marca requisitos sin test e IDs usados sin documento.
-- `consultar <término>` y `vecinos <id>`: navegan el mapa sin leer todo.
+- `vecinos <id>`: navega los enlaces de un requisito, test o código. La consulta por términos con el costo de abrir cada resultado es de Token Diet (`indexar_docs.py query`).
 
 Regenerar el índice con `indexar` después de tocar documentación; `verificar.py docs` solo lo revisa y nunca modifica archivos. `docs/INDEX.md` se versiona junto con el cambio (su salida no tiene fechas, así que no ensucia el historial); `docs/.grafo.json` es regenerable y `iniciar_docs.py` lo deja ignorado en `docs/.gitignore`.
 
