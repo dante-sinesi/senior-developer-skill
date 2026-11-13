@@ -13,7 +13,9 @@ Las claves, contraseñas, tokens, certificados y los datos personales (tarjetas,
 | 1. Convención | `.gitignore` y `.env.example` | `secretos.py gitignore --aplicar` completa el `.gitignore`; `verificar.py secretos` avisa si falta o si un `.env` ya está versionado. | Sí: no impide nada por sí sola. |
 | 2. Hook de Claude | Antes de cada acción de Claude | Frena escribir una clave en el código, leer o editar `.env` sin permiso, `git add -f` y claves en mensajes de commit o de Pull Request. | Solo con un cambio de configuración, que Claude no puede hacer. |
 | 3. Hooks de git | `pre-commit` y `pre-push` | Revisan lo preparado y **todo el historial que se va a subir**, commit por commit (una clave agregada y borrada después igual viaja). Valen también cuando commitea el usuario a mano. | Con `--no-verify`. |
-| 4. GitHub | Servidor | Escaneo de secretos y protección de subida (`secretos.py github` comprueba si están activos). | No. Gratis en repositorios públicos. |
+| 4. GitHub | Servidor | Escaneo de secretos y protección de subida (`secretos.py github` comprueba si están activos y `--activar` los enciende). `/inicializar-repositorio` los activa en los repositorios públicos nuevos. | No. Gratis en repositorios públicos; en uno privado GitHub los ofrece solo con «GitHub Secret Protection» (de pago). |
+
+Los hooks de git se saltean con `--no-verify` (o `-n` de `commit`, o `core.hooksPath`): **Claude no puede hacerlo**, el hook de Claude lo bloquea y da la alternativa (resolver el hallazgo o marcar `senior-ignore: ID motivo`). Lo que sigue siendo posible solo para el usuario, en su terminal, es lo único que una barrera local no cubre.
 
 ## `.env` con permiso del usuario
 

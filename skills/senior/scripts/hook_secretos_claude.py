@@ -76,6 +76,20 @@ def mensaje_secreto(hallazgos, ruta):
             "prueba), agregá en esa línea el comentario `senior-ignore: <ID> motivo` y volvé a escribirlo.")
 
 
+def saltea_hooks_de_git(args):
+    """True si los argumentos de un `git` (ya sin comillas ni el verbo) saltean los hooks: `commit`, `merge`, `push` o `am` con --no-verify (en `commit` también -n,
+    solo o dentro de un grupo como -nm), o cualquier `-c core.hooksPath=…`. Una palabra dentro de un mensaje entre comillas es un solo argumento y no cuenta."""
+    if any(a.lower().startswith("core.hookspath=") or a.lower().startswith("-ccore.hookspath=") for a in args):
+        return True
+    sub = next((a for a in args if not a.startswith("-") and "=" not in a), "")
+    if sub not in ("commit", "merge", "push", "am"):
+        return False
+    resto = args[args.index(sub) + 1:]
+    if "--no-verify" in resto:
+        return True
+    return sub == "commit" and any(re.fullmatch(r"-[A-Za-z]*n[A-Za-z]*", a) for a in resto)
+
+
 def evaluar(herramienta, entrada, cwd, raiz):
     """(detalle, motivo) si hay que bloquear; None si pasa."""
     import modo_hooks
@@ -130,6 +144,9 @@ def evaluar(herramienta, entrada, cwd, raiz):
                     return "se intentó agregar a git un archivo de secretos o forzar lo que .gitignore excluye", \
                         ("`git add` de un archivo de secretos o con `-f` salta la protección de .gitignore. Lo que git ignora no se fuerza; "
                          "si de verdad hay que versionarlo (por ejemplo, un archivo de ejemplo), dejalo anotado en `docs/pendientes.md` para que lo haga el usuario y seguí sin ese paso.")
+            if verbo == "git" and saltea_hooks_de_git(args):
+                return "se intentó saltear los hooks de git (--no-verify o hooksPath)",                     ("los hooks de git (secretos y autoría) existen para que ninguna clave llegue a GitHub y no se saltean. Si dan un falso positivo, resolvelo ahí: sacá el valor "
+                     "o marcá la línea con `senior-ignore: ID motivo`; si fallan por otra causa, anotalo en `docs/pendientes.md` y seguí con otro paso. Corré el mismo comando sin `--no-verify`.")
     return None
 
 

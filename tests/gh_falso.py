@@ -39,6 +39,29 @@ def main():
     if a[:2] == ["api", "user"]:
         print(f"{LOGIN} {ID}")
         return 0
+    if "api" in a[:1] and any(x.startswith("repos/") for x in a):
+        origen = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True).stdout.strip().replace("\\", "/")
+        nombre = next((n for n, r in e["repos"].items() if r["bare"].replace("\\", "/") == origen), None)
+        if nombre is None:
+            print("gh: Not Found (HTTP 404)", file=sys.stderr)
+            return 1
+        r = e["repos"][nombre]
+        if "PATCH" in a:
+            if r["privado"]:
+                print('{"message":"Secret scanning is not available for this repository.","status":"422"}')
+                print("gh: Secret scanning is not available for this repository. (HTTP 422)", file=sys.stderr)
+                return 1
+            cuerpo = json.loads(sys.stdin.read() or "{}")
+            r.setdefault("seguridad", {}).update({k: v["status"] for k, v in (cuerpo.get("security_and_analysis") or {}).items()})
+            guardar(e)
+        salida = {"full_name": nombre, "private": r["privado"]}
+        if not r["privado"]:  # en un repositorio público GitHub los activa por defecto
+            seg = {"secret_scanning": "enabled", "secret_scanning_push_protection": "enabled", **r.get("seguridad", {})}
+            if r.get("sin_proteccion"):
+                seg = {"secret_scanning": "disabled", "secret_scanning_push_protection": "disabled", **r.get("seguridad", {})}
+            salida["security_and_analysis"] = {k: {"status": v} for k, v in seg.items()}
+        print(json.dumps(salida))
+        return 0
     if a[:2] == ["repo", "create"]:
         nombre = a[2]
         if nombre in e["repos"]:

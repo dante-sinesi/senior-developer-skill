@@ -383,6 +383,12 @@ def ejecutar(args, raiz, r, secretos, meta):
     if rc != 0:
         return 1, sal + [f"FALTA la descripción y los topics: {o[-300:]}"]
     sal.append("LISTO descripción y topics aplicados y comprobados en GitHub")
+    # 6b. protección de subida y escaneo de secretos de GitHub (gratis en repositorios públicos; en uno privado necesitan un servicio de pago)
+    rc, o = correr([sys.executable, str(SKILLS / "senior" / "scripts" / "secretos.py"), "github", "--activar", "--raiz", str(raiz)])
+    if rc == 0:
+        sal.append("LISTO protección de subida y escaneo de secretos de GitHub activos")
+    else:
+        sal.append(f"AVISO la protección de subida de GitHub no se activó: {o.strip().splitlines()[0][:200] if o.strip() else 'sin detalle'}")
     # 7. commits
     git(raiz, "add", "README.md", ".gitignore")
     if (raiz / "docs" / "tarjetas").is_dir():
