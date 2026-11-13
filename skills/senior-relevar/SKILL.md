@@ -15,7 +15,7 @@ Cambiar un sistema que no se entiende es la causa más común de roturas. El rel
    python <token-diet>/scripts/relevar.py --out docs/relevamiento.md
    ```
    Entrega hechos: lenguajes, manifiestos, tests presentes, integración continua, documentación, historial git, archivos grandes y muy modificados, marcas TODO.
-3. **Mapa de conceptos.** Generar el índice (`<token-diet>/scripts/indexar_docs.py build`) y consultarlo (`query <términos>`) en lugar de leer archivos completos.
+3. **Mapa de conceptos.** Generar el índice con símbolos (`senior-memoria/scripts/indexar_docs.py indexar`) y consultarlo en lugar de leer archivos completos.
 4. **Lectura dirigida.** Leer solo lo que el inventario marca como central: puntos de entrada, los archivos más modificados y los más grandes. Anotar **hipótesis**, no verdades.
 5. **Convenciones detectadas.** Anotar las que el proyecto ya sigue (nombres, estructura, estilo). Se respetan por sobre cualquier preferencia.
 6. **Reglas de negocio por confirmar.** Listar las reglas que el código parece implementar y presentarlas al usuario para que las confirme o corrija (ver `senior-docs/references/requisitos.md`, sección "Extraer reglas de un sistema heredado"). Nunca se dan por válidas solo porque el código las cumple. Para sacarlas por lotes y con su evidencia: `documentar-proyecto/scripts/documentar.py reglas` deja una consulta lista para que el usuario la responda.

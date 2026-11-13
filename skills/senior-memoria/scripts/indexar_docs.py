@@ -6,6 +6,7 @@ ninguna herramienta externa.
 
 Uso:
     python indexar_docs.py indexar  [--raiz .] [--docs docs]
+    python indexar_docs.py consultar <termino> [--raiz .] [--docs docs]
     python indexar_docs.py vecinos   <id>      [--raiz .] [--docs docs]
 
 Qué hace "indexar":
@@ -358,6 +359,32 @@ def mostrar(grafo, nodo, raiz=None):
         print(f"  {sentido} {tipo}: {otro}")
 
 
+def cmd_consultar(carpeta_docs, termino):
+    grafo = cargar_grafo(carpeta_docs)
+    t = termino.lower()
+    puntuados = []
+    for n in grafo["nodos"]:
+        puntos = 0
+        if t == n["id"].lower():
+            puntos += 10
+        if t in n["id"].lower() and n["tipo"] not in ("simbolo", "codigo", "test"):
+            puntos += 4  # en código el id es una ruta: no debe pesar más que un requisito
+        if t in n["titulo"].lower():
+            puntos += 3
+        if any(t in tag.lower() for tag in n["tags"]):
+            puntos += 3
+        if t in n["resumen"].lower():
+            puntos += 1
+        if puntos:
+            puntuados.append((-puntos, n["id"], n))
+    if not puntuados:
+        print("Sin resultados.")
+        return
+    for _, _, n in sorted(puntuados, key=lambda x: (x[0], x[1]))[:5]:
+        mostrar(grafo, n, carpeta_docs.parent)
+        print()
+
+
 def cmd_vecinos(carpeta_docs, id_nodo):
     grafo = cargar_grafo(carpeta_docs)
     nodo = next((n for n in grafo["nodos"] if n["id"] == id_nodo), None)
@@ -370,8 +397,8 @@ def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("accion", choices=["indexar", "vecinos"])
-    ap.add_argument("argumento", nargs="?", help="id (vecinos)")
+    ap.add_argument("accion", choices=["indexar", "consultar", "vecinos"])
+    ap.add_argument("argumento", nargs="?", help="término o id (consultar / vecinos)")
     ap.add_argument("--raiz", default=".", help="raíz del proyecto (por defecto, la carpeta actual)")
     ap.add_argument("--docs", default="docs", help="carpeta de documentación dentro de la raíz")
     args = ap.parse_args()
@@ -382,7 +409,7 @@ def main():
     else:
         if not args.argumento:
             ap.error(f"'{args.accion}' necesita un argumento")
-        cmd_vecinos(carpeta_docs, args.argumento)
+        (cmd_consultar if args.accion == "consultar" else cmd_vecinos)(carpeta_docs, args.argumento)
 
 
 if __name__ == "__main__":

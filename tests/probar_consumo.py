@@ -35,7 +35,7 @@ def escribir(ruta, texto):
     f.write_text(texto, encoding="utf-8", newline="\n")
 
 
-# ---------- 2. el índice de senior es la trazabilidad; consultar por términos es de Token Diet ----------
+# ---------- 2. consultar muestra los tokens ----------
 D = BASE / "con-docs"
 escribir(D / "docs" / "requisitos" / "negocio" / "RN-001.md",
          "---\nid: RN-001\ntipo: requisito\ntitulo: Descuento por volumen\nresumen: Descuento\ntags: [descuento]\n---\n\n" + "texto " * 400)
@@ -43,15 +43,14 @@ indexar_docs.cmd_indexar(D, D / "docs")
 salida = io.StringIO()
 real = sys.stdout
 sys.stdout = salida
-indexar_docs.cmd_vecinos(D / "docs", "RN-001")
+indexar_docs.cmd_consultar(D / "docs", "descuento")
 sys.stdout = real
 s = salida.getvalue()
-chequear("vecinos indica los tokens aproximados de abrir el documento", "tokens al abrirlo" in s and "RN-001" in s, s)
+chequear("consultar indica los tokens aproximados de abrir el documento", "tokens al abrirlo" in s and "RN-001" in s, s)
 indice = (D / "docs" / "INDEX.md").read_text(encoding="utf-8")
 chequear("el índice generado no lleva esos números (sigue siendo determinista)", "tokens al abrirlo" not in indice)
 chequear("un símbolo no se mide", indexar_docs.tokens_al_abrir(D, {"tipo": "simbolo", "ruta": "x.py"}) is None)
 chequear("sin raíz no se mide", indexar_docs.tokens_al_abrir(None, {"tipo": "requisito", "ruta": "x"}) is None)
-chequear("consultar por términos ya no es de senior (lo hace Token Diet)", not hasattr(indexar_docs, "cmd_consultar"))
 
 # ---------- 3. hook de archivos protegidos ----------
 HOOK = RAIZ / "skills" / "senior" / "scripts" / "hook_archivos_protegidos.py"

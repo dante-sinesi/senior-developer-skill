@@ -7,7 +7,7 @@ corto, no los documentos completos:
   - docs/ESTADO.md (hasta 60 líneas)
   - fichas de cambio "en curso" con sus pasos abiertos
   - cantidad de pendientes en la bandeja
-  - pista de cómo consultar el mapa de conceptos (con Token Diet)
+  - pista de cómo consultar el mapa de conceptos
 
 Uso manual:
     python cargar_estado.py [--raiz .]
@@ -68,8 +68,8 @@ def main():
         if n:
             print(f"\nBandeja de pendientes: {n} abiertos (docs/pendientes.md).")
     if (raiz / "docs" / ".grafo.json").exists():
-        print("\nMapa de conceptos disponible: consultar con indexar_docs.py query <términos> de Token Diet "
-              "(y vecinos <id> de senior-memoria) antes de leer documentos completos.")
+        print("\nMapa de conceptos disponible: consultar con senior-memoria/scripts/indexar_docs.py "
+              "(consultar <término> | vecinos <id>) antes de leer documentos completos.")
 
 
 if __name__ == "__main__":
