@@ -14,7 +14,6 @@ sys.path.insert(0, str(SK / "senior" / "scripts"))
 import modo_hooks as mh  # noqa: E402
 
 FUERA = SK / "senior" / "scripts" / "hook_fuera_del_proyecto.py"
-LECT = SK / "senior-relevar" / "scripts" / "hook_lectura_externa.py"
 CHAT = SK / "senior" / "scripts" / "hook_permisos_chat.py"
 BASE = RAIZ / ".temporal" / "proy-falsos"
 mal = 0
@@ -128,16 +127,6 @@ for nombre, cmd in (("redirección", f"echo '{{}}' > {CONF}"), ("sed -i", f"sed 
     chequear(f"cambiarla con «{nombre}» se deniega", r == "deniega", (r, msg))
 r, msg = hook(FUERA, A, "Write", file_path=str(A / ".git" / mh.NOMBRE))
 chequear("escribirla con Write se deniega y el mensaje ofrece la vía del chat", r == "deniega" and "/permitir" in msg, msg)
-
-# ---------- una imagen que no se puede medir ya no frena el trabajo
-chica = A / "r_fold.png"
-chica.write_bytes(b"esto no es una imagen" * 10)
-grande = A / "r_proy.png"
-grande.write_bytes(b"esto tampoco " * 20000)
-r, _ = hook(LECT, A, "Read", file_path=str(chica))
-chequear("una imagen chica que no se puede medir se lee", r == "pasa", r)
-r, msg = hook(LECT, A, "Read", file_path=str(grande))
-chequear("una grande que no se puede medir tampoco se bloquea (las imágenes ya no son una regla de senior)", r == "pasa", (r, msg))
 
 # ---------- autorizar desde el chat, sin terminal ni sesión nueva
 C = repo("xampp-proyecto")

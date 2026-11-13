@@ -17,8 +17,6 @@ Chequeos (sin argumento corre "todo"):
   evidencia   las citas archivo:línea de la documentación inferida del código existen (ver documentar-proyecto)
   docs        marca requisitos sin test e IDs sin documento (solo lectura: el
               índice se regenera aparte con senior-memoria/scripts/indexar_docs.py indexar)
-  fuentes     PDF y HTML de documentos-externos/ sin convertir a Markdown
-              (se leen solo los .md de docs/fuentes/; ver senior-relevar/scripts/convertir_fuentes.py)
   requisitos  calidad del texto de docs/requisitos/: encabezado, IDs, enlaces, ejemplos verificables,
               palabras ambiguas y estado (ver senior-docs/scripts/revisar_requisitos.py)
   readme      el README.md de GitHub existe, está completo, enlaza a docs/,
@@ -490,28 +488,6 @@ def chequeo_tarjetas(raiz, args):
     return modulo.verificar(raiz, "docs/tarjetas", "docs/img")
 
 
-def chequeo_fuentes(raiz, args):
-    """Documentos externos: ninguno se lee sin convertirlo antes (carpeta documentos-externos/)."""
-    conversor = Path(__file__).resolve().parents[2] / "senior-relevar" / "scripts" / "convertir_fuentes.py"
-    if not conversor.exists():
-        return [], True
-    import importlib.util
-    espec = importlib.util.spec_from_file_location("convertir_fuentes", conversor)
-    modulo = importlib.util.module_from_spec(espec)
-    try:
-        espec.loader.exec_module(modulo)
-        pendientes, total = modulo.estado_de_fuentes(raiz)
-    except Exception as e:  # noqa: BLE001 - se informa cualquier fallo del conversor
-        return [f"Fuentes: no se pudo revisar: {str(e)[:150]}"], False
-    if not total:
-        return [], True
-    if pendientes:
-        nombres = ", ".join(o.name for o, _ in pendientes[:4])
-        return [f"Fuentes: {len(pendientes)} de {total} documentos externos sin convertir o cambiados ({nombres}). "
-                "No leerlos directo: correr senior-relevar/scripts/convertir_fuentes.py y leer docs/fuentes/."], False
-    return [f"Fuentes: {total} documentos externos convertidos y al día."], True
-
-
 def chequeo_comentarios(raiz, args):
     hallazgos, revisados, modo = comentarios.analizar(raiz, args.base)
     if modo == "sin-git":
@@ -557,7 +533,7 @@ def chequeo_seguridad(raiz, args):
 
 CHEQUEOS = {
     "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado, "escala": chequeo_escala, "evidencia": chequeo_evidencia,
-    "docs": chequeo_docs, "fuentes": chequeo_fuentes, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
+    "docs": chequeo_docs, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
     "comentarios": chequeo_comentarios, "listones": chequeo_listones, "autoria": chequeo_autoria,
     "diseno": chequeo_diseno, "seguridad": chequeo_seguridad, "secretos": chequeo_secretos, "tarjetas": chequeo_tarjetas,
 }

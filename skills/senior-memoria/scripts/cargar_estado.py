@@ -38,20 +38,6 @@ def asegurar_guardia(raiz):
         print(p.stdout.strip())
 
 
-def iniciar_fuentes(raiz):
-    """Crea documentos-externos/ si falta y convierte lo pendiente (mudo si no hay nada que hacer)."""
-    conversor = Path(__file__).resolve().parents[2] / "senior-relevar" / "scripts" / "convertir_fuentes.py"
-    if not conversor.exists():
-        return
-    try:
-        p = subprocess.run([sys.executable, "-I", str(conversor), "--iniciar", "--raiz", str(raiz)],
-                           capture_output=True, encoding="utf-8", errors="replace", timeout=300)
-    except (OSError, subprocess.TimeoutExpired):
-        return
-    if (p.stdout + p.stderr).strip():
-        print((p.stdout + p.stderr).strip())
-
-
 def avisar_token_diet(raiz):
     """Si Token Diet no está instalada (o es anterior a la 1.0.2), lo dice UNA vez por proyecto; senior sigue funcionando igual."""
     import importlib.util
@@ -83,7 +69,6 @@ def main():
     raiz = Path(args.raiz).resolve()
     asegurar_guardia(raiz)
     avisar_token_diet(raiz)
-    iniciar_fuentes(raiz)
     estado = raiz / "docs" / "ESTADO.md"
     if not estado.exists():
         return
