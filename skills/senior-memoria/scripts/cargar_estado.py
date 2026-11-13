@@ -52,6 +52,28 @@ def iniciar_fuentes(raiz):
         print((p.stdout + p.stderr).strip())
 
 
+def avisar_token_diet(raiz):
+    """Si Token Diet no está instalada (o es anterior a la 1.0.2), lo dice UNA vez por proyecto; senior sigue funcionando igual."""
+    import importlib.util
+    ruta = Path(__file__).resolve().parents[2] / "senior" / "scripts" / "token_diet.py"
+    marca = raiz / ".temporal" / ".aviso-token-diet"
+    try:
+        if marca.exists():
+            return
+        espec = importlib.util.spec_from_file_location("senior_token_diet", ruta)
+        modulo = importlib.util.module_from_spec(espec)
+        espec.loader.exec_module(modulo)
+        aviso = modulo.aviso()
+        if not aviso:
+            return
+        print("# Token Diet (opcional)")
+        print(aviso + " Este aviso sale una sola vez en este proyecto.\n")
+        marca.parent.mkdir(parents=True, exist_ok=True)
+        marca.write_text("avisado\n", encoding="utf-8")
+    except Exception:  # noqa: BLE001 - es solo un aviso
+        return
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -60,6 +82,7 @@ def main():
     args = ap.parse_args()
     raiz = Path(args.raiz).resolve()
     asegurar_guardia(raiz)
+    avisar_token_diet(raiz)
     iniciar_fuentes(raiz)
     estado = raiz / "docs" / "ESTADO.md"
     if not estado.exists():

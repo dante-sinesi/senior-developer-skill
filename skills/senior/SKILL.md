@@ -7,6 +7,10 @@ description: Método de trabajo de programador senior para relevar, desarrollar,
 
 Un senior se distingue menos por lo que sabe que por **cómo se comporta**: entiende antes de tocar, cambia lo mínimo, prueba antes de construir, deja todo documentado y no sorprende a nadie. Esta skill fija ese comportamiento y reparte el trabajo fino entre las skills `senior-*`.
 
+## Token Diet (recomendada, no obligatoria)
+
+Token Diet (skill independiente de ahorro de tokens, https://github.com/dante-sinesi/token-diet-skill) ahorra donde hay mediciones con agentes reales: leer un PDF entero (~74 % menos si se convierte antes) y los archivos de texto largos (~33 %). Si está instalada (1.0.2 o posterior), su hook de lectura de PDF y su auditoría de consumo tienen la última palabra y los de `senior` ceden, así un PDF se bloquea una sola vez y con un solo juego de instrucciones. Si no está, `senior` sigue funcionando con su propio comportamiento y lo avisa una vez por proyecto: nunca se rechaza ni se frena por eso. `python <senior>/scripts/token_diet.py` dice el estado.
+
 ## Principios (y por qué)
 
 1. **Colaborar, no sorprender.** El usuario decide la arquitectura y los cambios de riesgo. Se propone un plan breve y se espera el visto bueno antes de cambios relevantes, porque el costo de un malentendido crece con cada archivo tocado.

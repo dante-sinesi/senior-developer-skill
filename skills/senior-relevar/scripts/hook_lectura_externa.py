@@ -157,6 +157,8 @@ def decidir(ruta, cwd, es_shell=False):
     if en_fuentes(ruta):
         return None
     if ext in BINARIOS:
+        if token_diet_cede():
+            return None  # PDF y Office: con Token Diet instalada (1.0.2 o posterior) y su hook activo, bloquea ella: un solo bloqueador, un solo juego de instrucciones
         cubierto = True
     elif ext in TEXTUALES:
         cubierto = en_carpeta(ruta, CARPETA) and ruta.name.lower() != "leeme.md"
@@ -236,8 +238,6 @@ def main():
             flujo.reconfigure(encoding="utf-8")
     if os.environ.get("SENIOR_LECTURA_DIRECTA") == "1":
         return 0
-    if token_diet_cede():
-        return 0  # con Token Diet instalada y su hook activo, bloquea ella: un solo bloqueador, un solo juego de instrucciones
     try:
         datos = json.loads(sys.stdin.read() or "{}")
         herramienta = datos.get("tool_name")

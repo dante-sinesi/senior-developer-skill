@@ -16,8 +16,8 @@ import os
 import sys
 from pathlib import Path
 
-VERSION_MINIMA = (1, 0, 0)
-INSTRUCCION = ("Token Diet no está instalada: sin ella el consumo de tokens es mucho mayor. Se instala desde su repositorio "
+VERSION_MINIMA = (1, 0, 2)  # la versión con mediciones de agentes reales (docs/measurements/ de Token Diet)
+INSTRUCCION = ("Token Diet no está instalada: instalala para ahorrar en PDF y en archivos largos (senior sigue funcionando con lo suyo). Se instala desde su repositorio "
                "(https://github.com/dante-sinesi/token-diet-skill) con `python instalar.py install`.")
 
 
@@ -57,7 +57,7 @@ def estado(home=None):
 
 
 def cede_lectura(home=None):
-    """True si el hook de lectura de Token Diet está instalado, al día y registrado: el de `senior` se hace a un lado."""
+    """True si el hook de lectura de Token Diet está instalado, al día y registrado: el de `senior` le cede los PDF y los documentos de Office (lo único que ahorra, medido)."""
     e = estado(home)
     return e["instalada"] and e["al_dia"] and e["hook_lectura"]
 
