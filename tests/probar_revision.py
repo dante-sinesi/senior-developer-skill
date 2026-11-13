@@ -8,7 +8,6 @@ RAIZ = Path(__file__).resolve().parents[1]
 R0 = RAIZ / "skills"
 ATAJOS = R0 / "senior" / "scripts" / "atajos.py"
 VERIFICAR = R0 / "senior" / "scripts" / "verificar.py"
-COMENT = R0 / "senior" / "scripts" / "comentarios.py"
 
 R = RAIZ / ".temporal" / "proy-revision"
 import stat
@@ -37,7 +36,7 @@ def g(*a):
 
 
 def py(script, *a):
-    p = subprocess.run([sys.executable, str(script), *a, "--raiz", str(R)] if script not in (COMENT, VERIFICAR) else [sys.executable, str(script), *a],
+    p = subprocess.run([sys.executable, str(script), *a, "--raiz", str(R)] if script is not VERIFICAR else [sys.executable, str(script), *a],
                        cwd=R, capture_output=True, text=True, encoding="utf-8", env=env)
     return p.returncode, (p.stdout + p.stderr).strip()
 
@@ -64,11 +63,9 @@ c, s = py(ATAJOS, "--escribir")
 print("2) escribir:", (R / "docs" / "atajos.md").exists(), "| SIN DISPARADOR en el archivo:", "SIN DISPARADOR" in (R / "docs" / "atajos.md").read_text(encoding="utf-8"))
 c, s = py(VERIFICAR, "deuda", "--raiz", str(R))
 print("3) verificar deuda:", c, "|", [l for l in s.splitlines() if "tajos" in l][:1])
-c, s = py(COMENT, "--todo", "--raiz", str(R))
-print("4) comentarios no marca los atajos:", "atajo" not in s.lower(), "|", s[:80])
 
 chequear("los atajos sin disparador se señalan", "SIN DISPARADOR" in (R / "docs" / "atajos.md").read_text(encoding="utf-8"))
-for retirado in ("senior/scripts/impacto.py", "revisar-cambio/scripts/contexto.py", "senior-relevar/scripts/relevar.py", "senior-refactor/scripts/duplicados.py"):
+for retirado in ("senior/scripts/texto.py", "senior/scripts/comentarios.py", "senior/scripts/impacto.py", "revisar-cambio/scripts/contexto.py", "senior-relevar/scripts/relevar.py", "senior-refactor/scripts/duplicados.py"):
     chequear(f"{retirado} ya no está en el paquete (lo hace Token Diet)", not (R0 / retirado).exists())
 print("Todo bien." if not mal else f"{mal} casos mal.")
 sys.exit(1 if mal else 0)
