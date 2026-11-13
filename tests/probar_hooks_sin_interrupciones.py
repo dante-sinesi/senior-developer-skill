@@ -154,7 +154,7 @@ chequear("una entrada rota deja pasar", p.returncode == 0 and p.stdout.strip() =
 chequear("la respuesta tiene la forma que espera Claude Code", json.loads(mh.respuesta(A, "x", "d", "¿?", "haz algo."))["hookSpecificOutput"]["hookEventName"] == "PreToolUse")
 
 # ---------- documentación
-sk = (SK / "senior" / "SKILL.md").read_text(encoding="utf-8")
+sk = (SK / "senior" / "SKILL.md").read_text(encoding="utf-8") + ((SK / "senior" / "references" / "metodo-completo.md").read_text(encoding="utf-8"))
 rd = (RAIZ / "README.md").read_text(encoding="utf-8")
 cm = (RAIZ / "CLAUDE.md").read_text(encoding="utf-8")
 chequear("senior explica los dos modos y que no se interrumpe", "permisos_hooks.py" in sk and "sin interrumpir" in sk)

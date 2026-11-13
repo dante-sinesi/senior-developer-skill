@@ -184,7 +184,7 @@ ajustes2 = json.loads((FALSO / ".claude" / "settings.json").read_text(encoding="
 chequear("repetir no lo duplica", len(ajustes2["hooks"]["UserPromptSubmit"]) == 1)
 
 # ---------- documentación
-sk = (SK / "senior" / "SKILL.md").read_text(encoding="utf-8")
+sk = (SK / "senior" / "SKILL.md").read_text(encoding="utf-8") + ((SK / "senior" / "references" / "metodo-completo.md").read_text(encoding="utf-8"))
 rd = (RAIZ / "README.md").read_text(encoding="utf-8")
 cm = (RAIZ / "CLAUDE.md").read_text(encoding="utf-8")
 chequear("senior explica /permitir, los proyectos hermanos y que se puede leer la configuración", "/permitir" in sk and "hermano" in sk and "leer" in sk)
