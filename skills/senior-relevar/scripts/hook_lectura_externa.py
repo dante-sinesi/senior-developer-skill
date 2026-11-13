@@ -215,12 +215,29 @@ def rutas_de_shell(comando, cwd):
     return res
 
 
+def token_diet_cede():
+    """True si Token Diet está instalada, al día y con su hook de lectura registrado (la lógica está en senior/scripts/token_diet.py).
+    Si el módulo no se encuentra o falla, no cede: es preferible un bloqueador de más que ninguno."""
+    try:
+        ruta = Path(__file__).resolve().parents[2] / "senior" / "scripts" / "token_diet.py"
+        espec = importlib.util.spec_from_file_location("senior_token_diet", ruta)
+        modulo = importlib.util.module_from_spec(espec)
+        espec.loader.exec_module(modulo)
+        return bool(modulo.cede_lectura())
+    except Exception:  # noqa: BLE001
+        if os.environ.get("SENIOR_HOOK_DEPURAR") == "1":
+            raise
+        return False
+
+
 def main():
     for flujo in (sys.stdin, sys.stdout, sys.stderr):
         if hasattr(flujo, "reconfigure"):
             flujo.reconfigure(encoding="utf-8")
     if os.environ.get("SENIOR_LECTURA_DIRECTA") == "1":
         return 0
+    if token_diet_cede():
+        return 0  # con Token Diet instalada y su hook activo, bloquea ella: un solo bloqueador, un solo juego de instrucciones
     try:
         datos = json.loads(sys.stdin.read() or "{}")
         herramienta = datos.get("tool_name")
