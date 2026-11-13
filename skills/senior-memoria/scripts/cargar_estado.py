@@ -38,20 +38,6 @@ def asegurar_guardia(raiz):
         print(p.stdout.strip())
 
 
-def iniciar_fuentes(raiz):
-    """Crea documentos-externos/ si falta y convierte lo pendiente (mudo si no hay nada que hacer)."""
-    conversor = Path(__file__).resolve().parents[2] / "senior-relevar" / "scripts" / "convertir_fuentes.py"
-    if not conversor.exists():
-        return
-    try:
-        p = subprocess.run([sys.executable, "-I", str(conversor), "--iniciar", "--raiz", str(raiz)],
-                           capture_output=True, encoding="utf-8", errors="replace", timeout=300)
-    except (OSError, subprocess.TimeoutExpired):
-        return
-    if (p.stdout + p.stderr).strip():
-        print((p.stdout + p.stderr).strip())
-
-
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -60,7 +46,6 @@ def main():
     args = ap.parse_args()
     raiz = Path(args.raiz).resolve()
     asegurar_guardia(raiz)
-    iniciar_fuentes(raiz)
     estado = raiz / "docs" / "ESTADO.md"
     if not estado.exists():
         return

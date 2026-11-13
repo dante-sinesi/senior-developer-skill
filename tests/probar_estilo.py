@@ -217,9 +217,6 @@ p1 = subprocess.run([sys.executable, "-X", "utf8", str(SCRIPTS / "revisar_diseno
 p2 = subprocess.run([sys.executable, "-X", "utf8", str(SCRIPTS / "revisar_diseno.py"), "saturacion", str(P / "con-tarjeta.html")], capture_output=True, text=True, encoding="utf-8")
 chequear("una pantalla con 7 acciones principales falla la no saturación", "acciones principales" in p1.stdout and p1.returncode != 0, p1.stdout)
 chequear("lo mismo dentro de una tarjeta (data-tarjeta) no falla: es un catálogo de estados, no una pantalla", "acciones" not in p2.stdout and p2.returncode == 0, p2.stdout)
-fuente = (SCRIPTS / "capturar.py").read_text(encoding="utf-8")
-chequear("capturar.py no crea archivos de paso en la carpeta temporal del sistema", "mkdtemp()" not in fuente and fuente.count("mkdtemp(dir=") == 2)
-
 # 13. documentación
 sk = (RAIZ / "skills/senior-diseno/SKILL.md").read_text(encoding="utf-8")
 me = (RAIZ / "skills/senior-diseno/references/metodo.md").read_text(encoding="utf-8")

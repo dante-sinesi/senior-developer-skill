@@ -11,7 +11,7 @@ Uso:
 
   - Hasta 3 destinos por llamada: si hacen falta más, se abre un índice o una página que los reúna.
   - Un archivo local tiene que existir. Una dirección web debe empezar con http:// o https://.
-  - Usa Edge o Chrome si están instalados (la misma búsqueda que `senior-diseno/scripts/capturar.py`) y, si no, el
+  - Usa Edge o Chrome si están instalados (la misma búsqueda que `capturar.py` de Token Diet) y, si no, el
     navegador predeterminado.
   - Con --simular muestra qué abriría y no abre nada (sirve para probar).
 Solo biblioteca estándar.
