@@ -137,7 +137,7 @@ grande.write_bytes(b"esto tampoco " * 20000)
 r, _ = hook(LECT, A, "Read", file_path=str(chica))
 chequear("una imagen chica que no se puede medir se lee", r == "pasa", r)
 r, msg = hook(LECT, A, "Read", file_path=str(grande))
-chequear("una grande que no se puede medir se bloquea con el comando para reducirla (no pregunta)", r == "bloquea" and "convertir_fuentes.py" in msg and "--importar" in msg, (r, msg))
+chequear("una grande que no se puede medir tampoco se bloquea (las imágenes ya no son una regla de senior)", r == "pasa", (r, msg))
 
 # ---------- autorizar desde el chat, sin terminal ni sesión nueva
 C = repo("xampp-proyecto")

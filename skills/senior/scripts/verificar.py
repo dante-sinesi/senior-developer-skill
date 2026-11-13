@@ -17,7 +17,7 @@ Chequeos (sin argumento corre "todo"):
   evidencia   las citas archivo:línea de la documentación inferida del código existen (ver documentar-proyecto)
   docs        marca requisitos sin test e IDs sin documento (solo lectura: el
               índice se regenera aparte con senior-memoria/scripts/indexar_docs.py indexar)
-  fuentes     documentos e imágenes de documentos-externos/ sin procesar (convertir a Markdown o reducir a 1024 px)
+  fuentes     PDF y HTML de documentos-externos/ sin convertir a Markdown
               (se leen solo los .md de docs/fuentes/; ver senior-relevar/scripts/convertir_fuentes.py)
   requisitos  calidad del texto de docs/requisitos/: encabezado, IDs, enlaces, ejemplos verificables,
               palabras ambiguas y estado (ver senior-docs/scripts/revisar_requisitos.py)

@@ -28,7 +28,7 @@ REGLAS = (  # (nombre en el registro, qué frena, cómo se autoriza)
     ("escritura fuera del proyecto", "crear archivos o carpetas fuera de la raíz del proyecto (lo de paso va en `.temporal/`)", "`/permitir <ruta>`"),
     ("archivos protegidos", "editar `.env`, claves, el interior de `.git/` y los archivos de bloqueo de dependencias", "`/permitir <ruta>`"),
     ("secretos", "escribir claves o datos personales en archivos que van a git, leer `.env`, `git add -f` y claves en mensajes de commit", "`/permitir .env` para leer y editar `.env`"),
-    ("lectura de documentos externos", "leer un PDF, Word, Excel o una imagen sin convertirlos antes", "se convierten con `convertir_fuentes.py`; no se autoriza por ruta"),
+    ("lectura de documentos externos", "leer un PDF o un HTML externo sin convertirlo antes", "se convierten con `convertir_fuentes.py`; no se autoriza por ruta"),
     ("autoría", "commits, Pull Requests e issues con Claude o coautores", "no se autoriza: en GitHub figura solo el usuario"),
 )
 
