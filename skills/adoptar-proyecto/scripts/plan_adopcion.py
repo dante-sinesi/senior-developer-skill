@@ -69,7 +69,7 @@ def construir_plan(info, tipo):
     else:
         plan.append(("revisar", f"{info['readme']} existe y no se sobrescribe; se revisa con verificar.py readme"))
     if tipo == "existente":
-        plan.append(("auto", "Relevamiento automático -> docs/relevamiento.md"))
+        plan.append(("auto", "Relevamiento automático (relevar.py de Token Diet) -> docs/relevamiento.md"))
         plan.append(("manual", "Lectura dirigida, convenciones y riesgos (senior-relevar)"))
         plan.append(("manual", "Presentar reglas de negocio hipotéticas para que el usuario las confirme"))
         plan.append(("manual", "Proponer tests de caracterización prioritarios" if not info["tests"]
@@ -116,11 +116,13 @@ def aplicar(raiz, info, tipo):
         (raiz / "README.md").write_text(texto, encoding="utf-8", newline="\n")
         salidas.append("README.md creado desde la plantilla.")
     if tipo == "existente":
-        relevar = SKILLS / "senior-relevar" / "scripts" / "relevar.py"
+        relevar = Path(os.environ.get("SENIOR_TOKEN_DIET_HOME") or Path.home()) / ".claude" / "skills" / "token-diet" / "scripts" / "relevar.py"
         destino = raiz / "docs" / "relevamiento.md"
-        if relevar.exists() and not destino.exists():
-            salidas.append(correr([sys.executable, "-I", str(relevar), "--raiz", str(raiz),
-                                   "--salida", "docs/relevamiento.md"], raiz))
+        if not destino.exists():
+            if relevar.exists():
+                salidas.append(correr([sys.executable, str(relevar), str(raiz), "--out", "docs/relevamiento.md"], raiz))
+            else:
+                salidas.append("Relevamiento automático omitido: Token Diet no está instalada (`python instalar.py install` desde su repositorio).")
     guardia = SKILLS / "senior-git" / "scripts" / "guardia_autoria.py"
     if guardia.exists() and (raiz / ".git").exists():
         salidas.append(correr([sys.executable, "-I", str(guardia), "asegurar", "--raiz", str(raiz)], raiz))

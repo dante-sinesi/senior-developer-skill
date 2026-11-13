@@ -36,7 +36,7 @@ Un senior se distingue menos por lo que sabe que por **cómo se comporta**: enti
 | 0 | Comprobar que Token Diet está instalada: `python <senior>/scripts/token_diet.py` (si falta, anotar el comando de instalación en `docs/pendientes.md`) | senior |
 | 1 | Leer el estado del proyecto (`docs/ESTADO.md`, índice) | senior-memoria |
 | 2 | Si el sistema es ajeno o heredado: relevarlo | senior-relevar |
-| 3 | Medir el tamaño del cambio, ver su impacto (`impacto.py`) y acordar un plan breve con el usuario | esta skill |
+| 3 | Medir el tamaño del cambio, ver su impacto (`impacto.py` y `contexto.py` de Token Diet) y acordar un plan breve con el usuario | esta skill |
 | 4 | Crear la rama | senior-git |
 | 5 | La escalera antes de escribir (ver más abajo) y rojo: test que falla por la razón correcta, escrito desde la regla de negocio | esta skill, senior-tdd |
 | 6 | Verde: el mínimo código que lo hace pasar | senior-tdd |
@@ -53,14 +53,14 @@ El detalle por nivel de cambio está en `references/ceremonia-por-tamano.md`.
 Entendido el problema y su alcance, y antes de escribir, se sube por esta escalera y se **detiene en el primer escalón que alcanza**:
 
 1. **¿Hace falta?** Lo que nadie pidió (funciones, opciones, flexibilidad «por si acaso») no se construye: se nombra en una línea. Un pedido vago recibe la versión más chica que cumple el trabajo central.
-2. **¿Ya existe en el proyecto?** `python <esta-skill>/scripts/impacto.py --existe <palabras>` lista las definiciones parecidas. Se reusa la función, el componente o el patrón tal como lo usa el código vecino.
+2. **¿Ya existe en el proyecto?** Buscar por las palabras clave y, para un nombre exacto, `python <token-diet>/scripts/impacto.py <nombre>` (Token Diet todavía no tiene un modo «parecidos»). Se reusa la función, el componente o el patrón tal como lo usa el código vecino.
 3. **¿Lo da la biblioteca estándar o la plataforma?** Se usa, salvo que el proyecto tenga su propia pieza (la del proyecto gana).
 4. **¿Hay una dependencia ya instalada que lo resuelva?** Se usa. Nunca se agrega una dependencia nueva por pocas líneas.
 5. **Lo mínimo que funciona**, con su test derivado de la regla de negocio (`senior-tdd`).
 
 Alrededor de la escalera:
 - Nada de abstracciones, envoltorios, opciones ni configuración que nadie pidió. Borrar gana a agregar. Se respeta la estructura del proyecto (capas, interfaces, convenciones). Lo que se mueve o se une conserva su validación y su manejo de errores.
-- **Un error se corrige una vez, en el código compartido:** antes de editar, `python <esta-skill>/scripts/impacto.py <función>` lista todos sus llamadores.
+- **Un error se corrige una vez, en el código compartido:** antes de editar, `python <token-diet>/scripts/impacto.py <función>` lista dónde se define y todos sus llamadores.
 - **Un atajo con límite conocido se deja marcado** con un comentario `atajo: <límite>; cuándo: <disparador>`; `atajos.py` los junta en un registro y `verificar.py deuda` avisa los que no tienen disparador.
 - **La escalera nunca recorta** tests, documentación, validación en los bordes de confianza, seguridad ni accesibilidad.
 

@@ -52,6 +52,6 @@ El sistema de diseño se define en `docs/diseno/sistema/` y el código lo respet
 |---|---|---|
 | Variables de diseño | Se definen y mantienen en `tokens.css` | Se usan; no se copian los valores |
 | Componentes | Se inventarían con variantes y estados | Se implementan **una sola vez** y se reutilizan |
-| Duplicación | La detecta este chequeo en el diseño | La detecta `duplicados.py` en el código, y se refactoriza |
+| Duplicación | La detecta este chequeo en el diseño | La detecta `duplicados.py` de Token Diet en el código, y se refactoriza |
 | Etiquetas de formularios | Se fijan en el contrato de campos | Se implementan tal cual |
 | Cambios | Se decide el componente o la variante | Si hace falta uno nuevo, se diseña primero y se agrega al inventario |

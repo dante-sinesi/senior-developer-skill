@@ -7,9 +7,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parents[1]
 R0 = RAIZ / "skills"
 ATAJOS = R0 / "senior" / "scripts" / "atajos.py"
-IMPACTO = R0 / "senior" / "scripts" / "impacto.py"
 VERIFICAR = R0 / "senior" / "scripts" / "verificar.py"
-CONTEXTO = R0 / "revisar-cambio" / "scripts" / "contexto.py"
 COMENT = R0 / "senior" / "scripts" / "comentarios.py"
 
 R = RAIZ / ".temporal" / "proy-revision"
@@ -69,30 +67,8 @@ print("3) verificar deuda:", c, "|", [l for l in s.splitlines() if "tajos" in l]
 c, s = py(COMENT, "--todo", "--raiz", str(R))
 print("4) comentarios no marca los atajos:", "atajo" not in s.lower(), "|", s[:80])
 
-# --- impacto
-c, s = py(IMPACTO, "calcular_total")
-print("5) impacto de un símbolo:\n  ", s.replace("\n", "\n   "))
-c, s = py(IMPACTO, "--existe", "calcular", "totales")
-print("6) ya existe:", s.splitlines()[1].strip() if len(s.splitlines()) > 1 else s)
-
-# --- cambio y expediente
-(R / "app" / "precios.py").write_text(
-    "def calcular_total(items):\n    total = 0.0\n    for i in items:\n        total += float(i)\n    return total\n", encoding="utf-8")
-c, s = py(IMPACTO, "--cambio")
-print("7) impacto del cambio:\n  ", s.replace("\n", "\n   "))
-c, s = py(CONTEXTO)
-print("8) expediente:\n  ", s.replace("\n", "\n   "))
-g("add", ".")
-g("commit", "-q", "-m", "cambio")
-c, s = py(CONTEXTO)
-print("9) sin cambios pendientes -> último commit:", s.splitlines()[0])
-c, s = py(CONTEXTO, "rama", "--base", "HEAD~1")
-print("10) rama contra HEAD~1:", s.splitlines()[0])
-c, s = py(CONTEXTO, "preparado")
-print("11) preparado vacío:", s.splitlines()[0])
-
 chequear("los atajos sin disparador se señalan", "SIN DISPARADOR" in (R / "docs" / "atajos.md").read_text(encoding="utf-8"))
-chequear("el impacto de un símbolo encuentra a quien lo usa", "carrito" in py(IMPACTO, "calcular_total")[1])
-chequear("el expediente del cambio nombra el archivo tocado", "precios" in py(CONTEXTO, "rama", "--base", "HEAD~1")[1])
+for retirado in ("senior/scripts/impacto.py", "revisar-cambio/scripts/contexto.py", "senior-relevar/scripts/relevar.py", "senior-refactor/scripts/duplicados.py"):
+    chequear(f"{retirado} ya no está en el paquete (lo hace Token Diet)", not (R0 / retirado).exists())
 print("Todo bien." if not mal else f"{mal} casos mal.")
 sys.exit(1 if mal else 0)
