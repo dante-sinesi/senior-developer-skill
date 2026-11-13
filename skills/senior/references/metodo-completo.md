@@ -115,7 +115,7 @@ Para abrir un archivo o una página en el navegador se usa `python <esta-skill>/
 
 ## Verificación automática
 
-`scripts/verificar.py` (sin argumento corre todo) revisa tamaño, alcance, deuda, estado, documentación, calidad de los requisitos, README, **secretos**, texto (límites, repetición, información perdida), diagramas, comentarios del código modificado, **listones** (que el cambio no afloje umbrales, tests ni chequeos para pasar; `guardia_listones.py`) y seguridad, y devuelve pocas líneas. Con `--auditar` suma el chequeo de dependencias (usa la red). Ejecutarlo antes de cada PR y al cerrar la sesión.
+`scripts/verificar.py` (sin argumento corre todo) revisa tamaño, alcance, deuda, estado, documentación, calidad de los requisitos, README, **secretos**, texto (límites, repetición, información perdida), diagramas, comentarios del código modificado, **listones** (que el cambio no afloje umbrales, tests ni chequeos para pasar; `guardia_listones.py`) y seguridad, y devuelve pocas líneas. Con `--auditar` suma el chequeo de dependencias (usa la red). En un paquete de skills, `peso` hace cumplir los topes (descripción hasta 800 caracteres y 10.000 en total, cuerpo hasta 3.500 tokens y 150 líneas, cada referencia hasta 5.500 tokens, ningún script sin caso de uso, cada skill en el README; una excepción se justifica con `<!-- excepcion-peso: motivo -->`): `scripts/peso.py`. Ejecutarlo antes de cada PR y al cerrar la sesión.
 
 ## Excusas frecuentes y qué se responde
 
