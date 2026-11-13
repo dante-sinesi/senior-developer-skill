@@ -100,5 +100,18 @@ chequear("asegurar --silencioso igual muestra el aviso de instalación", "tiene 
 rd = (RAIZ / "README.md").read_text(encoding="utf-8")
 chequear("el README explica el aviso de instalación desactualizada", "instalación desactualizada" in rd.lower() and ".senior-instalacion.json" in rd)
 
+# 6. una skill que el paquete trajo y ya no trae (se pasó a otra skill) se retira al reinstalar; una ajena no se toca
+vieja = CASA / ".claude" / "skills" / "skill-retirada"
+ajena = CASA / ".claude" / "skills" / "skill-de-otro"
+for carpeta in (vieja, ajena):
+    carpeta.mkdir(parents=True)
+    (carpeta / "SKILL.md").write_text("---" + chr(10) + "name: x" + chr(10) + "description: y" + chr(10) + "---" + chr(10), encoding="utf-8")
+registro = json.loads(MANIFIESTO.read_text(encoding="utf-8"))
+registro["skills"]["skill-retirada"] = "0" * 64
+MANIFIESTO.write_text(json.dumps(registro), encoding="utf-8")
+salida = instalar()
+chequear("al reinstalar se retira la skill que el paquete ya no trae y lo dice", not vieja.exists() and "Se retiró la skill `skill-retirada`" in salida, salida[-300:])
+chequear("una skill que el paquete nunca instaló no se toca", ajena.exists())
+
 print("Todo bien." if not mal else f"{mal} casos mal.")
 sys.exit(1 if mal else 0)
