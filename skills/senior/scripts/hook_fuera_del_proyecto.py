@@ -235,6 +235,59 @@ def escrituras_en_codigo(comando):
     return res
 
 
+# senior-ignore: ESCRIBE-AFUERA motivo: este archivo muestra rutas de ejemplo (/tmp/x) en sus expresiones y docstrings
+# Segunda capa: un script guardado en un archivo. Antes de guardarlo (Write o Edit) y antes de ejecutarlo (`python x.py`, `node x.js`, `bash x.sh`,
+# `powershell -File x.ps1`) se le aplican las mismas reglas que al código que viaja en el comando: sus escrituras a rutas literales absolutas.
+# Lo que NO se ve (una ruta armada con código, `Path.home() / ...`, una variable de entorno) no se puede juzgar de forma estática: ahí la defensa
+# es `permissions.blockWritesOutsideWorkingDirectories` (ver capas_extra.py).
+EXT_CODIGO = {".py", ".pyw", ".js", ".mjs", ".cjs", ".ts", ".php", ".rb", ".pl"}
+EXT_SHELL = {".sh", ".bash", ".ps1", ".bat", ".cmd"}
+INTERPRETES = re.compile(r"^(?:python[\d.]*|py|node|deno|bun|php|ruby|perl|bash|sh|zsh|pwsh|powershell)$")
+MAX_SCRIPT = 200_000
+
+
+MARCA = re.compile(r"senior-ignore:[ 	]*ESCRIBE-AFUERA[ 	]+motivo:[ 	]*\S")  # un script que menciona rutas de ejemplo (por ejemplo, las pruebas de este hook) lo declara con motivo
+
+
+def literales_de_script(texto, sufijo):
+    """Destinos literales de escrituras dentro del texto de un script, según su tipo. Un script con la marca `senior-ignore: ESCRIBE-AFUERA motivo` no se analiza."""
+    sufijo = (sufijo or "").lower()
+    if MARCA.search(texto):
+        return []
+    if sufijo in EXT_CODIGO:
+        return escrituras_en_codigo("python " + texto)
+    if sufijo in EXT_SHELL:
+        variables = variables_del_comando(texto)
+        return [sustituir(t, variables) for t in objetivos_de_shell(texto)]
+    return []
+
+
+def scripts_del_comando(comando, cwd):
+    """Rutas de los archivos de script que el comando ejecuta con un intérprete (los que existen y no son enormes)."""
+    res = []
+    for seg in SEPARADORES.split(comando):
+        tokens = [t.strip("\"'") for t in TOKEN.findall(seg)]
+        while tokens and tokens[0].lower() in ("sudo", "env", "command", "time"):
+            tokens = tokens[1:]
+        if not tokens or not INTERPRETES.match(sin_exe(Path(tokens[0].replace("\\", "/")).name.lower())):
+            continue
+        resto, candidato = tokens[1:], None
+        for i, a in enumerate(resto):
+            if a.lower() in ("-file", "-f") and i + 1 < len(resto):
+                candidato = resto[i + 1]
+                break
+            if not a.startswith("-") and Path(a).suffix.lower() in EXT_CODIGO | EXT_SHELL:
+                candidato = a
+                break
+        ruta = a_ruta(candidato, cwd) if candidato else None
+        try:
+            if ruta is not None and Path(ruta).is_file() and Path(ruta).stat().st_size <= MAX_SCRIPT:
+                res.append(Path(ruta))
+        except OSError:
+            continue
+    return res
+
+
 def fuera_del_proyecto(textos, cwd, raices, hermano=None):
     """Los textos que apuntan fuera de todas las raíces propias (y de un proyecto hermano, si `hermano` lo acepta)."""
     fuera = []
@@ -308,11 +361,21 @@ def main():
         if herramienta in ("Write", "Edit", "NotebookEdit"):
             textos = [str(entrada.get("file_path") or entrada.get("notebook_path") or "")]
             comando = ""
+            contenido = str(entrada.get("content") or entrada.get("new_string") or entrada.get("new_source") or "")
+            if contenido and Path(textos[0]).suffix.lower() in EXT_CODIGO | EXT_SHELL:
+                try:  # si el archivo que se edita ya tiene la marca, un fragmento suyo tampoco se analiza
+                    previo = Path(a_ruta(textos[0], cwd) or "").read_text(encoding="utf-8", errors="replace") if Path(a_ruta(textos[0], cwd) or "").is_file() else ""
+                except OSError:
+                    previo = ""
+                if not MARCA.search(previo):
+                    textos += literales_de_script(contenido, Path(textos[0]).suffix)  # el script que se va a guardar
         elif herramienta in ("Bash", "PowerShell"):
             comando = str(entrada.get("command", ""))
             variables = variables_del_comando(comando)
             sin_cuerpos, cuerpos_de_codigo = partir_heredocs(comando)
             textos = [sustituir(t, variables) for t in objetivos_de_shell(sin_cuerpos) + escrituras_en_codigo(sin_cuerpos + "\n" + "\n".join(cuerpos_de_codigo))]
+            for script in scripts_del_comando(sin_cuerpos, cwd):  # el script guardado que se va a ejecutar
+                textos += literales_de_script(script.read_text(encoding="utf-8", errors="replace"), script.suffix)
         else:
             return 0
         import modo_hooks

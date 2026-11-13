@@ -1,3 +1,4 @@
+# senior-ignore: ESCRIBE-AFUERA motivo: las pruebas de este hook usan rutas de ejemplo (/tmp/x) dentro de comandos de mentira
 """El guardián de la regla máxima: 28 formas de escribir fuera del proyecto (y de leer, que es legítimo) contra el hook real."""
 import json
 import os
