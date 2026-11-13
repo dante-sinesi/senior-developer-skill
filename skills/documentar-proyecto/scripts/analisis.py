@@ -523,12 +523,38 @@ def decisiones_stack(proyecto):
     return [{"categoria": c, "componentes": [(e, *ev) for e, ev in sorted(comp.items())]} for c, comp in encontrados.items()]
 
 
-PALABRAS_DOMINIO = re.compile(r"(precio|price|total|descuento|discount|iva|tax|impuesto|recargo|interes|interest|comision|fee|stock|saldo|balance|"
-                              r"edad|age|limite|limit|plazo|dias|days|vencimiento|expir|maximo|minimo|cuota|monto|amount|tarifa|rate|estado|status|rol|role|permiso)", re.I)
+_PALABRAS = ("precio|price|total|descuento|discount|iva|tax|impuesto|recargo|interes|interest|comision|fee|stock|saldo|balance|edad|age|limite|limit|plazo|"
+             "dias|days|vencimiento|expir\\w*|maximo|minimo|cuota|monto|amount|tarifa|rate|estado|status|rol|role|permiso")
+# Palabras enteras (con su plural): `age` no coincide con PAGE ni `iva` con private. El camelCase se separa antes (ver `canonica`).
+PALABRAS_DOMINIO = re.compile(r"(?<![a-z0-9])(?:" + _PALABRAS + r")(?:s|es)?(?![a-z0-9])")
+
+
+def canonica(codigo):
+    """La línea en minúsculas y con el camelCase separado por guiones bajos (`totalPrice` → `total_price`), para comparar palabras enteras."""
+    return re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", codigo).lower()
+
+
+# Lo que parece una regla pero casi nunca lo es: códigos HTTP, contadores y desplazamientos, versiones y medidas de pantalla.
+ES_HTTP = re.compile(r"status(?:_?code)?(?:\(\))?\s*(?:===?|!==?|[<>]=?)\s*[1-5]\d\d\b|\bhttp_\w+\s*=\s*[1-5]\d\d\b")
+CONTADOR = r"(?:i|j|k|n|idx|index|indice|intentos?|reintentos?|retries|retry|attempts?|tries|page|pagina|offset|contador|counter|count|width|height|innerwidth|innerheight)"
+ES_CONTADOR = re.compile(r"[\w$.>\-\[\]()]*?(?<![a-z0-9])\$?" + CONTADOR + r"(?![a-z0-9])\s*(?:[<>]=?|===?|!==?)\s*-?\d+")
+ES_VERSION = re.compile(r"(?<![a-z0-9])\w*version\w*")
+CONSTANTE_TECNICA = re.compile(r"(?<![a-z0-9])(?:page_?size|per_?page|timeout\w*|port|puerto|max_?(?:retries|reintentos|intentos|connections)|retry\w*|backoff\w*|buffer\w*|chunk\w*)(?![a-z0-9])")
+
+
+def es_ruido(codigo):
+    """True si la línea parece una comparación o una constante de negocio pero es un detalle técnico (HTTP, contadores, versiones, medidas)."""
+    c = canonica(codigo)
+    if ES_HTTP.search(c) or ES_VERSION.search(c) and not PALABRAS_DOMINIO.search(c.replace("version", "")):
+        return True
+    comparaciones = re.findall(r"[\w$.>\-\[\]()]+\s*(?:[<>]=?|===?|!==?)\s*-?\d+(?:[.,]\d+)?", c)
+    if comparaciones and all(ES_CONTADOR.fullmatch(x) or ES_CONTADOR.match(x) for x in comparaciones):
+        return True
+    return bool(CONSTANTE_TECNICA.search(c) and re.search(r"=\s*-?\d", c))
 ES_COMPARACION = re.compile(r"(?:\bif\b|\belif\b|\belseif\b|\bwhile\b|\bwhen\b|\?|&&|\|\||\band\b|\bor\b)[^\n]*?(?:[<>]=?|===?|!==?)\s*-?\d+(?:[.,]\d+)?")
 ES_CONSTANTE = re.compile(r"\b(?:const\s+|define\(\s*['\"])?([A-Z][A-Z0-9_]{2,})\b['\"]?\s*(?:=|,)\s*-?\d+(?:\.\d+)?")
 ES_VALIDACION = re.compile(r"['\"](?:required|nullable|sometimes)[^'\"]*\|[^'\"]+['\"]|['\"](?:min|max|between|size|in|unique|exists|regex)\s*:[^'\"]+['\"]|"
-                           r"\.(?:min|max|length|email|regex)\(\s*\d|max_length\s*=\s*\d+|min_length\s*=\s*\d+|validators\s*=|Length\(\s*min")
+                           r"\.(?:min|max|length|email|regex)\(\s*\d|\.email\(\s*\)|max_length\s*=\s*\d+|min_length\s*=\s*\d+|validators\s*=|Length\(\s*min")
 ES_PERMISO = re.compile(r"\b(?:hasRole|hasPermission|can|authorize|is_admin|isAdmin|permission_required|login_required|role_required|@Roles)\b")
 ES_ESTADO = re.compile(r"\bconst\s+[A-Z_]*(?:ESTADO|STATUS|ROL|ROLE|TIPO|TYPE)\w*\s*=|^\s*class\s+\w+\([^)]*Enum\)|^\s*enum\s+\w+")
 
@@ -565,16 +591,19 @@ def reglas_candidatas(proyecto):
                 tipo, puntaje = "permiso", 2
             elif ES_ESTADO.search(codigo):
                 tipo, puntaje = "estados", 2
+            elif es_ruido(codigo) and not ES_PERMISO.search(codigo):
+                continue
             elif ES_COMPARACION.search(codigo):
                 numeros = [float(x.replace(",", ".")) for x in re.findall(r"(?:[<>]=?|[!=]==?)\s*(-?\d+(?:[.,]\d+)?)", codigo)]
                 if numeros and not all(x in (0.0, 1.0, -1.0) for x in numeros):
                     tipo, puntaje = "umbral", 2
-                elif PALABRAS_DOMINIO.search(codigo):
+                elif PALABRAS_DOMINIO.search(canonica(codigo)):
                     tipo, puntaje = "umbral", 1
-            elif ES_CONSTANTE.search(codigo) and PALABRAS_DOMINIO.search(codigo):
+            elif ES_CONSTANTE.search(codigo) and PALABRAS_DOMINIO.search(canonica(codigo)):
                 tipo, puntaje = "constante", 2
             if tipo:
-                if PALABRAS_DOMINIO.search(codigo):
+                if PALABRAS_DOMINIO.search(canonica(codigo)):
                     puntaje += 1
-                out.append({"tipo": tipo, "rel": rel, "linea": n, "texto": codigo[:140], "puntaje": puntaje})
+                confianza = "alta" if puntaje >= 3 else "media" if puntaje == 2 else "baja"
+                out.append({"tipo": tipo, "rel": rel, "linea": n, "texto": codigo[:140], "puntaje": puntaje, "confianza": confianza})
     return out

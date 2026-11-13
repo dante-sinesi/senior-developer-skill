@@ -442,6 +442,7 @@ def etapa_reglas(proyecto, raiz, res, refrescar=False):
         titulo, porque = PREGUNTAS[c["tipo"]]
         preguntas.append(
             f"#### P{i}. {titulo} en `{c['rel']}`\n\n**Lo que hace el código:** `{c['rel']}:{c['linea']}` — `{c['texto']}`\n"
+            f"**Qué tan segura es la detección:** {c.get('confianza', 'media')} (heurística por patrones: puede equivocarse).\n"
             f"**Por qué importa:** {porque}.\n**Opciones:** a) es la regla correcta; b) es incorrecta (indicar cuál es); c) ya no aplica.\n"
             "**Propuesta:** a. Queda como regla provisoria y sin test hasta que se confirme.\n**Respuesta:**\n")
     por_tipo = defaultdict(list)
