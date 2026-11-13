@@ -3,15 +3,17 @@
 
 Uso:
     python instalar.py                         # instala las skills y registra los hooks, y dice qué falta
+    python instalar.py --instalar-dependencias # además instala markitdown y Pillow (tu aprobación explícita)
     python instalar.py --verificar             # solo informa el estado (incluye si lo instalado está al día con este repositorio); no escribe nada
 
 Qué hace:
   1. Comprueba Python 3.10 o superior, Git, el CLI `gh` (opcional, para GitHub) y `pip`.
   2. Copia las skills de este repositorio a ~/.claude/skills, reemplazando las del paquete (no toca ninguna otra
      skill) y pasando los archivos de texto a fin de línea de Unix.
-  3. Registra en ~/.claude/settings.json los hooks globales de Claude Code (autoría, escritura fuera del proyecto,
-     archivos protegidos, secretos y permisos desde el chat), conservando los ajustes que ya haya y con una copia de seguridad.
-  4. Comprueba que Token Diet esté instalada (la lectura de documentos e imágenes externos y el ahorro de tokens son suyos).
+  3. Registra en ~/.claude/settings.json los cinco hooks globales de Claude Code (autoría, lectura de documentos
+     externos, escritura fuera del proyecto, archivos protegidos y permisos desde el chat), conservando los ajustes que ya haya y con una copia de seguridad.
+  4. Comprueba las dos bibliotecas de Python obligatorias para documentos e imágenes externos: `markitdown` y
+     `Pillow`. Solo las instala con --instalar-dependencias: nunca lo hace por su cuenta.
   5. Imprime un informe con lo que quedó listo y los pasos que faltan (por ejemplo `gh auth login` y la identidad
      de Git de cada repositorio).
 Los hooks de Git de cada proyecto no se instalan aquí: la skill los activa sola la primera vez que se usa en cada
@@ -29,7 +31,8 @@ RAIZ = Path(__file__).resolve().parent
 SKILLS = RAIZ / "skills"
 DESTINO = Path.home() / ".claude" / "skills"
 TEXTO = {".py", ".md", ".json", ".html", ".css", ".js", ".txt", ".sh", ".yml", ".yaml"}
-
+DEPENDENCIAS = (("markitdown", 'markitdown[all]', "documentos externos (PDF, Word, Excel, PowerPoint, HTML, JSON…)"),
+                ("PIL", "pillow", "imágenes externas (reducción a 1024 px)"))
 
 
 def cargar_guardia():
@@ -86,6 +89,13 @@ def instalar_skills():
     return copiadas
 
 
+def modulo_disponible(py, modulo):
+    try:
+        return subprocess.run([py, "-c", f"import {modulo}"], capture_output=True, timeout=60).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
 def programa(nombre, *args):
     ruta = shutil.which(nombre)
     if not ruta:
@@ -102,6 +112,7 @@ def main():
         sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--verificar", action="store_true", help="solo informar; no escribir nada")
+    ap.add_argument("--instalar-dependencias", action="store_true", help="instalar markitdown y Pillow con pip")
     ap.add_argument("--python", default=None, help="intérprete a usar para los hooks y las dependencias")
     args = ap.parse_args()
     listo, falta, avisos = [], [], []
@@ -145,6 +156,20 @@ def main():
         py = args.python or guardia.python_que_funciona() or sys.executable
     else:
         py = args.python or sys.executable
+
+    faltantes = [(m, p, para) for m, p, para in DEPENDENCIAS if not modulo_disponible(py, m)]
+    if faltantes and args.instalar_dependencias and not args.verificar:
+        paquetes = [p for _, p, _ in faltantes]
+        print(f"Instalando con pip (aprobado con --instalar-dependencias): {', '.join(paquetes)}")
+        p = subprocess.run([py, "-m", "pip", "install", *paquetes], encoding="utf-8", errors="replace")
+        if p.returncode != 0:
+            avisos.append("pip no pudo instalar alguna dependencia: revisar el mensaje de arriba")
+        faltantes = [(m, pk, para) for m, pk, para in DEPENDENCIAS if not modulo_disponible(py, m)]
+    for m, p, para in DEPENDENCIAS:
+        if (m, p, para) in faltantes:
+            falta.append(f"biblioteca `{p}` para {para}: `{py} -m pip install \"{p}\"` o `python instalar.py --instalar-dependencias`")
+        else:
+            listo.append(f"biblioteca `{p}` disponible")
 
     # Token Diet: por ahora solo se avisa (la dependencia obligatoria llega al final del traspaso de mecánicas).
     espec_td = importlib.util.spec_from_file_location("senior_token_diet", RAIZ / "skills" / "senior" / "scripts" / "token_diet.py")

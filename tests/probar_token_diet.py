@@ -10,6 +10,7 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
 sys.stdout.reconfigure(encoding="utf-8")
+HOOK = RAIZ / "skills" / "senior-relevar" / "scripts" / "hook_lectura_externa.py"
 TD = RAIZ / "skills" / "senior" / "scripts" / "token_diet.py"
 CONSUMO = RAIZ / "skills" / "auditar-consumo" / "scripts" / "consumo.py"
 BASE = RAIZ / ".temporal" / "proy-token-diet"
@@ -54,26 +55,32 @@ espec = importlib.util.spec_from_file_location("token_diet", TD)
 td = importlib.util.module_from_spec(espec)
 espec.loader.exec_module(td)
 vacio = inicio("vacio")
-chequear("sin instalar: no cede y avisa cómo instalarla", "no está instalada" in td.aviso(vacio) and "instalar.py install" in td.aviso(vacio), td.aviso(vacio))
+chequear("sin instalar: no cede y avisa cómo instalarla", not td.cede_lectura(vacio) and "no está instalada" in td.aviso(vacio) and "instalar.py install" in td.aviso(vacio), td.aviso(vacio))
 ok = inicio("ok", "1.0.0")
-chequear("instalada 1.0.0 con su hook: cede y no avisa", td.estado(ok)["hook_lectura"] and td.aviso(ok) == "", td.estado(ok))
+chequear("instalada 1.0.0 con su hook: cede y no avisa", td.cede_lectura(ok) and td.aviso(ok) == "", td.estado(ok))
 viejo = inicio("viejo", "0.9.2")
-chequear("versión vieja: no cede y pide actualizar", "anterior" in td.aviso(viejo), td.aviso(viejo))
+chequear("versión vieja: no cede y pide actualizar", not td.cede_lectura(viejo) and "anterior" in td.aviso(viejo), td.aviso(viejo))
 sin_hook = inicio("sinhook", "1.0.0", hook=False)
-chequear("instalada sin hook registrado: no cede y lo dice", "hook de lectura" in td.aviso(sin_hook), td.aviso(sin_hook))
+chequear("instalada sin hook registrado: no cede y lo dice", not td.cede_lectura(sin_hook) and "hook de lectura" in td.aviso(sin_hook), td.aviso(sin_hook))
 roto = inicio("roto", "1.0.0", hook=False)
 (roto / ".claude" / "settings.json").write_text("{no es json", encoding="utf-8")
-chequear("settings ilegible: no rompe y no cuenta el hook", not td.estado(roto)["hook_lectura"])
+chequear("settings ilegible: no rompe, no cede", not td.cede_lectura(roto))
 nueva = inicio("mayor", "1.10.0")
-chequear("1.10.0 cuenta como mayor que 1.0.0 (no se compara como texto)", td.estado(nueva)["al_dia"])
+chequear("1.10.0 cuenta como mayor que 1.0.0 (no se compara como texto)", td.cede_lectura(nueva))
 
-# 2. el hook de lectura ya no es de senior: no queda ningún script de lectura de documentos en el paquete
-import subprocess as _sp
-for retirado in ("senior-relevar/scripts/hook_lectura_externa.py", "senior-relevar/scripts/convertir_fuentes.py", "senior-diseno/scripts/capturar.py"):
-    chequear(f"{retirado} ya no está en el paquete (lo hace Token Diet)", not (RAIZ / "skills" / retirado).exists())
-
+# 2. el hook de senior: cede con Token Diet activa y bloquea sin ella
 P = BASE / "proyecto"
-P.mkdir(parents=True, exist_ok=True)
+(P / "documentos-externos").mkdir(parents=True)
+subprocess.run(["git", "init", "-q"], cwd=P)
+pdf = P / "documentos-externos" / "manual.pdf"
+pdf.write_bytes(b"%PDF-1.4\n" + b"0" * 200)
+entrada = json.dumps({"tool_name": "Read", "tool_input": {"file_path": str(pdf)}, "cwd": str(P)})
+r = correr(HOOK, home=vacio, entrada=entrada)
+chequear("sin Token Diet: el hook de senior bloquea la lectura directa", "deny" in r.stdout or r.returncode == 2, (r.stdout, r.stderr))
+r = correr(HOOK, home=ok, entrada=entrada)
+chequear("con Token Diet activa: el hook de senior no dice nada (bloquea una sola)", r.returncode == 0 and not r.stdout.strip(), (r.stdout, r.stderr))
+r = correr(HOOK, home=viejo, entrada=entrada)
+chequear("con Token Diet vieja: senior sigue bloqueando", "deny" in r.stdout or r.returncode == 2, (r.stdout, r.stderr))
 
 # 3. la auditoría de senior cede la referencia
 r = correr(CONSUMO, "--raiz", str(P), "--home", str(ok))
@@ -87,26 +94,5 @@ chequear("instalador: sin Token Diet muestra el aviso con el comando", "Token Di
 r = correr(RAIZ / "instalar.py", "--verificar", home=ok)
 chequear("instalador: con Token Diet lo da por listo", "Token Diet 1.0.0 instalada" in r.stdout, r.stdout[-600:])
 chequear("la guardia del estado imprime y sale con 1 si falta", correr(TD, home=vacio).returncode == 1 and correr(TD, home=ok).returncode == 0)
-
-# 5. las capturas del diseño las saca Token Diet: sin ella, el mensaje dice cómo instalarla
-(P / "p.html").write_text("<!doctype html><title>x</title><p>hola</p>", encoding="utf-8")
-DISENO = RAIZ / "skills" / "senior-diseno" / "scripts" / "revisar_diseno.py"
-r = correr(DISENO, "base", str(P / "p.html"), "--capturas", home=vacio)
-chequear("--capturas sin Token Diet dice que no está instalada y cómo instalarla", "Token Diet no está instalada" in r.stdout and "instalar.py install" in r.stdout, r.stdout[-400:])
-VERIF = RAIZ / "skills" / "senior" / "scripts" / "verificar.py"
-chequear("verificar.py ya no ofrece el chequeo de fuentes (es de Token Diet)", "chequeo_fuentes" not in VERIF.read_text(encoding="utf-8"))
-
-# 6. al migrar los hooks sueltos, el hook de lectura de Token Diet (mismo nombre de archivo) no se toca
-import json as _json
-spec = importlib.util.spec_from_file_location("guardia", RAIZ / "skills" / "senior-git" / "scripts" / "guardia_autoria.py")
-guardia = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(guardia)
-td_cmd = 'python "C:/Users/x/.claude/skills/token-diet/scripts/hook_lectura_externa.py"'
-sr_cmd = 'python "C:/Users/x/.claude/skills/senior-relevar/scripts/hook_lectura_externa.py"'
-ajustes = {"hooks": {"PreToolUse": [{"matcher": "Read", "hooks": [{"type": "command", "command": td_cmd}, {"type": "command", "command": sr_cmd}]}]}}
-sacados = guardia.sacar_sueltos(ajustes)
-quedan = [h["command"] for g in ajustes["hooks"]["PreToolUse"] for h in g["hooks"]]
-chequear("migrar sueltos saca el hook viejo de senior y deja el de Token Diet", sacados == 1 and quedan == [td_cmd], (sacados, quedan))
-chequear("con backslashes de Windows también se reconoce el de Token Diet", not guardia.es_suelto(td_cmd.replace("/", chr(92))))
 
 sys.exit(1 if mal else 0)
