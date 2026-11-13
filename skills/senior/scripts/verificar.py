@@ -17,7 +17,6 @@ Chequeos (sin argumento corre "todo"):
   evidencia   las citas archivo:línea de la documentación inferida del código existen (ver documentar-proyecto)
   docs        marca requisitos sin test e IDs sin documento (solo lectura: el
               índice se regenera aparte con senior-memoria/scripts/indexar_docs.py indexar)
-  dependencia Token Diet, la skill de ahorro de tokens, está instalada y al día (obligatoria: sin ella senior no se usa)
   requisitos  calidad del texto de docs/requisitos/: encabezado, IDs, enlaces, ejemplos verificables,
               palabras ambiguas y estado (ver senior-docs/scripts/revisar_requisitos.py)
   readme      el README.md de GitHub existe, está completo, enlaza a docs/,
@@ -484,18 +483,6 @@ def chequeo_tarjetas(raiz, args):
     return modulo.verificar(raiz, "docs/tarjetas", "docs/img")
 
 
-def chequeo_dependencia(raiz, args):
-    """Token Diet es el motor de este paquete: sin ella instalada y al día, senior no se usa."""
-    import importlib.util
-    espec = importlib.util.spec_from_file_location("senior_token_diet", Path(__file__).resolve().with_name("token_diet.py"))
-    modulo = importlib.util.module_from_spec(espec)
-    espec.loader.exec_module(modulo)
-    aviso = modulo.aviso()
-    if aviso:
-        return [f"Dependencia: {aviso}"], False
-    return [f"Dependencia: Token Diet {modulo.estado()['version']} instalada y con su hook de lectura activo."], True
-
-
 def chequeo_seguridad(raiz, args):
     hallazgos, auditoria, vulnerable = seguridad.analizar(raiz, args.auditar)
     salida = []
@@ -514,7 +501,7 @@ def chequeo_seguridad(raiz, args):
 
 CHEQUEOS = {
     "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado, "escala": chequeo_escala, "evidencia": chequeo_evidencia,
-    "docs": chequeo_docs, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "dependencia": chequeo_dependencia, "diagramas": chequeo_diagramas,
+    "docs": chequeo_docs, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "diagramas": chequeo_diagramas,
     "listones": chequeo_listones, "autoria": chequeo_autoria,
     "diseno": chequeo_diseno, "seguridad": chequeo_seguridad, "secretos": chequeo_secretos, "tarjetas": chequeo_tarjetas,
 }

@@ -105,25 +105,4 @@ quedan = [h["command"] for g in ajustes["hooks"]["PreToolUse"] for h in g["hooks
 chequear("migrar sueltos saca el hook viejo de senior y deja el de Token Diet", sacados == 1 and quedan == [td_cmd], (sacados, quedan))
 chequear("con backslashes de Windows también se reconoce el de Token Diet", not guardia.es_suelto(td_cmd.replace("/", chr(92))))
 
-# 7. dependencia obligatoria: sin Token Diet, el instalador falla y senior no se usa
-r = correr(RAIZ / "instalar.py", "--verificar", home=vacio)
-chequear("instalador: sin Token Diet falla (FALTA) con el motivo y el comando", r.returncode == 1 and "FALTA  Token Diet es obligatoria" in r.stdout and "instalar.py install" in r.stdout, (r.returncode, r.stdout[-500:]))
-r = correr(RAIZ / "instalar.py", "--verificar", home=ok)
-chequear("instalador: con Token Diet no falla por ella", "Token Diet es obligatoria" not in r.stdout, r.stdout[-300:])
-VERIF = RAIZ / "skills" / "senior" / "scripts" / "verificar.py"
-r = correr(VERIF, "dependencia", "--raiz", str(P), home=vacio)
-chequear("verificar.py dependencia falla sin Token Diet y dice cómo instalarla", r.returncode == 1 and "Dependencia: Token Diet no está instalada" in r.stdout, (r.returncode, r.stdout[-300:]))
-r = correr(VERIF, "dependencia", "--raiz", str(P), home=ok)
-chequear("verificar.py dependencia pasa con Token Diet instalada", r.returncode == 0 and "Token Diet 1.0.0 instalada" in r.stdout, (r.returncode, r.stdout[-300:]))
-GUARDIA = RAIZ / "skills" / "senior-git" / "scripts" / "guardia_autoria.py"
-r = correr(GUARDIA, "asegurar", "--raiz", str(P), home=vacio)
-chequear("asegurar falla sin Token Diet con un FALTA", r.returncode == 1 and "FALTA Token Diet (obligatoria" in r.stdout, (r.returncode, r.stdout[-400:]))
-CARGAR = RAIZ / "skills" / "senior-memoria" / "scripts" / "cargar_estado.py"
-r = correr(CARGAR, "--raiz", str(P), home=vacio)
-chequear("al abrir la sesión sin Token Diet dice que senior no se aplica y que no hay que preguntar ni esperar", "senior NO SE APLICA" in r.stdout and "sin preguntar ni esperar" in r.stdout, r.stdout[-400:])
-r = correr(CARGAR, "--raiz", str(P), home=ok)
-chequear("al abrir la sesión con Token Diet no dice nada de la dependencia", "NO SE APLICA" not in r.stdout, r.stdout[-300:])
-sk = (RAIZ / "skills" / "senior" / "SKILL.md").read_text(encoding="utf-8")
-chequear("la skill senior declara la dependencia, el porqué y que no se pregunta ni se espera", "## Dependencia obligatoria: Token Diet" in sk and "nunca se pregunta ni se espera" in sk and "no se usa sin ella" in sk)
-
 sys.exit(1 if mal else 0)

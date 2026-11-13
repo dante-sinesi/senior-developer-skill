@@ -161,13 +161,13 @@ def main():
     else:
         py = args.python or sys.executable
 
-    # Token Diet es obligatoria: sin ella instalada y al día, el paquete no termina bien y senior no se usa.
+    # Token Diet: por ahora solo se avisa (la dependencia obligatoria llega al final del traspaso de mecánicas).
     espec_td = importlib.util.spec_from_file_location("senior_token_diet", RAIZ / "skills" / "senior" / "scripts" / "token_diet.py")
     modulo_td = importlib.util.module_from_spec(espec_td)
     espec_td.loader.exec_module(modulo_td)
     aviso_td = modulo_td.aviso()
     if aviso_td:
-        falta.append(f"Token Diet es obligatoria (es el motor de este paquete: lectura, resúmenes y ahorro de tokens; sin ella senior no se usa). {aviso_td}")
+        avisos.append(aviso_td)
     else:
         listo.append(f"Token Diet {modulo_td.estado()['version']} instalada y con su hook de lectura activo")
 

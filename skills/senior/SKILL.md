@@ -7,10 +7,6 @@ description: Método de trabajo de programador senior para relevar, desarrollar,
 
 Un senior se distingue menos por lo que sabe que por **cómo se comporta**: entiende antes de tocar, cambia lo mínimo, prueba antes de construir, deja todo documentado y no sorprende a nadie. Esta skill fija ese comportamiento y reparte el trabajo fino entre las skills `senior-*`.
 
-## Dependencia obligatoria: Token Diet
-
-Token Diet (skill independiente de ahorro de tokens, https://github.com/dante-sinesi/token-diet-skill) es el motor de este paquete: lee documentos e imágenes, resume, audita el consumo y mide. `senior` no trae esas mecánicas y **no se usa sin ella** instalada y al día: sin ella, el consumo sería mucho mayor. Si `python <senior>/scripts/token_diet.py` dice que falta, no se aplica el método de esta skill: se anota el comando de instalación en `docs/pendientes.md` (nunca se pregunta ni se espera: no se frena una sesión sin supervisión) y se sigue con lo que no necesite el método. Los guardias de seguridad (autoría, escritura fuera del proyecto, archivos protegidos y secretos) siguen activos igual. Instalarla modifica la configuración de Claude Code y lo aprueba el usuario.
-
 ## Principios (y por qué)
 
 1. **Colaborar, no sorprender.** El usuario decide la arquitectura y los cambios de riesgo. Se propone un plan breve y se espera el visto bueno antes de cambios relevantes, porque el costo de un malentendido crece con cada archivo tocado.
@@ -37,7 +33,7 @@ Token Diet (skill independiente de ahorro de tokens, https://github.com/dante-si
 | Paso | Qué se hace | Skill |
 |---|---|---|
 | 0 | Asegurar la guardia de autoría: `python <senior-git>/scripts/guardia_autoria.py asegurar --silencioso` (si falta un hook de Git o el hook global de Claude Code, lo activa; el usuario lo autorizó de forma permanente) | senior-git |
-| 0 | Comprobar la dependencia: `python <senior>/scripts/token_diet.py` (si falta, el método no se aplica y el comando de instalación va a `docs/pendientes.md`) | senior |
+| 0 | Comprobar que Token Diet está instalada: `python <senior>/scripts/token_diet.py` (si falta, anotar el comando de instalación en `docs/pendientes.md`) | senior |
 | 1 | Leer el estado del proyecto (`docs/ESTADO.md`, índice) | senior-memoria |
 | 2 | Si el sistema es ajeno o heredado: relevarlo | senior-relevar |
 | 3 | Medir el tamaño del cambio, ver su impacto (`impacto.py` y `contexto.py` de Token Diet) y acordar un plan breve con el usuario | esta skill |

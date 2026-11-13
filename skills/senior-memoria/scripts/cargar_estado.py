@@ -38,23 +38,6 @@ def asegurar_guardia(raiz):
         print(p.stdout.strip())
 
 
-def avisar_dependencia():
-    """Sin Token Diet (instalada y al día), senior no aplica su método: lo dice al abrir la sesión, sin preguntar ni esperar."""
-    import importlib.util
-    ruta = Path(__file__).resolve().parents[2] / "senior" / "scripts" / "token_diet.py"
-    try:
-        espec = importlib.util.spec_from_file_location("senior_token_diet", ruta)
-        modulo = importlib.util.module_from_spec(espec)
-        espec.loader.exec_module(modulo)
-        aviso = modulo.aviso()
-    except Exception:  # noqa: BLE001 - si no se puede comprobar, no se frena nada
-        return
-    if aviso:
-        print("# senior NO SE APLICA en esta sesión: falta su dependencia")
-        print(aviso)
-        print("Anotá ese comando en docs/pendientes.md (sin preguntar ni esperar) y seguí con lo que no necesite el método senior.\n")
-
-
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -63,7 +46,6 @@ def main():
     args = ap.parse_args()
     raiz = Path(args.raiz).resolve()
     asegurar_guardia(raiz)
-    avisar_dependencia()
     estado = raiz / "docs" / "ESTADO.md"
     if not estado.exists():
         return
