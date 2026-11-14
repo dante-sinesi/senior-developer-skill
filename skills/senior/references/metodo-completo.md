@@ -68,6 +68,10 @@ Alrededor de la escalera:
 
 Antes de commitear una decisión no trivial (lógica con ramas, un límite entre módulos, algo que el compilador no verifica, un efecto difícil de deshacer), un subagente sin el hilo de la conversación intenta romperla: se le pasa solo el artefacto y el contrato, nunca la afirmación ni el razonamiento propio. `scripts/duda.py armar` prepara el texto del revisor y `duda.py decidir` indica qué sigue; el resultado se reconcilia hallazgo por hallazgo y a los tres ciclos, o ante dos seguidos sin ningún hallazgo accionable («teatro de duda»), se le plantea al usuario. Detalle en `references/duda.md`. No se usan herramientas de otros modelos sin autorización explícita del usuario.
 
+## Planes no simples: revisarlos a ciegas antes de ejecutarlos
+
+Un plan con algo irreversible, varias áreas o varias sesiones se escribe en un `.md` que se baste solo (contexto, decisiones ya tomadas, pasos, qué pasa si falla, terminado cuando) y lo revisa **un pez**: un revisor que solo recibe ese archivo y busca fallas. `scripts/pez.py revisar` lo corre, cada hallazgo se acepta o se rechaza con su motivo en el propio plan, y `pez.py decidir` dice si se ejecuta, se repite (una sola vez) o se le plantea al usuario. Detalle y mediciones en `references/plan-pez.md`.
+
 ## Proyecto nuevo o sin la metodología
 
 Para incorporar un proyecto (nuevo o existente) usar `adoptar-proyecto` (`/adoptar-proyecto`): muestra un plan, espera aprobación y crea la base documental y el README. Sin eso, se trabaja con lo que haya y se propone adoptar.
