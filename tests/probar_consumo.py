@@ -174,7 +174,7 @@ chequear("el script del despachador existe donde lo busca la guardia", guardia_a
 # ---------- 4. regla de dos fallas y documentación ----------
 senior = ((RAIZ / "skills") / "senior" / "SKILL.md").read_text(encoding="utf-8") + (((RAIZ / "skills") / "senior" / "references" / "metodo-completo.md").read_text(encoding="utf-8"))
 cerrar = (RAIZ / "skills" / "cerrar-sesion" / "SKILL.md").read_text(encoding="utf-8")
-readme = (RAIZ / "README.md").read_text(encoding="utf-8")
+readme = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("principio 17: dos fallas, barrera, y la decide el usuario", "17. **Una regla que falló dos veces" in senior and "solo se arma si el usuario dice que sí" in senior)
 chequear("si el usuario dice que no, queda anotado y no se vuelve a ofrecer", "docs/pendientes.md" in senior.split("17. **")[1].split("\n")[0] and "no volver a ofrecerla" in senior)
 chequear("es un punto de control", "Armar una barrera" in senior)

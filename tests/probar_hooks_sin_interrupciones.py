@@ -155,7 +155,7 @@ chequear("la respuesta tiene la forma que espera Claude Code", json.loads(mh.res
 
 # ---------- documentación
 sk = (SK / "senior" / "SKILL.md").read_text(encoding="utf-8") + ((SK / "senior" / "references" / "metodo-completo.md").read_text(encoding="utf-8"))
-rd = (RAIZ / "README.md").read_text(encoding="utf-8")
+rd = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 cm = (RAIZ / "CLAUDE.md").read_text(encoding="utf-8")
 chequear("senior explica los dos modos y que no se interrumpe", "permisos_hooks.py" in sk and "sin interrumpir" in sk)
 chequear("el README lo explica", "permisos_hooks.py" in rd and "sin supervisión" in rd)

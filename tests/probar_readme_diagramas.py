@@ -186,7 +186,7 @@ chequear("y vuelve a estar al día después del sync", "diagramas:" not in lin[0
 # ---------------- documentación
 sd = (SK / "senior-docs" / "SKILL.md").read_text(encoding="utf-8")
 dg_md = (SK / "senior-docs" / "references" / "diagramas.md").read_text(encoding="utf-8")
-rm = (RAIZ / "README.md").read_text(encoding="utf-8")
+rm = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("senior-docs explica los diagramas en el README", "readme_diagramas.py" in sd and "Diagramas en el README" in sd)
 chequear("la referencia de diagramas fija los límites del README", "En el README" in dg_md and "hasta 4" in dg_md)
 chequear("el README del paquete lo explica", "readme_diagramas.py" in rm and "Diagramas en el README" in rm)

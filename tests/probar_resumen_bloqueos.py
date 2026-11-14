@@ -86,7 +86,7 @@ chequear("Claude no puede limpiar el registro ni autorizar", hook(f"{ph} limpiar
 # documentación
 cs = (RAIZ / "skills" / "cerrar-sesion" / "SKILL.md").read_text(encoding="utf-8")
 chequear("/cerrar-sesion corre el resumen, propone autorizar y aclara que no interrumpe", "permisos_hooks.py resumen" in cs and "/permitir" in cs and "no interrumpe el trabajo" in cs)
-rd = (RAIZ / "README.md").read_text(encoding="utf-8")
+rd = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("el README explica /permisos y el resumen de /cerrar-sesion", "`/permisos`" in rd and "resumen" in rd and "/cerrar-sesion" in rd)
 
 print("Todo bien." if not mal else f"{mal} casos mal.")

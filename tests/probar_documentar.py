@@ -214,7 +214,7 @@ chequear("la skill tiene nombre, descripción corta y las reglas", skill.startsw
 chequear("el protocolo de las etapas con el modelo existe", (SK / "documentar-proyecto" / "references" / "protocolo.md").exists())
 plan = (SK / "adoptar-proyecto" / "scripts" / "plan_adopcion.py").read_text(encoding="utf-8")
 chequear("/adoptar-proyecto propone documentar un proyecto existente", "/documentar-proyecto" in plan and "/documentar-proyecto" in (SK / "adoptar-proyecto" / "SKILL.md").read_text(encoding="utf-8"))
-readme = (RAIZ / "README.md").read_text(encoding="utf-8")
+readme = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("el README lo explica", "## Documentar un proyecto existente" in readme and "`documentar-proyecto`" in readme and "`evidencia`" in readme)
 chequear("el README no tiene texto ajeno al proyecto", verificar.contenido_ajeno(readme) == [])
 chequear("senior-docs y senior-relevar lo mencionan", "provisorio" in (SK / "senior-docs" / "SKILL.md").read_text(encoding="utf-8") and "documentar.py reglas" in (SK / "senior-relevar" / "SKILL.md").read_text(encoding="utf-8"))

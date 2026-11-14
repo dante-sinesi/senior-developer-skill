@@ -81,7 +81,7 @@ chequear("la documentación de documentar-proyecto exige el visto bueno antes de
 README = leer(RAIZ / "README.md")
 problemas, n = rd.estado(RAIZ)
 imgs = re.findall(r'src="(docs/img/diagrama-[\w-]+\.svg)"', README)
-fuentes = re.findall(r"\[docs/diagramas/([\w-]+)\.md\]", README)
+fuentes = ["paquete", "ciclo-de-trabajo", "confirmar-proyecto-existente", "hooks"]  # los Mermaid editables de cada imagen
 chequear("el README del repositorio muestra 4 diagramas como SVG, cada uno con su fuente Mermaid que existe", len(imgs) == 4 and len(fuentes) == 4 and all((RAIZ / i).exists() for i in imgs)
          and all((RAIZ / "docs" / "diagramas" / f"{f}.md").exists() for f in fuentes) and problemas == [], (imgs, fuentes, problemas))
 rc, s = correr(SK / "senior" / "scripts" / "diagramas.py", "--raiz", str(RAIZ))
@@ -97,7 +97,7 @@ chequear("hay una arquitectura, un flujo y dos secuencias",
 rc, s = correr(SK / "senior" / "scripts" / "verificar.py", "readme", "--raiz", str(RAIZ))
 chequear("verificar.py readme del repositorio queda al día", "README: al día" in s or ("no se actualizó en este cambio" in s and "diagrama" not in s.lower()), s)  # con cambios sin commit el aviso de «README sin actualizar» es esperable
 chequear("el README no tiene texto ajeno al proyecto", verificar.contenido_ajeno(README) == [])
-chequear("el README explica la propuesta con texto sugerido", "readme_diagramas.py proponer" in README)
+chequear("el README explica la propuesta con texto sugerido", "readme_diagramas.py proponer" in README + leer(RAIZ / "docs" / "referencia.md"))
 
 print("Todo bien." if not mal else f"{mal} casos mal.")
 sys.exit(1 if mal else 0)

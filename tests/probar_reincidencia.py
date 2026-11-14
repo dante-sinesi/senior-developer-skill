@@ -108,7 +108,7 @@ r = subprocess.run([sys.executable, str(SCRIPTS / "permisos_hooks.py"), "bloqueo
 chequear("permisos_hooks.py bloqueos muestra las veces y marca lo que reincide", "×" in r.stdout and "reincide" in r.stdout, r.stdout)
 cs = (RAIZ / "skills" / "cerrar-sesion" / "SKILL.md").read_text(encoding="utf-8")
 chequear("/cerrar-sesion lo cuenta como aviso al cerrar y aclara que no interrumpe", "reincide" in cs and "no interrumpe el trabajo" in cs)
-rd = (RAIZ / "README.md").read_text(encoding="utf-8")
+rd = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("el README explica que los mensajes no mandan a parar y que lo pendiente va a docs/pendientes.md", "sin supervisión" in rd and "nunca manda a parar" in rd)
 
 print("Todo bien." if not mal else f"{mal} casos mal.")

@@ -43,7 +43,7 @@ for h in hooks:
     chequear(f"{h.name}: en uso normal una entrada inesperada deja pasar sin ruido", normal.returncode == 0 and not normal.stdout.strip() and "Traceback" not in normal.stderr, normal.stderr[-200:])
     chequear(f"{h.name}: con SENIOR_HOOK_DEPURAR=1 la misma entrada muestra el error", depurando.returncode != 0 and "Traceback" in depurando.stderr, depurando.stdout + depurando.stderr)
 
-rd = (RAIZ / "README.md").read_text(encoding="utf-8")
+rd = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("el README explica SENIOR_HOOK_DEPURAR", "SENIOR_HOOK_DEPURAR" in rd)
 
 print("Todo bien." if not mal else f"{mal} casos mal.")
