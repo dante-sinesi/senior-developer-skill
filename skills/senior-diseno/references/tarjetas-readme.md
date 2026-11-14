@@ -49,7 +49,7 @@ Este formato es solo la forma de los datos, no un estilo. Obligatorios: `fondo`,
 
 1. Escribir los tres temas en `.temporal/estilos/a.json`, `b.json` y `c.json` y la portada en `.temporal/estilos/portada.json` (`{"tipo": "portada", "titulo": …, "subtitulo": …, "pie": …}`, con el título del nombre del repositorio y el subtítulo de la descripción).
 2. `python <senior-docs>/scripts/readme_tarjetas.py comparar --tarjeta .temporal/estilos/portada.json --estilos .temporal/estilos/a.json .temporal/estilos/b.json .temporal/estilos/c.json`: dibuja **la misma portada** con cada estilo y arma `comparar.html`.
-3. Mostrarla con `python <senior>/scripts/abrir_en_navegador.py .temporal/estilos/comparar.html` (una sola pestaña) y **esperar la elección del usuario** (A, B o C, con o sin ajustes). La mirada del usuario es parte del proceso y no se reemplaza con un chequeo: una decoración puede tapar el texto y el script no lo ve.
+3. Mostrarla con `python <senior>/scripts/abrir_en_navegador.py .temporal/estilos/comparar.html` (una sola pestaña) y **esperar la elección del usuario** (A, B o C, con o sin ajustes). Para comparar más tarjetas o pantallas a la vez, `ver_propuestas.py crear .temporal/estilos` arma un visor con todas las imágenes y SVG juntos. La mirada del usuario es parte del proceso y no se reemplaza con un chequeo: una decoración puede tapar el texto y el script no lo ve.
 4. Evolucionar el elegido con el feedback (un cambio por vez) y volver a comparar si hace falta.
 5. Pasarlo a `/inicializar-repositorio` con `--readme tarjetas --estilo .temporal/estilos/<el elegido>.json`. Queda guardado en `docs/tarjetas/estilo.json` y las tarjetas nuevas (cifras medidas o esperadas) se agregan después como JSON en `docs/tarjetas/`.
 

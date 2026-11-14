@@ -148,6 +148,7 @@ Se probaron dos hábitos que parecían faltarle al método: **depurar por causa 
 | 2026-11-13 | Se registran las decisiones del traspaso: dependencia excluyente (`senior` no se usa sin Token Diet), sin frenar sesiones sin supervisión, bloqueo duro solo al final, y el índice de la memoria y la ceremonia proporcional también se traspasan. | Ninguna nota; punto 17 sigue en curso. |
 | 2026-11-13 | El README de este repositorio pasa al formato de repositorio público con tarjetas SVG (estilo «Plano», elegido por el usuario): portada, tres cifras medidas y los cuatro diagramas redibujados como SVG y actualizados al estado actual (guardias, Token Diet opcional, flujo de aprobación). El motor ahora dibuja flujo y secuencia y avisa en vez de recortar un texto que no entra. | Ninguna nota; falta probar el render contra GitHub real (puntos 18 y 19). |
 | 2026-11-14 | README aligerado: de unas 6.200 a unas 1.700 palabras. Queda lo esencial (qué resuelve, qué se midió, contenido, instalación, uso, cómo funciona, pruebas) y el detalle de cada mecánica pasa a `docs/referencia.md`, sin cambiar su contenido. | Ninguna nota. |
+| 2026-11-14 | Visor de propuestas en `senior-diseno`: `ver.html` en cada ronda y `ver_propuestas.py`, una sola página que muestra las direcciones, pantallas o imágenes y SVG en desktop, mobile o ambas a la vez, una por una o lado a lado, con modos de la app declarables y propuestas pendientes marcadas. Estructura neutra, sin estilo del proyecto. | Ninguna nota; falta probarlo con un diseño real. |
 
 ### Detalle del PR #28 (revisión completa)
 
