@@ -16,7 +16,7 @@ import consumo  # noqa: E402
 import indexar_docs  # noqa: E402
 import verificar  # noqa: E402
 
-BASE = RAIZ / ".temporal" / "proy-consumo"
+BASE = RAIZ / ".temporal" / "pcons"  # nombre corto: la memoria simulada lleva la ruta entera en su nombre y Windows corta a los 260 caracteres
 mal = 0
 
 

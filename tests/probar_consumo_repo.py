@@ -10,7 +10,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parents[1]
 sys.stdout.reconfigure(encoding="utf-8")
 CONSUMO = RAIZ / "skills" / "auditar-consumo" / "scripts" / "consumo.py"
-BASE = RAIZ / ".temporal" / "proy-consumo-repo"
+BASE = RAIZ / ".temporal" / "pcons-repo"
 mal = 0
 
 
