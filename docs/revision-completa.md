@@ -48,6 +48,19 @@ Tres tareas de código chicas en un proyecto Python de ejemplo (corregir un bug,
 - **Decisión:** con esa evidencia no se apaga `senior` por defecto (se descartó la idea de activarlo solo con un comando): el costo de ~1,8 veces compra tests, documentación y una calidad que el usuario distingue a ciegas.
 - **Límites:** 3 tareas chicas, un solo modelo, un solo proyecto en Python, calidad medida por presencia de tests y documentación más un juicio humano de seis casos con un solo juez.
 
+### Hábitos candidatos medidos y descartados (2026-11-13, agentes reales)
+
+Se probaron dos hábitos que parecían faltarle al método: **depurar por causa raíz** (reproducir, seguir el dato hacia atrás, arreglar donde nace y probar cada camino que lo usa) y **comprobar que el test detecta** (romper a propósito la línea recién escrita y ver que el test falle). Se escribieron como referencias de `senior-tdd` y una línea en el núcleo, y se midieron con 6 tareas de código en Python (3 bugs con la trampa de que el síntoma se reporta por un camino pero la causa vive en una función compartida, con pruebas ocultas que verifican los dos caminos; y 3 funciones con tramos y límites, donde se inyectan errores al código y se cuenta cuántos detectan los tests que escribió el agente), 3 repeticiones por rama:
+
+| Rama | Causa raíz (9 corridas) | Puntaje de mutación (envío / volumen / crédito) | Costo estimado (18 llamadas) |
+|---|---|---|---|
+| Sin skills | 9 de 9 | 92 % / 100 % / 100 % | 1,61 USD |
+| `senior` actual | 9 de 9 | 92 % / 94 % / 100 % | 2,64 USD |
+| `senior` con los hábitos | 9 de 9 | 92 % / 100 % / 100 % | 2,59 USD |
+
+- **Resultado:** el modelo ya hace las dos cosas por su cuenta en estas tareas; los hábitos no mejoran nada medible (las diferencias entre 94 % y 100 % entran en el ruido de tres repeticiones). Con la regla del paquete (algo entra si se mide una ganancia) **no se agregaron**.
+- **Límites:** tareas fáciles que no dejan margen (efecto techo), un solo modelo y un solo lenguaje. No prueba que los hábitos sean inútiles en un bug real y complicado; falta encontrar un caso donde la diferencia aparezca. El trabajo quedó en la rama local `feat/depurar-y-sabotaje`, sin subir.
+
 ## Puntaje por parte, con su mejora
 
 | Parte | Nota inicial | Nota hoy | Mejora propuesta | Nota estimada con la mejora |
@@ -130,6 +143,7 @@ Tres tareas de código chicas en un proyecto Python de ejemplo (corregir un bug,
 | 2026-11-13 | Punto 5: tope de peso por skill. `verificar.py peso` falla si una descripción pasa de 800 caracteres (o 10.000 en total), un cuerpo de 3.500 tokens o 150 líneas, una referencia de 5.500 tokens, si un script no tiene caso de uso anotado o si una skill no figura en el README. | Punto 5 resuelto; la fila de `senior` en el peso queda como estaba. |
 | 2026-11-13 | Punto 8 descartado por decisión del usuario: Linux y macOS no son una plataforma que le importe, así que no se agrega la matriz de integración continua ni se adaptan las pruebas. | Ninguna nota. |
 | 2026-11-13 | Se agrega `docs/guia-del-paquete.md`: documentación punto por punto de lo que abarca el paquete y de cómo ataca cada una de sus 17 skills, los guardias, el verificador y lo medido. | Ninguna nota. |
+| 2026-11-13 | Hábitos candidatos medidos con agentes reales (depurar por causa raíz y comprobar que el test detecta): sin ganancia medible porque el modelo ya los hace solo; no se agregan. Queda anotado como próximo a atacar el trabajo autónomo en sesiones largas. | Ninguna nota. |
 | 2026-11-13 | Se registran las decisiones del traspaso: dependencia excluyente (`senior` no se usa sin Token Diet), sin frenar sesiones sin supervisión, bloqueo duro solo al final, y el índice de la memoria y la ceremonia proporcional también se traspasan. | Ninguna nota; punto 17 sigue en curso. |
 
 ### Detalle del PR #28 (revisión completa)
@@ -156,5 +170,6 @@ El orden sugerido sale de lo que más pesa en las notas y de lo que desbloquea e
 4. **Otros sistemas operativos** (8) y la capa de GitHub (15).
 5. **Peso** (5 y la fila de `senior`): un tope por skill que se haga cumplir.
 6. **Traspaso del ahorro de tokens a Token Diet** (17): es el objetivo principal; ver la sección de arriba.
+7. **Próximo a atacar: trabajo autónomo en sesiones largas.** Una skill aparte (se activa por otra frase, como «trabajá hasta terminar») con un plan y criterios de terminado, puntos de parada seguros, presupuesto de gasto y qué hacer cuando algo bloquea (anotar en `docs/pendientes.md` y seguir, sin esperar ni preguntar). Hay que resolver cómo convive con la regla de que commit, push y PR necesitan aprobación. Prueba pensada: una tarea larga con un bloqueo a mitad, para medir si termina lo demás sin esperar ni pedir permiso. Quedan en la lista, sin hacerse: migraciones y despliegue seguro, rendimiento con evidencia, atender una revisión y publicar una versión.
 
 Un hallazgo nuevo (de un uso real, una prueba que falla o una medición) se agrega como punto ciego con su estado y entra en este orden según lo que rompa.
