@@ -8,6 +8,7 @@
 :root { color-scheme: light dark; --fondo: #e9e7e2; --panel: #f7f6f3; --tinta: #1c1b19; --suave: #5b574f; --linea: #b9b3a5; --barra: #1c1b19; --barra-tinta: #f5f1e8; --acento: #8a2d12; }
 @media (prefers-color-scheme: dark) { :root { --fondo: #232220; --panel: #2c2b28; --tinta: #efece4; --suave: #aaa595; --linea: #4a4740; --barra: #111; --acento: #f0a58a; } }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }   /* un display propio no debe ganarle al atributo hidden: lo que se oculta no puede verse */
 html, body { height: 100%; }
 body { margin: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--fondo); color: var(--tinta); font: 14px/1.45 system-ui, sans-serif; }
 header.barra { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 8px 16px; background: var(--barra); color: var(--barra-tinta); }
@@ -122,7 +123,7 @@ figcaption a { color: var(--acento); }
     if (estado.diseno === 'lado') h.set('c', 'lado');
     if (estado.notas) h.set('notas', '1');
     h.set('s', estado.panel ? '1' : '0');
-    history.replaceState(null, '', '#' + h.toString());
+    try { history.replaceState(null, '', '#' + h.toString()); } catch (e) { /* en un marco sin permiso para cambiar la dirección: se sigue sin recordarla */ }
   }
 
   // Un solo factor de escala por vista: todo entra en la ventana sin barras de desplazamiento y la
@@ -209,8 +210,7 @@ figcaption a { color: var(--acento); }
       b.addEventListener('click', function () { irAPantalla(i); todo(); });
       var li = el('li'); li.appendChild(b); cont.appendChild(li);
     });
-    var varias = M.pantallas.length > 1;
-    $('#tit-pantallas').hidden = !varias; cont.hidden = !varias;
+    // las pestañas se muestran siempre, aunque haya una sola (General): su título «Pestañas» las distingue de las alternativas
     $('#nota-pend').hidden = !M.pantallas.some(function (pn) { return pn.propuestas.some(pendiente); });
     var lat = $('#lateral'), menu = $('#menu');
     lat.classList.toggle('cerrado', !estado.panel);

@@ -20,6 +20,9 @@ Chequeos (sin indicar ninguno corre "todo"). Ninguno juzga el aspecto artístico
               y no confusas, sin etiquetas genéricas, tipos y autocompletado
   contraste   razón de contraste WCAG de cada par color/fondo (4,5:1 texto normal, 3:1 texto grande)
   sistema     variables de diseño, valores sueltos, estilos en línea y componentes definidos dos veces
+  desborde    mide en un navegador (Edge o Chrome, sin interfaz) que la página no se salga de su ancho a 390 px (mobile) ni a 1280 px (desktop):
+              deslizar de costado es FALLA siempre; corre dentro de «todo» (no en las llamadas desde otros scripts) y se justifica con
+              <!-- excepcion-desborde: motivo -->. Sin navegador avisa que no pudo medir
 
 Marcas: FALLA incumple una política estricta; AVISO conviene revisar; JUSTIFICADA tenía una excepción
 escrita. Para justificar una excepción de una pantalla, dentro de ella:
@@ -621,7 +624,7 @@ def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("chequeo", choices=["todo", *CHEQUEOS])
+    ap.add_argument("chequeo", choices=["todo", "desborde", *CHEQUEOS])
     ap.add_argument("rutas", nargs="+")
     ap.add_argument("--tipo", choices=["sitio", "app"], default="sitio")
     ap.add_argument("--sitio", action="store_true", help="la regla de tipografía cuenta en el conjunto de archivos (un sitio completo)")
@@ -630,7 +633,12 @@ def main():
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
     nombres = None if args.chequeo == "todo" else [args.chequeo]
-    hallazgos = analizar(args.rutas, nombres, args.tipo, sitio=args.sitio)
+    hallazgos = [] if args.chequeo == "desborde" else analizar(args.rutas, nombres, args.tipo, sitio=args.sitio)
+    if args.chequeo in ("todo", "desborde"):  # lo único que necesita un navegador de verdad
+        import desborde  # noqa: E402
+        for f in archivos_de(args.rutas):
+            if f.suffix.lower() in (".html", ".htm") and re.search(r"<html|<!doctype", f.read_text(encoding="utf-8-sig", errors="replace")[:2000], re.I):
+                hallazgos.extend(desborde.hallazgos(f))
     if args.json:
         print(json.dumps(hallazgos, ensure_ascii=False, indent=1))
     else:

@@ -52,6 +52,7 @@ Detalle, ejemplos y qué se entrega en cada paso: `references/metodo.md`.
 | No saturación | 1 acción principal, 4 campos visibles (hasta 6 más en "opciones avanzadas"), navegación corta, acciones con texto | `references/no-saturacion.md` |
 | Accesibilidad | Contraste suficiente, foco visible, objetivos táctiles, uso sin hover, `prefers-reduced-motion` | `references/reactividad.md`, `tipografia-y-color.md` |
 | Reactividad | Estados de hover, foco y presionado; transiciones breves | `references/reactividad.md` |
+| Sin desborde | Nada se sale del ancho a 390 px (mobile) ni a 1280 px (desktop): se mide en un navegador de verdad y es FALLA | `scripts/desborde.py` |
 | Sistema de diseño | Variables e inventario de componentes; cada componente se define una vez | `references/sistema-de-diseno.md` |
 
 Comandos (todos en `<esta-skill>/scripts/`):
@@ -66,10 +67,11 @@ python tarjeta_estilo.py componente "Nombre" --variantes a,b --estados x,y   # c
 python tarjeta_estilo.py estado                         # ¿la tarjeta está al día?
 python revisar_diseno.py todo docs/diseno/rondas/<ronda>/*.html [--tipo sitio|app] [--sitio] --capturas
 python capturar.py <archivo.html>        # solo capturas, si hace falta por separado
+python desborde.py <archivo.html> [--ancho 390]   # ¿se sale de su ancho? (también lo corre revisar_diseno.py todo)
 python colores.py "#1a1a1a" "#ffffff"
 ```
 
-`revisar_diseno.py` acepta los chequeos `base`, `tipografia`, `saturacion`, `interaccion`, `estados`, `etiquetas`, `contraste` y `sistema`; ninguno juzga el aspecto. FALLA incumple una regla estricta; una excepción se justifica por escrito dentro de la pantalla con `<!-- excepcion-saturacion: motivo -->` (o `excepcion-tipografia`). Son heurísticas: marcan qué mirar. `capturar.py` usa el Edge o Chrome instalados para sacar PNG de desktop y mobile, que se leen como imágenes.
+`revisar_diseno.py` acepta los chequeos `desborde` (con navegador; justificable con `<!-- excepcion-desborde: motivo -->`), `base`, `tipografia`, `saturacion`, `interaccion`, `estados`, `etiquetas`, `contraste` y `sistema`; ninguno juzga el aspecto. FALLA incumple una regla estricta; una excepción se justifica por escrito dentro de la pantalla con `<!-- excepcion-saturacion: motivo -->` (o `excepcion-tipografia`). Son heurísticas: marcan qué mirar. `capturar.py` usa el Edge o Chrome instalados para sacar PNG de desktop y mobile, que se leen como imágenes.
 
 ## Otros modos
 
