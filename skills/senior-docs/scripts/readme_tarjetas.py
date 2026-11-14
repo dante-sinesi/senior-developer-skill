@@ -7,7 +7,7 @@ decoración libre en SVG) vive en un TEMA, un JSON que el diseñador escribe par
 
 Uso:
     python readme_tarjetas.py generar   [--raiz .] [--fuente docs/tarjetas] [--salida docs/img] [--estilo <tema.json>] [--idioma es|en]
-    python readme_tarjetas.py comparar  --tarjeta <tarjeta.json> --estilos a.json b.json [c.json] [--salida .temporal/estilos] [--idioma es|en]
+    python readme_tarjetas.py comparar  --tarjeta <tarjeta.json> [otra.json …] --estilos a.json b.json [c.json] [--salida .temporal/estilos] [--idioma es|en] [--sin-muestras]
     python readme_tarjetas.py verificar [--raiz .] [--fuente docs/tarjetas] [--salida docs/img]
     python readme_tarjetas.py bloque    <nombre> [--raiz .] [--ancho 760]       # el bloque de Markdown para pegar la tarjeta en el README
 
@@ -23,6 +23,8 @@ Reglas que el motor hace cumplir (el aspecto es libre, esto no):
   - una idea por tarjeta, sin saturar: título hasta 40 caracteres, subtítulo hasta 90;
   - contraste de texto de al menos 4,5:1 contra el fondo (y 3:1 para el color de acento);
   - la decoración es SVG libre pero sin scripts, sin eventos, sin recursos externos ni foreignObject, y cada SVG pesa menos de 200 KB.
+`comparar` dibuja cada tarjeta con cada estilo (y una muestra de cada tipo que falte: cifra, antes y después, flujo y secuencia) y arma el visor de propuestas de `senior-diseno` (`ver.html`): una pestaña por tarjeta, una alternativa por estilo,
+en una sola vista, con el ancho en que GitHub muestra el README (sin los botones de desktop y mobile, que acá no aplican).
 El tema (JSON): ver `senior-diseno/references/tarjetas-readme.md`. Solo biblioteca estándar.
 """
 import argparse
@@ -320,20 +322,84 @@ def generar(raiz, fuente, salida, estilo, idioma):
     return escritas
 
 
-def comparar(tarjeta_json, estilos, salida, idioma, base="."):
-    """Dibuja la MISMA tarjeta con cada estilo y arma una página para elegir. Devuelve (ruta de la página, [ruta de cada SVG])."""
-    tarjeta = cargar_json(tarjeta_json)
+# ancho con que GitHub muestra el README en escritorio (una sola vista: las tarjetas no cambian entre desktop y celular)
+ANCHO_README = 1012
+
+
+# Muestras para elegir el estilo: una de cada tipo de tarjeta, con contenido de ejemplo (nunca va al README)
+MUESTRAS = {
+    "cifra": {"tipo": "cifra", "valor": "-57 %", "etiqueta": "tokens al leer una imagen grande", "origen": "esperado",
+              "nota": "Ejemplo para elegir el estilo: no es una medición.", "pie": "Ejemplo de una cifra con su sello."},
+    "antes_despues": {"tipo": "antes_despues", "titulo": "Leer un registro", "antes": {"etiqueta": "sin la skill", "valor": 1000},
+                      "despues": {"etiqueta": "con la skill", "valor": 300}, "origen": "esperado",
+                      "nota": "Ejemplo para elegir el estilo: no es una medición.", "pie": "Ejemplo de un antes y después con barras."},
+    "flujo": {"tipo": "flujo", "titulo": "Un flujo de ejemplo", "columnas": 3,
+              "nodos": [{"id": "a", "texto": "Pedido", "col": 0, "fila": 0}, {"id": "b", "texto": "Plan breve", "col": 1, "fila": 0},
+                        {"id": "c", "texto": "Cambio", "col": 2, "fila": 0}, {"id": "d", "texto": "¿Aprobado?", "col": 2, "fila": 1, "forma": "decision"},
+                        {"id": "e", "texto": "Fusión", "col": 1, "fila": 1}],
+              "flechas": [{"de": "a", "a": "b"}, {"de": "b", "a": "c"}, {"de": "c", "a": "d"}, {"de": "d", "a": "e", "texto": "sí"},
+                          {"de": "d", "a": "b", "texto": "ajustes", "estilo": "punteada"}],
+              "pie": "Ejemplo de un diagrama de flujo."},
+    "secuencia": {"tipo": "secuencia", "titulo": "Una secuencia de ejemplo",
+                  "participantes": [{"id": "u", "texto": "Usuario"}, {"id": "c", "texto": "Claude"}, {"id": "s", "texto": "Script"}],
+                  "pasos": [{"de": "u", "a": "c", "texto": "pide un cambio"}, {"de": "c", "a": "s", "texto": "verifica"},
+                            {"de": "s", "a": "c", "texto": "resultado", "estilo": "punteada"}, {"nota": "Se muestra si falla", "sobre": "c"},
+                            {"de": "c", "a": "u", "texto": "avisa"}],
+                  "pie": "Ejemplo de un diagrama de secuencia."},
+}
+TITULOS_MUESTRA = {"cifra": "Cifra", "antes_despues": "Antes y después", "flujo": "Diagrama de flujo", "secuencia": "Diagrama de secuencia"}
+
+
+def _visor():
+    """El visor de propuestas de senior-diseno, si el paquete está completo."""
+    scripts = Path(__file__).resolve().parents[2] / "senior-diseno" / "scripts"
+    if not (scripts / "ver_propuestas.py").exists():
+        return None
+    if str(scripts) not in sys.path:
+        sys.path.insert(0, str(scripts))
+    import ver_propuestas
+    return ver_propuestas
+
+
+def comparar(tarjetas, estilos, salida, idioma, base=".", muestras=True):
+    """Dibuja cada tarjeta con cada estilo y arma el visor para elegir. Devuelve (ruta de la página, [ruta de cada SVG]).
+
+    Con `muestras` (por defecto) suma una muestra de cada tipo que no se haya pasado (cifra, antes y después, flujo y secuencia),
+    para ver cómo queda TODO lo que puede llevar el README, no solo la portada. Los SVG salen como `<tarjeta>__<letra>.svg`.
+    Con el paquete completo la página es `ver.html` (el visor de senior-diseno); si falta senior-diseno, queda `comparar.html`.
+    """
+    tarjetas = [tarjetas] if isinstance(tarjetas, (str, Path)) else list(tarjetas)
     salida = Path(salida)
     salida.mkdir(parents=True, exist_ok=True)
-    bloques, rutas = [], []
-    for letra, ruta in zip("ABC", estilos):
-        tema = validar_tema(cargar_json(ruta))
-        svg = renderizar(tarjeta, tema, idioma, base=base)
-        destino = salida / f"estilo-{letra.lower()}.svg"
-        destino.write_text(svg, encoding="utf-8", newline="\n")
-        rutas.append(destino)
-        bloques.append(f'<section><h2>Estilo {letra}: {html.escape(tema["nombre"])}</h2><p>Composición: {tema["composicion"]}. Colores de fondo y título: '
-                       f'{tema["colores"]["fondo"]} y {tema["colores"]["titulo"]}.</p>{svg}</section>')
+    temas = [(letra, validar_tema(cargar_json(ruta))) for letra, ruta in zip("ABC", estilos)]
+    piezas = [(Path(r).stem, cargar_json(r), None) for r in tarjetas]
+    if muestras:
+        hay = {d.get("tipo") for _, d, _ in piezas}
+        piezas += [(f"{tipo.replace('_', '-')}-ejemplo", dict(MUESTRAS[tipo]), TITULOS_MUESTRA[tipo] + " (ejemplo)") for tipo in MUESTRAS if tipo not in hay]
+    rutas, bloques, pantallas = [], [], []
+    for nombre, tarjeta, titulo in piezas:
+        propuestas, alto = [], 0
+        for letra, tema in temas:
+            svg = renderizar(tarjeta, tema, idioma, base=base)
+            destino = salida / f"{nombre}__{letra.lower()}.svg"
+            destino.write_text(svg, encoding="utf-8", newline="\n")
+            rutas.append(destino)
+            alto = max(alto, int(re.search(r'height="(\d+)"', svg).group(1)))
+            propuestas.append({"id": letra.lower(), "titulo": f"Estilo {letra}: {tema['nombre']}", "archivo": destino.name})
+            bloques.append(f'<section><h2>{html.escape(nombre)} · Estilo {letra}: {html.escape(tema["nombre"])}</h2><p>Composición: {tema["composicion"]}. '
+                           f'Colores de fondo y título: {tema["colores"]["fondo"]} y {tema["colores"]["titulo"]}.</p>{svg}</section>')
+        pantallas.append({"id": nombre, "titulo": titulo or nombre.replace("-", " ").replace("_", " ").capitalize(), "propuestas": propuestas,
+                          "viewports": {"desktop": [ANCHO_README, alto + 40]}})
+    visor = _visor()
+    if visor:
+        manifiesto = {"titulo": "Estilos para el README", "modos": ["desktop"], "pantallas": pantallas, "viewports": {"desktop": [ANCHO_README, 340]}}
+        ruta_m = salida / "_manifiesto.json"
+        ruta_m.write_text(json.dumps(manifiesto, ensure_ascii=False), encoding="utf-8", newline="\n")
+        try:
+            pagina, _ = visor.crear(salida, manifiesto=ruta_m, salida="ver.html")
+        except visor.VisorError as e:
+            raise TarjetaError(str(e))
+        return pagina, rutas
     pagina = salida / "comparar.html"
     pagina.write_text('<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
                       "<title>Estilos para la tarjeta</title><style>body{font-family:system-ui,sans-serif;margin:24px;background:#f4f4f4;color:#222}"
@@ -402,10 +468,11 @@ def main():
             s.add_argument("nombre")
             s.add_argument("--ancho", type=int, default=ANCHO)
     c = sub.add_parser("comparar")
-    c.add_argument("--tarjeta", required=True)
+    c.add_argument("--tarjeta", nargs="+", required=True)
     c.add_argument("--estilos", nargs="+", required=True)
     c.add_argument("--salida", default=".temporal/estilos")
     c.add_argument("--idioma", choices=("es", "en"), default="es")
+    c.add_argument("--sin-muestras", action="store_true", help="no sumar las muestras de cifra, antes y después, flujo y secuencia")
     a = ap.parse_args()
     try:
         if a.orden == "generar":
@@ -415,7 +482,7 @@ def main():
         if a.orden == "comparar":
             if not 2 <= len(a.estilos) <= 3:
                 sys.exit("Se comparan dos o tres estilos.")
-            pagina, rutas = comparar(a.tarjeta, a.estilos, a.salida, a.idioma)
+            pagina, rutas = comparar(a.tarjeta, a.estilos, a.salida, a.idioma, muestras=not a.sin_muestras)
             print(pagina)
             return 0
         if a.orden == "bloque":

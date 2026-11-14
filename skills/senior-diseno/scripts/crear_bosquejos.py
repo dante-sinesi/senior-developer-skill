@@ -67,6 +67,11 @@ def evolucionar(args):
     destino = base.parent / f"{nombre}-v{n + 1}{base.suffix}"
     shutil.copyfile(base, destino)
     print(f"Creado: {destino.name} (copia de {base.name}). Trabajar sobre la nueva versión.")
+    try:
+        ruta, _ = ver_propuestas.regenerar(base.parent)
+        print(f"El visor ({ruta.name}) ya incluye la versión nueva: abrirlo en el navegador para mostrarla.")
+    except ver_propuestas.VisorError as e:
+        print(f"AVISO: no se pudo actualizar el visor: {e}")
 
 
 def iniciar_diseno(diseno, valores, creados):

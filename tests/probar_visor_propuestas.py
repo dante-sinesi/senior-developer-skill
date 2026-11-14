@@ -69,6 +69,7 @@ chequear("un modo desconocido se rechaza", falla(vp.leer_modos, "tablet", texto=
 
 # ---- la página
 html = ruta.read_text(encoding="utf-8")
+chequear("las imágenes se ven sin el margen blanco del marco y cada pestaña puede traer su tamaño", ".marco.imagen { display: grid; place-items: center; border: 0; background: transparent; }" in html and "function VPm(modo)" in html)
 chequear("la página es autocontenida: sin recursos externos", not re.search(r'(src|href)="https?://', html) and "<link" not in html)
 chequear("lo de la herramienta va marcado data-herramienta (las reglas de diseño lo ignoran)", html.count("data-herramienta") >= 4)
 chequear("trae vista desktop, mobile y ambas, una o lado a lado, y avisa los pendientes", all(x in html for x in ('data-modo="desktop"', 'data-modo="mobile"', 'data-modo="ambas"', 'data-diseno="lado"', "Pendiente: falta la propuesta")))
@@ -77,8 +78,8 @@ chequear("izquierda y derecha cambian de pestaña y arriba y abajo de alternativ
 chequear("hay un botón de pantalla completa que usa la API del navegador", 'id="pantalla-completa"' in html and "requestFullscreen" in html and "exitFullscreen" in html)
 chequear("las pestañas van en el panel lateral, debajo de las alternativas", html.index('id="lista"') < html.index('id="pantallas"') and 'nav class="pestanas"' not in html)
 chequear("la página no tiene barras de desplazamiento y el panel sí las tiene cuando hace falta", "overflow: hidden; background: var(--fondo)" in html and "overflow-y: auto" in html)
-chequear("la versión mobile nunca es más alta que la desktop: se angosta manteniendo la proporción", "Math.min(h, VP.desktop[1])" in html and "dispH / altoNecesario" in html)
-chequear("los modos que la app no tiene bloquean su botón con un aviso", "Esta app no tiene modo" in html and "b.disabled = !ok" in html)
+chequear("la versión mobile nunca es más alta que la desktop: se angosta manteniendo la proporción", "Math.min(h, VPm('desktop')[1])" in html and "dispH / altoNecesario" in html)
+chequear("una app con un solo modo no muestra los botones Desktop, Mobile ni Ambas ni rotula las vistas por modo", "$('#grupo-vista').hidden = MODOS.length < 2" in html and "MODOS.length > 1 ? (modo" in html)
 chequear("un título con etiquetas no rompe la página", "</script><b>" not in vp.pagina({"titulo": "</script><b>", "modos": ["mobile"], "pantallas": []}))
 scripts = re.findall(r"<script data-herramienta>(.*?)</script>", html, re.S)
 if shutil.which("node") and scripts:
@@ -111,6 +112,28 @@ chequear("el visor de la ronda trae las tres direcciones y los modos pedidos", m
 (ronda / "ver.html").write_text("mio", encoding="utf-8")
 subprocess.run([sys.executable, str(SCRIPTS / "crear_bosquejos.py"), "--nombre", "Prueba", "--raiz", str(Q), "--fecha", "2026-01-01"], capture_output=True, text=True, encoding="utf-8")
 chequear("volver a crear la ronda no pisa un ver.html existente", (ronda / "ver.html").read_text(encoding="utf-8") == "mio")
+chequear("al cambiar de pestaña se conserva la alternativa (por nombre o por posición)", "function irAPantalla(i)" in html and "estado.propuesta = 0" not in html)
+# regenerar conserva título y modos
+Rg = RAIZ / ".temporal" / "proy-visor-regenerar"
+if Rg.exists():
+    shutil.rmtree(Rg, onerror=_forzar)
+Rg.mkdir(parents=True)
+(Rg / "direccion-a.html").write_text("<p>a</p>", encoding="utf-8")
+vp.crear(Rg, "Mi app", ["mobile"])
+(Rg / "direccion-a-v2.html").write_text("<p>a2</p>", encoding="utf-8")
+vp.regenerar(Rg)
+mg = manifiesto_de(Rg / "ver.html")
+chequear("regenerar suma los archivos nuevos y conserva el título y los modos", mg["titulo"] == "Mi app" and mg["modos"] == ["mobile"] and len(mg["pantallas"][0]["propuestas"]) == 2, mg)
+r = subprocess.run([sys.executable, str(SCRIPTS / "crear_bosquejos.py"), "--evolucionar", str(ronda / "direccion-b.html")], capture_output=True, text=True, encoding="utf-8")
+ids = [p["id"] for p in manifiesto_de(ronda / "ver.html")["pantallas"][0]["propuestas"]] if (ronda / "ver.html").read_text(encoding="utf-8").startswith("<!doctype") else []
+chequear("--evolucionar deja el visor al día con la versión nueva", r.returncode == 0 and "direccion-b-v2" in ids and "ya incluye la versión nueva" in r.stdout, r.stdout + r.stderr + str(ids))
+Ts = RAIZ / ".temporal" / "proy-visor-estilo"
+if Ts.exists():
+    shutil.rmtree(Ts, onerror=_forzar)
+r = subprocess.run([sys.executable, str(SCRIPTS / "tarjeta_estilo.py"), "nueva", "--nombre", "Prueba", "--raiz", str(Ts), "--fecha", "2026-01-02"], capture_output=True, text=True, encoding="utf-8")
+chequear("las alternativas de estilo también traen su visor", r.returncode == 0 and (Ts / "docs/diseno/estilo/2026-01-02-prueba/ver.html").exists() and "ver.html" in r.stdout, r.stdout + r.stderr)
+skill = (RAIZ / "skills" / "senior-diseno" / "SKILL.md").read_text(encoding="utf-8")
+chequear("el diseñador muestra siempre el visor abierto en el navegador y nunca capturas", "siempre con el visor" in skill and "abrir_en_navegador.py" in skill and "nunca con capturas" in skill)
 chequear("el SKILL.md de diseño explica el visor", "ver_propuestas.py" in (RAIZ / "skills" / "senior-diseno" / "SKILL.md").read_text(encoding="utf-8"))
 
 print("Todo bien." if not mal else f"{mal} casos mal.")

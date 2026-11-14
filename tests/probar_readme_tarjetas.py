@@ -163,10 +163,21 @@ for n, t in (("a", TEMA_A), ("b", TEMA_B), ("c", TEMA_C)):
 (T / "portada.json").write_text(json.dumps(PORTADA, ensure_ascii=False), encoding="utf-8")
 r = subprocess.run([sys.executable, str(SCRIPT), "comparar", "--tarjeta", str(T / "portada.json"), "--estilos", str(T / "a.json"), str(T / "b.json"), str(T / "c.json"),
                     "--salida", str(BASE / "comparacion")], capture_output=True, text=True, encoding="utf-8", errors="replace")
-pagina = (BASE / "comparacion" / "comparar.html").read_text(encoding="utf-8") if (BASE / "comparacion" / "comparar.html").exists() else ""
-chequear("comparar arma una página con los tres estilos rotulados A, B y C", r.returncode == 0 and pagina.count("<svg") == 3 and all(f"Estilo {x}" in pagina for x in "ABC"), r.stdout + r.stderr)
-chequear("la página no carga nada de afuera (sin http, sin scripts)", "http://www.w3.org" in pagina and not re.search(r"https?://(?!www\.w3\.org)", pagina) and "<script" not in pagina)
-chequear("y deja un SVG por estilo", all((BASE / "comparacion" / f"estilo-{x}.svg").exists() for x in "abc"))
+(T / "cifra.json").write_text(json.dumps(CIFRA_M, ensure_ascii=False), encoding="utf-8")
+r = subprocess.run([sys.executable, str(SCRIPT), "comparar", "--tarjeta", str(T / "portada.json"), str(T / "cifra.json"), "--estilos", str(T / "a.json"), str(T / "b.json"), str(T / "c.json"),
+                    "--salida", str(BASE / "comparacion2")], capture_output=True, text=True, encoding="utf-8", errors="replace")
+C2 = BASE / "comparacion2"
+ver = (C2 / "ver.html").read_text(encoding="utf-8") if (C2 / "ver.html").exists() else ""
+mv = json.loads(re.search(r'id="manifiesto">(.*?)</script>', ver, re.S).group(1).replace("<" + chr(92) + "/", "</")) if ver else {}
+chequear("comparar con dos tarjetas arma el visor: una pestaña por tarjeta y una alternativa por estilo A, B y C",
+         r.returncode == 0 and [p["id"] for p in mv.get("pantallas", [])] == ["portada", "cifra", "antes-despues-ejemplo", "flujo-ejemplo", "secuencia-ejemplo"] and all(len(p["propuestas"]) == 3 for p in mv["pantallas"])
+         and all(f"Estilo {x}" in ver for x in "ABC"), r.stdout + r.stderr)
+chequear("el visor usa una sola vista con el ancho del README, sin separar desktop y mobile", mv.get("viewports", {}).get("desktop", [0])[0] == 1012 and mv["modos"] == ["desktop"], mv.get("viewports"))
+chequear("el visor no carga nada de afuera", "http://www.w3.org" not in ver.replace("xmlns", "") or not re.search(r'(src|href)="https?://', ver))
+chequear("y deja un SVG por tarjeta y estilo, con las muestras de cada tipo de gráfico", all((C2 / f"{t}__{x}.svg").exists() for t in ("portada", "cifra", "antes-despues-ejemplo", "flujo-ejemplo", "secuencia-ejemplo") for x in "abc"))
+chequear("cada pestaña trae el alto de su propia tarjeta", all(p["viewports"]["desktop"][0] == 1012 for p in mv["pantallas"]) and len({p["viewports"]["desktop"][1] for p in mv["pantallas"]}) > 1, [p["viewports"] for p in mv["pantallas"]])
+r = subprocess.run([sys.executable, str(SCRIPT), "comparar", "--tarjeta", str(T / "portada.json"), "--estilos", str(T / "a.json"), str(T / "b.json"), "--sin-muestras", "--salida", str(BASE / "comparacion3")], capture_output=True, text=True, encoding="utf-8", errors="replace")
+chequear("--sin-muestras deja solo la tarjeta pedida", r.returncode == 0 and [p.name for p in (BASE / "comparacion3").glob("*.svg")].count("flujo-ejemplo__a.svg") == 0 and (BASE / "comparacion3" / "portada__a.svg").exists(), r.stdout + r.stderr)
 r = subprocess.run([sys.executable, str(SCRIPT), "comparar", "--tarjeta", str(T / "portada.json"), "--estilos", str(T / "a.json")], capture_output=True, text=True, encoding="utf-8", errors="replace")
 chequear("comparar un solo estilo no se acepta (son dos o tres)", r.returncode != 0, r.stdout + r.stderr)
 
