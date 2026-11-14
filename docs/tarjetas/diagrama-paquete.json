@@ -150,5 +150,5 @@
       "texto": "lee PDF, si está"
     }
   ],
-  "pie": "Arquitectura del paquete: el usuario habla con la skill senior, que reparte el trabajo entre método, relevamiento, diseño y comandos; todo actúa sobre el proyecto, vigilado por guardias globales, verificado por verificar.py y publicado por ramas y Pull Requests."
+  "pie": "Cómo se arma el paquete: le pides algo a senior, que reparte el trabajo, y los guardias vigilan el proyecto."
 }

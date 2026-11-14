@@ -63,5 +63,5 @@
       "texto": "/permitir ruta"
     }
   ],
-  "pie": "Secuencia de un guardia: ante una escritura fuera del proyecto, sobre un archivo protegido o con un secreto, el hook consulta la configuración, bloquea y explica sin interrumpir el trabajo, registra el bloqueo y el usuario decide al volver si autoriza esa ruta."
+  "pie": "Cómo frenan los guardias: si Claude intenta algo peligroso, el guardia lo bloquea y explica qué hacer en su lugar."
 }

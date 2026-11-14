@@ -46,7 +46,7 @@ NOTA_PROVISORIA = "> Diagrama inferido del código y sin confirmar: describe lo 
 MARCA_GENERADO = re.compile(r"<!--\s*generado por documentar\.py")
 INICIO = re.compile(r"^<!--\s*diagrama:\s*(\S+?)(?:#(\d+))?\s*-->\s*$")
 FIN = re.compile(r"^<!--\s*/diagrama\s*-->\s*$")
-ANTES_DE = ("## Pruebas", "## Estructura del proyecto", "## Documentación", "## Contribuir")
+ANTES_DE = ("## Cómo empezar", "## Pruebas", "## Estructura del proyecto", "## Documentación", "## Más información", "## Para quien colabora", "## Contribuir")
 
 
 def leer(ruta):

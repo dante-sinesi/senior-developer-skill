@@ -1,32 +1,22 @@
 # {{nombre}}
 
-(completar) Qué es y para quién, en dos o tres líneas.
+(completar) Qué es y para quién, en una o dos frases, con palabras de todos los días.
 
-## Requisitos
+## Qué te da
 
-(completar) Lo necesario para ejecutarlo: lenguajes, versiones, servicios.
+(completar) Tres o cuatro ideas, cada una en una frase simple: qué problema resuelve, no cómo.
 
-## Instalación
+## Cómo empezar
 
-(completar) Pasos para dejarlo funcionando desde cero.
+(completar) Tres pasos como máximo para verlo funcionando. El comando exacto, sin explicar de más.
 
-## Uso
-
-(completar) Cómo se usa; ejemplos mínimos.
-
-## Pruebas
-
-(completar) Comando que ejecuta toda la suite y cómo se configura la base de prueba, si hay.
-
-## Estructura del proyecto
-
-(completar) Una línea por carpeta de primer nivel.
-
-## Documentación
+## Más información
 
 - Índice de la documentación: [docs/INDEX.md](docs/INDEX.md)
 - Estado actual: [docs/ESTADO.md](docs/ESTADO.md)
 
-## Contribuir
+## Para quien colabora
+
+(completar) Requisitos y versiones, estructura del proyecto (una línea por carpeta de primer nivel) y cómo ejecutar las pruebas.
 
 Ramas por cambio, commits con Conventional Commits en español neutro y Pull Request. Detalle en la documentación.

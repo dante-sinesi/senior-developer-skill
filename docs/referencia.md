@@ -163,3 +163,54 @@ Se comparó el trabajo de agentes con y sin las skills, con corrección automát
 - **Costo:** unos 18% más de tokens y 34% más de tiempo por tarea chica.
 
 Son pocas corridas y parte de la corrección usa los propios scripts del paquete: sirven como indicio, no como prueba concluyente.
+
+## Requisitos e instalación en detalle
+
+- [Claude Code](https://claude.com/claude-code), Python 3.10 o superior (solo biblioteca estándar) y Git. El CLI `gh` solo para trabajar con GitHub.
+- Opcional, recomendada: **Token Diet** ([token-diet-skill](https://github.com/dante-sinesi/token-diet-skill), 1.0.2 o posterior), que se ocupa de leer PDF y archivos largos. Sin ella todo funciona igual y el paquete lo avisa una sola vez por proyecto.
+
+```bash
+git clone https://github.com/dante-sinesi/senior-developer-skill.git
+cd senior-developer-skill
+python instalar.py --instalar-dependencias
+```
+
+El instalador copia las skills a `~/.claude/skills` (sin tocar las demás), registra los dos hooks globales de Claude Code (un despachador, `hook_senior.py`, que corre en un solo proceso los controles de autoría, escritura fuera del proyecto, archivos protegidos y secretos, y el de permisos desde el chat) y termina con un informe de qué quedó listo y qué falta (`--verificar` solo informa). Después abrí una sesión nueva de Claude Code para que se apliquen los hooks. En cada proyecto, la skill resuelve en nombre de quién se hacen los commits: usa la identidad local o la sesión de `gh` y, si no hay ninguna, te pregunta tu usuario de GitHub y tu correo. Instalación manual: copiar las carpetas de `skills/` a `~/.claude/skills`, todas juntas.
+
+## Las piezas del paquete, una por una
+
+| Skill | Para qué sirve |
+|---|---|
+| `senior` | Puerta de entrada: principios, flujo de trabajo, puntos de control y el verificador (`verificar.py`) |
+| `senior-memoria` | Estado del proyecto, fichas de cambio, pendientes, índice y mapa de conceptos |
+| `senior-relevar` | Entender un sistema ajeno o heredado antes de modificarlo; ingesta opcional de documentos externos (PDF, Word, PowerPoint, Excel) a Markdown |
+| `senior-tdd` | Ciclo rojo-verde-refactor, código heredado, pruebas de interfaz y guardia de base de prueba |
+| `senior-refactor` | Detección de duplicación y refactor seguro |
+| `revisar-cambio` | Comando `/revisar-cambio`: revisa un diff, una rama o un Pull Request y entrega hallazgos numerados, cada uno con su caso concreto, su arreglo y qué pasa si se omite |
+| `senior-docs` | Requisitos (elicitación por lotes en un Markdown que el usuario responde, y revisión automática de su redacción), diagramas legibles, decisiones de arquitectura y README |
+| `senior-git` | Ramas por cambio, Conventional Commits en español neutro, Pull Requests, y la descripción y los Topics del repositorio al día |
+| `senior-seguridad` | Lista de revisión, chequeos automáticos y modo formal con registro de riesgos |
+| `senior-lenguajes` | Perfiles de PHP, JavaScript/TypeScript, CSS, SQL y HTML; alta de lenguajes nuevos |
+| `senior-diseno` | Diseño de interfaces: tarjeta de estilo, método (tres alternativas, feedback, evolución) y reglas objetivas con script; el estilo es libre |
+| `documentar-proyecto` | Comando `/documentar-proyecto`: genera la documentación que falta de un proyecto existente, provisoria y con evidencia |
+| `auditar-consumo` | Comando `/auditar-consumo`: mide cuánto contexto consumen las skills, `CLAUDE.md` y la memoria, y propone qué recortar |
+| `auditar-diseno` | Comando `/auditar-diseno`: revisa la interfaz de un proyecto existente sin modificarlo |
+| `adoptar-proyecto` | Comando `/adoptar-proyecto`: plan, aprobación y creación de la base documental |
+| `cerrar-sesion` | Comando `/cerrar-sesion`: cierre ordenado opcional |
+| `inicializar-repositorio` | Comando `/inicializar-repositorio`: de un enlace o un nombre a un repositorio de GitHub listo y publicado |
+| `trabajo-autonomo` | Comando `/trabajo-autonomo` (solo con el comando, nunca se activa solo): deja una tarea trabajando sin supervisión, con puntos de guardado en una rama propia `auto/…`, bloqueos que se anotan sin esperar y un informe al volver |
+
+## Pruebas del paquete
+
+Las baterías están en `tests/` (un `probar_*.py` por tema: hooks, escala, listones, diagramas, documentación inferida, compatibilidad con Python 3.10, etc.) y se corren juntas:
+
+```
+python tests/correr_todo.py            # todas
+python tests/correr_todo.py hook       # solo las que contengan «hook»
+```
+
+Cada batería imprime `ok` o `MAL` por caso y sale con 1 si alguno falla; lo que crean va en `.temporal/`, que git ignora. En GitHub las corre `.github/workflows/pruebas.yml` con Python 3.10 y 3.12 sobre Windows, porque las pruebas de los hooks usan rutas de Windows.
+
+## Estado y relación con Token Diet
+
+Primera versión; las instrucciones y los scripts están en español. Las mecánicas de ahorro de tokens van a [Token Diet](https://github.com/dante-sinesi/token-diet-skill), una skill independiente de la que `senior` depende de forma blanda.
