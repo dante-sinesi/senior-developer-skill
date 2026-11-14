@@ -3,5 +3,5 @@
   "valor": "9 de 9",
   "etiqueta": "corridas con tests agregados por el agente con senior (6 de 9 sin skills)",
   "origen": "medido",
-  "pie": "Medido con agentes reales en tres tareas de código y tres repeticiones: con senior el agente agregó tests en las nueve corridas; sin skills, en seis."
+  "pie": "Con senior, el agente escribió pruebas en las nueve tareas; sin las skills, solo en seis."
 }

@@ -186,5 +186,5 @@
       "texto": "hallazgos"
     }
   ],
-  "pie": "Ciclo de trabajo de un cambio: leer el estado, planear, abrir una rama, escribir el test que falla, el código mínimo y el refactor, actualizar la documentación, correr verificar.py y abrir el Pull Request; solo se fusiona si el usuario lo aprueba, y los hallazgos vuelven al código."
+  "pie": "Cómo se hace un cambio: se lee, se planea, se escribe la prueba, se verifica y se abre un Pull Request que apruebas tú."
 }

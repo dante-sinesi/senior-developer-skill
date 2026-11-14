@@ -9,7 +9,7 @@ La documentación sirve si se puede leer, encontrar y confiar en ella. Por eso: 
 
 ## README del repositorio (siempre al día)
 
-El `README.md` de la raíz es lo primero que ve cualquiera en GitHub. Contiene: qué es, requisitos, instalación, uso, pruebas, estructura del proyecto (una línea por carpeta de primer nivel) y enlace a `docs/INDEX.md`. Se crea con `plantillas/readme.md` y **se revisa y actualiza en cada cambio**, sin excepción: se reescribe la parte afectada y no se agregan registros de cambios (eso es del PR y de git). Lo exige `verificar.py readme`.
+El `README.md` de la raíz es lo primero que ve cualquiera en GitHub, y se escribe **para quien llega por primera vez**: párrafos cortos, palabras simples y explicaciones abstractas (qué es, qué te da), con diagramas en lugar de texto técnico. Orden: qué es, qué te da, cómo funciona (diagramas), cómo empezar en pocos pasos, más información y, al final, lo técnico para quien colabora (requisitos, estructura de carpetas, pruebas). Reglas y ejemplo en `references/readme-simple.md`. Se crea con `plantillas/readme.md` y **se revisa y actualiza en cada cambio**, sin excepción: se reescribe la parte afectada y no se agregan registros de cambios (eso es del PR y de git). Lo exige `verificar.py readme`.
 
 ## Completa no es redundante
 

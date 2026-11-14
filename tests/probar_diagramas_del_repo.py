@@ -89,7 +89,7 @@ chequear("los diagramas de docs/diagramas/ del repositorio son legibles", rc == 
 fuentes = sorted((RAIZ / "docs" / "diagramas").glob("*.md"))
 chequear("hay cuatro diagramas fuente, todos confirmados (sin marca de generado)", len(fuentes) == 4 and not any("generado por documentar.py" in leer(f) for f in fuentes), [f.name for f in fuentes])
 chequear("cada diagrama del README tiene su texto breve", all(b["texto_debajo"] and len(b["texto_debajo"]) <= 400 for b in rd.analizar_readme(README)))
-chequear("la sección «Cómo funciona» está una sola vez y antes del Verificador", README.count("## Cómo funciona") == 1 and README.index("## Cómo funciona") < README.index("## Verificador"))
+chequear("la sección «Cómo funciona» está una sola vez y antes de «Cómo empezar»", README.count("## Cómo funciona") == 1 and README.index("## Cómo funciona") < README.index("## Cómo empezar"))
 chequear("la lista numerada de «Flujo de trabajo» se reemplazó por el diagrama", "### Flujo de trabajo" not in README and "1. Leer el estado del proyecto." not in README)
 chequear("la frase sobre el rigor según el tamaño del cambio se conserva", "El rigor se ajusta al tamaño del cambio" in README)
 chequear("hay una arquitectura, un flujo y dos secuencias",

@@ -76,5 +76,5 @@
       "texto": "pasa lo confirmado y arma sus tests"
     }
   ],
-  "pie": "Secuencia de adopción: el usuario pide /adoptar-proyecto, Claude muestra un plan y espera aprobación, los scripts generan documentación provisoria con evidencia, y solo lo que el usuario confirma pasa a ser regla de negocio con sus tests."
+  "pie": "Cómo se incorpora un proyecto que ya existe: Claude propone un plan, tú lo apruebas y solo lo que confirmas pasa a ser regla."
 }
