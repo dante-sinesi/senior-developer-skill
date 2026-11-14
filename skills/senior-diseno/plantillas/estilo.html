@@ -14,6 +14,12 @@
 <style data-componentes>
 /* El aspecto de las piezas firma, usando solo las variables de arriba. */
 </style>
+<style data-estructura>
+/* Base estructural (no es estilo, no se toca): sin desborde horizontal a 390 ni a 1280 px; lo mide desborde.py. */
+*, *::before, *::after { box-sizing: border-box; }
+img, svg, video, canvas, iframe { max-width: 100%; }
+body { overflow-wrap: anywhere; }
+</style>
 </head>
 <body>
 <!-- TARJETA DE ESTILO: la definición gráfica del proyecto, antes de diseñar pantallas.
