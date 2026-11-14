@@ -17,7 +17,7 @@ Nombres de archivo (sin manifiesto):  [pantalla__]propuesta[__desktop|__mobile].
     direccion-b.html              sin «pantalla__»: va a la pantalla «General»
 Se ignoran comparar.html, los visores (ver.html, ver-*.html) y los que empiezan con «_».
 
-Modos de la app (--modos): una app solo mobile (`--modos mobile`) o solo desktop (`--modos desktop`) bloquea el otro botón con un aviso y no marca nada como pendiente.
+Modos de la app (--modos): una app solo mobile (`--modos mobile`) o solo desktop (`--modos desktop`) oculta los botones Desktop, Mobile y Ambas (no hay nada que elegir) y no marca nada como pendiente.
 Si la app tiene los dos modos y a una propuesta le falta uno, el visor lo marca «pendiente» (la estructura para completarlo ya está: basta sumar el archivo `__mobile` o `__desktop`).
 
 Manifiesto explícito (JSON):
@@ -121,6 +121,20 @@ def crear(carpeta, titulo=None, modos=("desktop", "mobile"), manifiesto=None, sa
     ruta = carpeta / salida
     ruta.write_text(pagina(m), encoding="utf-8", newline="\n")
     return ruta, pendientes
+
+
+def regenerar(carpeta, salida="ver.html"):
+    """Vuelve a armar el visor de una carpeta que ya lo tiene (para sumar una versión o un archivo nuevo), con su mismo título y modos.
+    Sin visor previo lo crea con los valores por defecto. Devuelve (ruta, pendientes)."""
+    carpeta = Path(carpeta).resolve()
+    previo = carpeta / salida
+    titulo, modos = None, ("desktop", "mobile")
+    if previo.exists():
+        m = re.search(r'<script type="application/json" id="manifiesto">(.*?)</script>', previo.read_text(encoding="utf-8"), re.S)
+        if m:
+            datos = json.loads(m.group(1).replace("<\\/", "</"))
+            titulo, modos = datos.get("titulo"), tuple(datos.get("modos") or modos)
+    return crear(carpeta, titulo, modos, None, salida)
 
 
 def main():

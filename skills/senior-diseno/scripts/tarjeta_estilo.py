@@ -208,14 +208,19 @@ def nueva(args):
     ronda = r["estilo"] / f"{args.fecha}-{slug(args.nombre)}"
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import crear_bosquejos as cb
+    import ver_propuestas
     creados = []
     for letra in "abc":
         contenido = cb.con_visor(cb.rellenar((PLANTILLAS / "estilo.html").read_text(encoding="utf-8"),
                                              {"proyecto": args.nombre, "letra": letra.upper()}), f"Estilo {letra.upper()}")
         cb.escribir_si_falta(ronda / f"estilo-{letra}.html", contenido, creados)
+    if not (ronda / "ver.html").exists():
+        ver_propuestas.crear(ronda, f"{args.nombre}: estilos")
+        creados.append(ronda / "ver.html")
     print(f"Alternativas de estilo listas en {ronda.relative_to(raiz).as_posix()}/ ({len(creados)} archivos creados; lo existente no se tocó).")
     if r["html"].exists():
         print("AVISO: ya hay una tarjeta viva (estilo/tarjeta.html). Una ronda nueva solo se justifica si se redefine el estilo del proyecto.")
+    print("Mostrarlos con el visor: python <senior>/scripts/abrir_en_navegador.py " + (ronda / "ver.html").relative_to(raiz).as_posix())
     print("Siguiente paso: diseñar tres estilos distintos (cada uno con su paleta, tipografía y piezas firma en todos sus estados), "
           "mostrarlos al usuario y ajustar con su feedback.")
 

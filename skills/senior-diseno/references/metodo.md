@@ -70,4 +70,4 @@ El método es el mismo.
 Pedido: "una pantalla de juego, tres alternativas."
 1. Tres estructuras: tablero a pantalla completa con panel lateral; tablero arriba y mano de recursos abajo; tablero central con paneles flotantes retráctiles. Cada una con el aspecto que su idea pide.
 2. Feedback: "Me gustó la B, con los recursos más grandes y la acción principal siempre a mano."
-3. Se crea `direccion-b-v2.html` con esos cambios, se pasan las reglas, se capturan desktop y mobile y se entrega.
+3. Se crea `direccion-b-v2.html` con esos cambios, se pasan las reglas, se revisan las capturas y se entrega regenerando el visor y abriéndolo en el navegador (nunca capturas para mostrar).
