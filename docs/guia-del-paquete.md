@@ -47,9 +47,10 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
   - **Proporcionalidad:** un cambio trivial o chico (hasta unos 3 archivos y 50 líneas) se hace directo; uno mediano o grande lee el método completo y lleva ficha de cambio, plan y revisión de seguridad.
   - **La escalera antes de escribir:** ¿hace falta?, ¿ya existe en el proyecto?, ¿lo da la biblioteca estándar?, ¿lo resuelve una dependencia ya instalada?, y recién entonces lo mínimo que funciona. Nunca recorta tests, documentación ni seguridad.
   - **Dudar antes de dar por buena una decisión no trivial:** un subagente sin el hilo de la conversación intenta romperla con solo el artefacto y el contrato (`duda.py`).
+  - **Planes no simples: el pez.** Un plan con algo irreversible, varias áreas o varias sesiones se escribe en un `.md` que se baste solo y lo revisa un revisor a ciegas que recibe solo ese archivo (`pez.py`): veredicto, hallazgos con caso concreto y regla de corte (una repetición como máximo, y a la segunda se le plantea al usuario). Cada hallazgo se acepta o rechaza con motivo en el propio plan. Medido con agentes reales: uno solo rinde lo mismo que tres con foco distinto por un tercio del costo.
   - **Puntos de control:** lista de cosas que siempre se consultan (arquitectura, borrar datos, agentes en paralelo, `.env`, salir del proyecto, resolver una discrepancia entre regla y código).
   - **Excusas frecuentes:** una tabla que anticipa los atajos típicos («es chico, no hace falta test») y la respuesta.
-- **Herramientas:** `verificar.py` (el verificador, ver el punto 5), `escala.py`, `impacto.py`, `atajos.py`, `duda.py`, `env_gestion.py`, `abrir_en_navegador.py`, `temporal.py`, `peso.py` y los hooks (punto 4).
+- **Herramientas:** `verificar.py` (el verificador, ver el punto 5), `escala.py`, `impacto.py`, `atajos.py`, `duda.py`, `pez.py`, `env_gestion.py`, `abrir_en_navegador.py`, `temporal.py`, `peso.py` y los hooks (punto 4).
 - **No hace:** no programa solo ni reemplaza la decisión del usuario sobre arquitectura o cambios de riesgo.
 - **Medido:** con las tres tareas de prueba, el método sube los tests agregados de 6 a 9 de 9 y la documentación de 3 a 6 de 9; el usuario lo prefirió a ciegas en 6 de 6 pedidos. Cuesta unas 1,8 veces más (ver el punto 6).
 

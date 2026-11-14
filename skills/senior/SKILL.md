@@ -24,7 +24,7 @@ Un senior se distingue menos por lo que sabe que por **cómo se comporta**: enti
 | Nivel | Cuándo | Qué se hace |
 |---|---|---|
 | Trivial o chico | hasta ~3 archivos y 50 líneas | Directo, con lo de arriba. Sin ficha ni plan largo. |
-| Mediano o grande | más que eso, o toca algo crítico (acceso, dinero, datos personales) | Antes de empezar, leer `references/metodo-completo.md` (flujo, escalera, ficha de cambio, puntos de control) y usar las skills `senior-*` que correspondan. |
+| Mediano o grande | más que eso, o toca algo crítico (acceso, dinero, datos personales) | Antes de empezar, leer `references/metodo-completo.md` (flujo, escalera, ficha de cambio, puntos de control) y usar las skills `senior-*` que correspondan. Si hay un **plan no simple** (irreversible, varias áreas o varias sesiones), se escribe en un `.md` y lo revisa el pez antes de ejecutarlo: `references/plan-pez.md`. |
 
 `python <esta-skill>/scripts/verificar.py tamano` mide el cambio. Si hay duda, se trata como mediano. Un sistema ajeno o heredado siempre se releva antes (`senior-relevar`).
 

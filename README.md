@@ -74,6 +74,7 @@ El instalador copia las skills a `~/.claude/skills` (sin tocar las demás), regi
 - **Pedido vago:** se elicitan los requisitos por lotes o con una entrevista corta, y se pide un sí explícito.
 - **Fin de la sesión:** `/cerrar-sesion` actualiza el estado, corre el verificador y propone el commit.
 - **Cambios largos sin supervisión:** `/trabajo-autonomo`, con rama propia y sin push ni fusión.
+- **Plan no simple** (algo irreversible, varias áreas o varias sesiones): se escribe en un `.md` y lo revisa a ciegas un revisor, el pez, antes de ejecutarlo (`pez.py`).
 
 Más detalle en la [referencia de funcionamiento](docs/referencia.md#cómo-se-usa-con-más-detalle).
 
