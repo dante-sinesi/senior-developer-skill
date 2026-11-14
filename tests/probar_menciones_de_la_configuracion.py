@@ -111,7 +111,7 @@ chequear("también con el destino entre comillas", bash(f'echo a {GT} "/tmp/y"')
 chequear("un comando común pasa", bash("ls -la") == "pasa" and bash("git status") == "pasa")
 chequear("el hook sigue protegido con su variable de depuración", "SENIOR_HOOK_DEPURAR" in HOOK.read_text(encoding="utf-8"))
 
-rd = (RAIZ / "README.md").read_text(encoding="utf-8")
+rd = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("el README explica que mencionar la configuración no la cambia", "solo la menciona" in rd or "solo la mencionan" in rd or "solo menciona" in rd)
 
 print("Todo bien." if not mal else f"{mal} casos mal.")

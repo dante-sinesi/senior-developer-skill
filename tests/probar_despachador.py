@@ -153,7 +153,7 @@ r = subprocess.run([sys.executable, "-X", "utf8", "-c", codigo % "False"], captu
 ajustes2 = json.loads((FALSO / ".claude" / "settings.json").read_text(encoding="utf-8"))
 chequear("repetir no duplica nada", ajustes2 == ajustes and "saqué" not in r.stdout, r.stdout)
 
-rd = (RAIZ / "README.md").read_text(encoding="utf-8")
+rd = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("el README explica el despachador", "hook_senior.py" in rd and "un solo proceso" in rd)
 
 print("Todo bien." if not mal else f"{mal} casos mal.")

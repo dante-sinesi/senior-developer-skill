@@ -97,7 +97,7 @@ codigo = ("import sys; sys.path.insert(0, r'" + str(RAIZ / "skills" / "senior-gi
 r = subprocess.run([sys.executable, "-X", "utf8", "-c", codigo], capture_output=True, text=True, encoding="utf-8", errors="replace", env=ENV)
 chequear("asegurar --silencioso igual muestra el aviso de instalación", "tiene cambios que no están instalados" in r.stdout, r.stdout + r.stderr)
 
-rd = (RAIZ / "README.md").read_text(encoding="utf-8")
+rd = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("el README explica el aviso de instalación desactualizada", "instalación desactualizada" in rd.lower() and ".senior-instalacion.json" in rd)
 
 print("Todo bien." if not mal else f"{mal} casos mal.")

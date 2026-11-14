@@ -218,7 +218,7 @@ sk = (RAIZ / "skills" / "inicializar-repositorio" / "SKILL.md").read_text(encodi
 chequear("el comando tiene su SKILL.md con nombre y descripción", sk.startswith("---\nname: inicializar-repositorio\ndescription:") and "/inicializar-repositorio" in sk)
 chequear("la skill explica la autorización y lo que no hace", "Invocar este comando es el pedido" in sk and "Forzar un push" in sk and "obligatorios" in sk)
 chequear("la skill manda a preguntar el tipo de README y a que el diseñador proponga tres estilos", "README simple" in sk and "tarjetas SVG" in sk and "tres estilos" in sk and "tarjetas-readme.md" in sk)
-rd = (RAIZ / "README.md").read_text(encoding="utf-8")
+rd = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("el README lo explica", "`inicializar-repositorio`" in rd and "/inicializar-repositorio" in rd)
 
 print("Todo bien." if not mal else f"{mal} casos mal.")

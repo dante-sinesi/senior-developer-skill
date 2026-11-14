@@ -224,7 +224,7 @@ chequear("capturar.py no crea archivos de paso en la carpeta temporal del sistem
 sk = (RAIZ / "skills/senior-diseno/SKILL.md").read_text(encoding="utf-8")
 me = (RAIZ / "skills/senior-diseno/references/metodo.md").read_text(encoding="utf-8")
 sd = (RAIZ / "skills/senior-diseno/references/sistema-de-diseno.md").read_text(encoding="utf-8")
-rd = (RAIZ / "README.md").read_text(encoding="utf-8")
+rd = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("SKILL.md explica el paso de estilo y los comandos", "1b. **Estilo**" in sk and "tarjeta_estilo.py elegir" in sk and "references/estilo.md" in sk)
 chequear("metodo.md tiene el paso 2b", "| 2b |" in me and "Paso 2b" in me)
 chequear("el sistema de diseño exige actualizar la tarjeta con cada componente", "en el mismo cambio" in sd and "tarjeta_estilo.py estado" in sd)

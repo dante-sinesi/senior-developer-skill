@@ -178,6 +178,7 @@ chequear("senior-docs enlaza la regla", "references/diagramas.md" in leer(SK / "
 sk = leer(SK / "senior" / "SKILL.md") + leer(SK / "senior" / "references" / "metodo-completo.md")
 chequear("senior manda a abrir con abrir_en_navegador.py y explica por qué", "abrir_en_navegador.py" in sk and "una pestaña por cada uno" in sk and "Start-Process" in sk)
 rm = leer(RAIZ / "README.md")
+rm = rm + leer(RAIZ / "docs" / "referencia.md")
 chequear("el README lo explica", "abrir_en_navegador.py" in rm and "Pensados para el ancho de la página" in rm)
 chequear("el protocolo de secuencias limita el largo de los mensajes", "mensajes de hasta unos 40 caracteres" in leer(SK / "documentar-proyecto" / "references" / "protocolo.md"))
 chequear("el README no tiene texto ajeno al proyecto", verificar.contenido_ajeno(rm) == [])

@@ -80,7 +80,7 @@ chequear("el código no escribe archivos (solo lee)", "write_text" not in SCRIPT
 
 # 7. documentación
 doc = (RAIZ / "docs" / "revision-completa.md").read_text(encoding="utf-8")
-rd = (RAIZ / "README.md").read_text(encoding="utf-8")
+rd = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("el documento vivo ya no afirma que las reglas deny cubran cualquier comando", "que sí cubren cualquier comando" not in doc)
 chequear("el README explica la segunda capa y capas_extra.py", "capas_extra.py" in rd and "sandbox" in rd and "WSL2" in rd)
 

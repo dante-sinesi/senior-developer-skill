@@ -78,7 +78,7 @@ real = json.loads(r.stdout)
 chequear("sobre este repositorio mide las skills del paquete", len(real["skills"]) >= 16 and any(x["nombre"] == "senior" for x in real["skills"]), len(real["skills"]))
 
 sk = (RAIZ / "skills" / "auditar-consumo" / "SKILL.md").read_text(encoding="utf-8")
-rd = (RAIZ / "README.md").read_text(encoding="utf-8")
+rd = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("la skill y el README explican --repo", "--repo" in sk and "--repo" in rd)
 
 print("Todo bien." if not mal else f"{mal} casos mal.")

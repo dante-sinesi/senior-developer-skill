@@ -146,7 +146,7 @@ chequear("verificar.py incluye el chequeo", "escala" in verificar.CHEQUEOS and l
 # 9. la documentación lo enlaza
 adoptar = (RAIZ / "skills" / "adoptar-proyecto" / "SKILL.md").read_text(encoding="utf-8")
 senior = ((RAIZ / "skills") / "senior" / "SKILL.md").read_text(encoding="utf-8") + (((RAIZ / "skills") / "senior" / "references" / "metodo-completo.md").read_text(encoding="utf-8"))
-readme = (RAIZ / "README.md").read_text(encoding="utf-8")
+readme = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("adoptar-proyecto manda a preguntar la escala", "escala.py niveles" in adoptar and "escala.py fijar" in adoptar)
 chequear("senior pregunta la escala una sola vez y la deja evolucionar", "se pregunta una sola vez" in senior and "no se vuelve a preguntar" in senior and "escala.py evolucionar" in senior)
 chequear("cerrar-sesion corre estado, que evoluciona sin preguntar", "escala.py estado" in (RAIZ / "skills" / "cerrar-sesion" / "SKILL.md").read_text(encoding="utf-8"))

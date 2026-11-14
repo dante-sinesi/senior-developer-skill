@@ -305,7 +305,7 @@ chequear("la guardia mantiene registrado el despachador, que corre el hook de se
 chequear("el despachador existe donde lo busca la guardia", guardia_autoria.ruta_hook_claude(reg[0]).exists())
 
 sk = ((RAIZ / "skills") / "senior" / "SKILL.md").read_text(encoding="utf-8") + (((RAIZ / "skills") / "senior" / "references" / "metodo-completo.md").read_text(encoding="utf-8"))
-rd = (RAIZ / "README.md").read_text(encoding="utf-8")
+rd = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 cm = (RAIZ / "CLAUDE.md").read_text(encoding="utf-8")
 chequear("senior tiene el principio 18 con el permiso para .env y la propuesta", "18. **Ninguna clave" in sk and "/permitir .env" in sk and "env_gestion.py" in sk and "references/secretos.md" in sk)
 chequear("existe la referencia de secretos", (RAIZ / "skills" / "senior" / "references" / "secretos.md").exists())

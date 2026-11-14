@@ -34,7 +34,7 @@ for s in SKILLS:
     for nombre in set(re.findall(r"`([a-z_]+\.py)", m.group(1))):
         existe = any(RAIZ.glob(f"skills/*/scripts/{nombre}"))
         chequear(f"{s}: el script {nombre} existe", existe)
-r = (RAIZ / "README.md").read_text(encoding="utf-8")
+r = ((RAIZ / "README.md").read_text(encoding="utf-8") + (RAIZ / "docs" / "referencia.md").read_text(encoding="utf-8"))
 chequear("el README lo menciona", "excusas frecuentes" in r)
 print("Todo bien." if not mal else f"{mal} casos mal.")
 sys.exit(1 if mal else 0)
