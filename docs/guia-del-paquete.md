@@ -4,7 +4,7 @@ Qué abarca el paquete y cómo ataca cada una de sus habilidades. Es una guía d
 
 ## 1. Qué es y qué problema ataca
 
-`senior` es un paquete de 17 skills para Claude Code que hace que el trabajo de programar se parezca al de una persona senior: entiende antes de tocar, cambia lo mínimo, prueba antes de construir, deja todo documentado y no sorprende a nadie. No es una herramienta que programa por sí sola: es un **método**, más **guardias automáticos** que impiden lo que no debe pasar aunque nadie se acuerde de la regla.
+`senior` es un paquete de 18 skills para Claude Code que hace que el trabajo de programar se parezca al de una persona senior: entiende antes de tocar, cambia lo mínimo, prueba antes de construir, deja todo documentado y no sorprende a nadie. No es una herramienta que programa por sí sola: es un **método**, más **guardias automáticos** que impiden lo que no debe pasar aunque nadie se acuerde de la regla.
 
 Los problemas concretos que ataca, y con qué:
 
@@ -200,6 +200,18 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
 - **Problema:** sesiones que se llenan sin saber por qué.
 - **Cómo lo ataca:** `consumo.py` mide, sin gastar tokens del modelo, lo que se paga en cada sesión (descripciones de skills, `CLAUDE.md`, índice de la memoria), lo que se paga al activar una skill y lo que se lee solo si hace falta; propone recortes ordenados por rendimiento. Con `--repo` mide las skills del repositorio en lugar de las instaladas, para ver un recorte antes de reinstalar. Si Token Diet está instalada, su auditoría es la de referencia.
 - **No hace:** solo mide y propone; los números son estimaciones (caracteres / 4, margen de ±30 %).
+
+### 3.18 `trabajo-autonomo` (`/trabajo-autonomo`): sesiones largas sin supervisión
+
+- **Problema:** dejar una tarea trabajando horas sin que se pierda lo hecho, se mezcle con el trabajo del usuario o se frene esperando una respuesta que nadie da.
+- **Cómo lo ataca**
+  - **Solo con el comando** (`disable-model-invocation`): nunca se activa por contexto, porque autoriza commits sin aprobación caso por caso. Esa autorización es exacta: commits locales en una rama propia `auto/<tema>-<fecha>`; nunca push, Pull Request, fusión, tags, `main` ni reescribir historia.
+  - **Una sola ronda de preguntas al empezar** (objetivo, criterios de terminado con su comando, alcance, límites) y después no se vuelve a preguntar.
+  - **Lo hace cumplir `autonomo.py`:** `iniciar` crea la rama y se niega con cambios sin commitear; `punto` guarda un commit local solo con tests en verde, en la rama de la sesión y con mensaje convencional; a los tres fallos seguidos avisa `ALTO`; `bloqueo` anota pregunta, opciones y recomendación en `docs/pendientes.md` y sigue; `cerrar` escribe el informe.
+  - **Ante un bloqueo** no se pregunta ni se espera: se anota y se sigue con otro paso independiente; si no queda ninguno, se cierra.
+  - **Al volver:** el informe (`.temporal/autonomo/<tema>/informe.md`) lista commits, criterios, bloqueos y cómo revisar; subir, abrir el PR y fusionar se aprueban por separado.
+- **Herramienta:** `autonomo.py`. El script no tiene ninguna operación de `push`, `merge`, `rebase`, `reset` ni `tag`.
+- **No hace:** no decide por el usuario una regla de negocio ni saltea los hooks de seguridad.
 
 ## 4. Los guardias: qué se bloquea solo
 

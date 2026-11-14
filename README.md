@@ -51,6 +51,7 @@ Son pocas tareas, un solo modelo y un solo juez: sirven para no engañarse, no p
 | `adoptar-proyecto` | Comando `/adoptar-proyecto`: plan, aprobación y creación de la base documental |
 | `cerrar-sesion` | Comando `/cerrar-sesion`: cierre ordenado opcional |
 | `inicializar-repositorio` | Comando `/inicializar-repositorio`: de un enlace o un nombre a un repositorio de GitHub listo y publicado |
+| `trabajo-autonomo` | Comando `/trabajo-autonomo` (solo con el comando, nunca se activa solo): deja una tarea trabajando sin supervisión, con puntos de guardado en una rama propia `auto/…`, bloqueos que se anotan sin esperar y un informe al volver |
 
 ## Requisitos
 
@@ -207,6 +208,14 @@ Ninguna clave, contraseña, token, certificado ni dato personal (tarjetas, docum
 
 Se detectan formatos conocidos (AWS, GitHub, Anthropic, OpenAI, Stripe, Slack, Google y otros), credenciales dentro de una dirección o asignadas como texto, tarjetas (con control Luhn), documentos, archivos de claves y volcados de datos. Un falso positivo se descarta con `senior-ignore: <ID> motivo` en la línea. Límites: una clave partida o codificada puede pasar, en un frontend las variables de entorno quedan a la vista del navegador y una clave que ya se subió se rota, no alcanza con borrarla. Detalle en `skills/senior/references/secretos.md`.
 
+## Trabajo autónomo en sesiones largas
+
+`/trabajo-autonomo` es para dejar una tarea trabajando horas sin nadie mirando. Se activa **solo si lo escribís** y su pedido autoriza exactamente commits locales en una rama propia `auto/<tema>-<fecha>`: nunca push, Pull Request, fusión, `main` ni reescribir historia. Antes de empezar se pregunta una sola vez el objetivo, los criterios de terminado (cada uno con su comando), el alcance y los límites; después no se vuelve a preguntar.
+
+- **Lo hace cumplir un script** (`autonomo.py`): `iniciar` crea la rama (y se niega si hay cambios sin commitear, para no mezclar lo tuyo); `punto` guarda un commit local solo si los tests están en verde y la rama es la de la sesión; a los tres intentos fallidos seguidos avisa `ALTO`; `bloqueo` anota la pregunta, las opciones y una recomendación en `docs/pendientes.md` sin esperar; `cerrar` escribe el informe para revisar al volver.
+- **Qué pasa cuando algo bloquea:** se anota y se sigue con otro paso independiente; si no queda ninguno, se cierra la sesión.
+- **Al volver** se revisa el informe y se aprueba por separado, cada vez, subir la rama, abrir el Pull Request y fusionar.
+
 ## Inicializar un repositorio
 
 `/inicializar-repositorio <enlace | dueño/nombre | nombre>` deja una carpeta lista y publicada sin armar cada paso a mano. Se le pasa el enlace de un repositorio que ya existe o el nombre de uno nuevo (en ese caso hay que decir si es `--publico` o `--privado`: no se decide por vos) y hace, en orden:
@@ -290,4 +299,4 @@ Primera versión. Las instrucciones y los scripts están en español.
 
 **Objetivo:** que las mecánicas de ahorro de tokens pasen a una skill propia e independiente, [Token Diet](https://github.com/dante-sinesi/token-diet-skill). Cuando ella cubra lo mismo o más que `senior`, `senior` las suelta y pasa a requerir que Token Diet esté instalada.
 
-Una guía punto por punto de lo que abarca el paquete y de cómo ataca cada habilidad (las 17 skills, los guardias, el verificador y lo que está medido) está en [docs/guia-del-paquete.md](docs/guia-del-paquete.md). La revisión crítica del paquete (nota por parte, puntos ciegos con su estado e historial de cambios) vive en [docs/revision-completa.md](docs/revision-completa.md) y se actualiza en cada Pull Request que toca una parte puntuada.
+Una guía punto por punto de lo que abarca el paquete y de cómo ataca cada habilidad (las 18 skills, los guardias, el verificador y lo que está medido) está en [docs/guia-del-paquete.md](docs/guia-del-paquete.md). La revisión crítica del paquete (nota por parte, puntos ciegos con su estado e historial de cambios) vive en [docs/revision-completa.md](docs/revision-completa.md) y se actualiza en cada Pull Request que toca una parte puntuada.
