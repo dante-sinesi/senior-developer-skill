@@ -347,4 +347,4 @@ Primera versión. Las instrucciones y los scripts están en español.
 
 **Objetivo:** que las mecánicas de ahorro de tokens pasen a una skill propia e independiente, [Token Diet](https://github.com/dante-sinesi/token-diet-skill). Cuando ella cubra lo mismo o más que `senior`, `senior` las suelta y pasa a requerir que Token Diet esté instalada.
 
-La revisión crítica del paquete (nota por parte, puntos ciegos con su estado e historial de cambios) vive en [docs/revision-completa.md](docs/revision-completa.md) y se actualiza en cada Pull Request que toca una parte puntuada.
+Una guía punto por punto de lo que abarca el paquete y de cómo ataca cada habilidad (las 17 skills, los guardias, el verificador y lo que está medido) está en [docs/guia-del-paquete.md](docs/guia-del-paquete.md). La revisión crítica del paquete (nota por parte, puntos ciegos con su estado e historial de cambios) vive en [docs/revision-completa.md](docs/revision-completa.md) y se actualiza en cada Pull Request que toca una parte puntuada.
