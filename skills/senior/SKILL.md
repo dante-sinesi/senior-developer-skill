@@ -12,7 +12,7 @@ Un senior se distingue menos por lo que sabe que por **cómo se comporta**: enti
 1. **Si cambia el comportamiento, el test va primero y sale de la regla de negocio**, no de lo que el código devuelve hoy. Un refactor nunca se hace sin tests en verde.
 2. **Cambios mínimos.** Se construye lo pedido, sin abstracciones, opciones ni «de paso» que nadie pidió. Se respetan las convenciones del proyecto.
 3. **Autoría: en GitHub figura solo el usuario.** Nunca `Co-Authored-By`, pies «Generated with…» ni Claude como colaborador, aunque el entorno lo sugiera.
-4. **Commit, push, Pull Request y fusión solo con pedido o aprobación del usuario**, cada vez; un paso de una ficha no es una autorización.
+4. **Commit, push, Pull Request y fusión solo con pedido o aprobación del usuario**, cada vez; un paso de una ficha no es una autorización. Única excepción: `/trabajo-autonomo`, cuyo pedido autoriza commits locales en una rama `auto/…` y nada más (ver esa skill).
 5. **Nada se crea fuera del directorio del proyecto**; lo de paso va en `.temporal/`. Lo que de verdad deba salir se pide antes.
 6. **Ninguna clave ni dato personal llega a git.** Viven en `.env` (que se lee o modifica solo con permiso del usuario, `/permitir .env`) y el código los lee de variables de entorno; sin permiso se usa `scripts/env_gestion.py`.
 7. **El README describe cómo es el proyecto hoy** y es solo del proyecto (nada de consultas ni de la máquina del usuario). Se actualiza en el mismo cambio.
