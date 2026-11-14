@@ -2,7 +2,7 @@
 """Prepara una ronda de diseño: tres esqueletos HTML (sin estilo) y los documentos de trabajo.
 
 Uso (ronda nueva):
-    python crear_bosquejos.py --nombre <proyecto> [--raiz .] [--tipo sitio|app] [--fecha AAAA-MM-DD] [--completo]
+    python crear_bosquejos.py --nombre <proyecto> [--raiz .] [--tipo sitio|app] [--fecha AAAA-MM-DD] [--completo] [--modos desktop,mobile]
 Uso (evolucionar o corregir la dirección elegida):
     python crear_bosquejos.py --evolucionar docs/diseno/rondas/<ronda>/direccion-b.html
         Copia la dirección a direccion-b-v2.html (luego -v3…) para trabajar sobre ella sin perder la anterior.
@@ -12,6 +12,8 @@ Por defecto la ronda es LIVIANA (trabajos chicos) y crea, solo dentro de <raiz>/
 Con --completo (proyectos medianos o grandes) agrega además:
   docs/diseno/notas/preferencias.md, notas/decisiones.md, sistema/tokens.css,
   sistema/inventario-componentes.md, campos/, auditoria/, y en la ronda briefing.md, inventario-campos.md, comparar.html
+Además deja ver.html: el visor para mirar todas las propuestas de la ronda juntas, en desktop, mobile o ambas (--modos mobile si la app
+no tiene versión desktop, o al revés; `ver_propuestas.py crear <ronda>` lo regenera cuando se suman archivos).
 Cada direccion-*.html es un esqueleto único, sin dependencias y SIN estilo: el aspecto lo decide el diseñador.
 Trae solo la barra para ver el diseño en desktop, mobile o ambas. Solo biblioteca estándar.
 """
@@ -22,6 +24,9 @@ import sys
 import unicodedata
 from datetime import date
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import ver_propuestas  # noqa: E402 motivo: sys.path se ajusta justo antes de importarlo
 
 PLANTILLAS = Path(__file__).resolve().parents[1] / "plantillas"
 
@@ -89,6 +94,7 @@ def main():
     ap.add_argument("--raiz", default=".")
     ap.add_argument("--tipo", choices=["sitio", "app"], default="sitio")
     ap.add_argument("--fecha", default=date.today().isoformat())
+    ap.add_argument("--modos", default="desktop,mobile", help="modos que tiene la app: desktop,mobile (por defecto), desktop o mobile")
     ap.add_argument("--completo", action="store_true", help="crea también los documentos de un proyecto mediano o grande")
     ap.add_argument("--evolucionar", help="copia la dirección elegida a una versión nueva (-v2, -v3…)")
     args = ap.parse_args()
@@ -116,11 +122,19 @@ def main():
                                           '<!-- El estilo del proyecto ya está definido (docs/diseno/estilo/): usar las variables de '
                                           'sistema/tokens.css y las piezas de la tarjeta. Esta dirección solo cambia la estructura. -->\n</head>', 1)
         escribir_si_falta(ronda / f"direccion-{letra}.html", contenido, creados)
+    if not (ronda / "ver.html").exists():
+        try:
+            ver_propuestas.crear(ronda, f"{args.nombre}: direcciones", ver_propuestas.leer_modos(args.modos))
+            creados.append(ronda / "ver.html")
+        except ver_propuestas.VisorError as e:
+            sys.exit(f"Error: {e}")
     if args.completo:
         escribir_si_falta(ronda / "comparar.html", rellenar(leer("comparar.html"), valores), creados)
     print(f"Ronda lista en {ronda.relative_to(raiz).as_posix()}/ ({len(creados)} archivos creados; lo existente no se tocó).")
     if con_estilo:
         print("Hay una tarjeta de estilo: las tres direcciones usan sus variables y difieren solo en estructura.")
+    print("Para mirar todas las propuestas juntas (desktop, mobile o ambas): python <senior>/scripts/abrir_en_navegador.py "
+          f"{(ronda / 'ver.html').relative_to(raiz).as_posix()}")
     print("Siguiente paso: completar las notas/briefing con el usuario y diseñar tres direcciones que difieran en estructura. "
           "El aspecto (estilo, arte) lo decide el diseñador; las reglas objetivas las controla revisar_diseno.py.")
 
