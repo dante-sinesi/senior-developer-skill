@@ -13,16 +13,17 @@ tags: [diagrama, arquitectura]
 
 ```mermaid
 flowchart TB
-    U["Usuario"] --> S["senior: principios, flujo y control"]
-    S --> M["Método: tdd, refactor, docs, git, seguridad"]
+    U["Usuario"] --> S["senior"]
+    S --> M["Método y memoria"]
     S --> R["Relevar y documentar"]
     S --> D["Diseño"]
     S --> C["Comandos"]
-    M --> P["Proyecto: docs/, README y código"]
+    M --> P["Proyecto"]
     R --> P
     D --> P
     C --> P
     P --> V["verificar.py"]
-    P --> G["GitHub: ramas y PR"]
-    H["Hooks globales"] -.-> P
+    P --> G["GitHub y PR"]
+    H["Guardias globales"] -.->|frenan| P
+    T["Token Diet (opcional)"] -.->|lee PDF, si está| S
 ```

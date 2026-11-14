@@ -145,6 +145,7 @@ Se probaron dos hábitos que parecían faltarle al método: **depurar por causa 
 | 2026-11-13 | Se agrega `docs/guia-del-paquete.md`: documentación punto por punto de lo que abarca el paquete y de cómo ataca cada una de sus 17 skills, los guardias, el verificador y lo medido. | Ninguna nota. |
 | 2026-11-13 | Hábitos candidatos medidos con agentes reales (depurar por causa raíz y comprobar que el test detecta): sin ganancia medible porque el modelo ya los hace solo; no se agregan. Queda anotado como próximo a atacar el trabajo autónomo en sesiones largas. | Ninguna nota. |
 | 2026-11-13 | Se registran las decisiones del traspaso: dependencia excluyente (`senior` no se usa sin Token Diet), sin frenar sesiones sin supervisión, bloqueo duro solo al final, y el índice de la memoria y la ceremonia proporcional también se traspasan. | Ninguna nota; punto 17 sigue en curso. |
+| 2026-11-13 | El README de este repositorio pasa al formato de repositorio público con tarjetas SVG (estilo «Plano», elegido por el usuario): portada, tres cifras medidas y los cuatro diagramas redibujados como SVG y actualizados al estado actual (guardias, Token Diet opcional, flujo de aprobación). El motor ahora dibuja flujo y secuencia y avisa en vez de recortar un texto que no entra. | Ninguna nota; falta probar el render contra GitHub real (puntos 18 y 19). |
 
 ### Detalle del PR #28 (revisión completa)
 

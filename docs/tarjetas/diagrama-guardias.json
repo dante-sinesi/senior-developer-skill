@@ -1,0 +1,67 @@
+{
+  "tipo": "secuencia",
+  "titulo": "Qué hace un guardia ante una escritura",
+  "participantes": [
+    {
+      "id": "c",
+      "texto": "Claude"
+    },
+    {
+      "id": "h",
+      "texto": "Guardia (hook)"
+    },
+    {
+      "id": "k",
+      "texto": "Configuración"
+    },
+    {
+      "id": "u",
+      "texto": "Usuario"
+    }
+  ],
+  "pasos": [
+    {
+      "de": "c",
+      "a": "h",
+      "texto": "escritura riesgosa"
+    },
+    {
+      "de": "h",
+      "a": "k",
+      "texto": "¿está autorizada?"
+    },
+    {
+      "de": "k",
+      "a": "h",
+      "texto": "no",
+      "estilo": "punteada"
+    },
+    {
+      "bloque": "modo denegar (el predeterminado, sin interrumpir)"
+    },
+    {
+      "de": "h",
+      "a": "c",
+      "texto": "bloquea y explica"
+    },
+    {
+      "de": "h",
+      "a": "k",
+      "texto": "registra el bloqueo"
+    },
+    {
+      "bloque": "al volver el usuario"
+    },
+    {
+      "de": "h",
+      "a": "u",
+      "texto": "informa bloqueos"
+    },
+    {
+      "de": "u",
+      "a": "k",
+      "texto": "/permitir ruta"
+    }
+  ],
+  "pie": "Secuencia de un guardia: ante una escritura fuera del proyecto, sobre un archivo protegido o con un secreto, el hook consulta la configuración, bloquea y explica sin interrumpir el trabajo, registra el bloqueo y el usuario decide al volver si autoriza esa ruta."
+}

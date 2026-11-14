@@ -14,19 +14,16 @@ tags: [diagrama, secuencia]
 ```mermaid
 sequenceDiagram
     participant C as Claude
-    participant H as Hook
+    participant H as Guardia (hook)
     participant K as Configuración
     actor U as Usuario
-    C->>H: escribe fuera del proyecto
-    H->>K: ¿autorizada? ¿qué modo?
-    alt está autorizada
-        H-->>C: pasa
-    else modo denegar, por defecto
-        H-->>C: bloquea y da la ruta nueva
-        H->>K: registra el bloqueo
-        C->>C: rehace dentro del proyecto
-    else modo preguntar
-        H->>U: pregunta y espera
-    end
-    U->>K: al volver: bloqueos o permitir
+    C->>H: escritura riesgosa
+    H->>K: ¿está autorizada?
+    K-->>H: no
+    Note over H: modo denegar (el predeterminado, sin interrumpir)
+    H->>C: bloquea y explica
+    H->>K: registra el bloqueo
+    Note over U: al volver el usuario
+    H->>U: informa bloqueos
+    U->>K: /permitir ruta
 ```

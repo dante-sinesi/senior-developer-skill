@@ -18,13 +18,14 @@ sequenceDiagram
     participant S as Scripts
     participant D as docs/
     U->>C: /adoptar-proyecto
-    C->>D: crea docs/ y relevamiento
-    U->>C: /documentar-proyecto
-    C->>S: analiza el código
-    S->>D: genera docs provisorios
-    S->>D: consulta de reglas
-    Note over D: provisorio hasta confirmar
-    U->>D: responde la consulta
-    C->>D: confirma y pasa a vigente
-    C->>D: tests desde los ejemplos
+    C->>S: detectar estado
+    S-->>C: plan a crear
+    C->>U: muestra el plan
+    U->>C: aprueba
+    C->>S: documentar proyecto
+    S->>D: escribe docs provisorios
+    Note over C: Reglas de negocio candidatas: nada se da por cierto
+    C->>U: consulta con reglas por confirmar
+    U->>C: confirma o corrige
+    C->>D: pasa lo confirmado y arma sus tests
 ```

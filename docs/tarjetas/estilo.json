@@ -1,0 +1,21 @@
+{
+  "nombre": "Plano",
+  "composicion": "izquierda",
+  "alto": 300,
+  "colores": {
+    "fondo": "#0B2540",
+    "titulo": "#FFFFFF",
+    "texto": "#C9E1F4",
+    "acento": "#5BC0EB"
+  },
+  "tipografia": {
+    "familia": "ui-monospace, Consolas, 'Courier New', monospace",
+    "peso_titulo": 700,
+    "peso_texto": 400,
+    "mayusculas": false
+  },
+  "decoracion": {
+    "fondo_svg": "<g stroke=\"#5BC0EB\" stroke-opacity=\"0.13\" stroke-width=\"1\" fill=\"none\"><path d=\"M0 0V300\" /><path d=\"M40 0V300\" /><path d=\"M80 0V300\" /><path d=\"M120 0V300\" /><path d=\"M160 0V300\" /><path d=\"M200 0V300\" /><path d=\"M240 0V300\" /><path d=\"M280 0V300\" /><path d=\"M320 0V300\" /><path d=\"M360 0V300\" /><path d=\"M400 0V300\" /><path d=\"M440 0V300\" /><path d=\"M480 0V300\" /><path d=\"M520 0V300\" /><path d=\"M560 0V300\" /><path d=\"M600 0V300\" /><path d=\"M640 0V300\" /><path d=\"M680 0V300\" /><path d=\"M720 0V300\" /><path d=\"M760 0V300\" /><path d=\"M0 0H760\" /><path d=\"M0 40H760\" /><path d=\"M0 80H760\" /><path d=\"M0 120H760\" /><path d=\"M0 160H760\" /><path d=\"M0 200H760\" /><path d=\"M0 240H760\" /><path d=\"M0 280H760\" /></g>",
+    "frente_svg": "<g fill=\"none\" stroke=\"#5BC0EB\" stroke-width=\"2\"><path d=\"M560 24H736V96\" /><path d=\"M560 24V30M736 96H730\" /><path d=\"M590 24V44M620 24V36M650 24V44M680 24V36M710 24V44\" stroke-width=\"1.5\"/><path d=\"M736 54H726M736 74H730M736 34H730\" stroke-width=\"1.5\"/><circle cx=\"736\" cy=\"24\" r=\"5\" fill=\"#0B2540\"/></g><g fill=\"none\" stroke=\"#5BC0EB\" stroke-opacity=\"0.55\" stroke-width=\"1.5\"><path d=\"M40 268H720\"/><path d=\"M40 262V274M720 262V274\"/></g>"
+  }
+}

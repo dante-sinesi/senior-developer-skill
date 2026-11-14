@@ -112,7 +112,7 @@ chequear("el título largo se achica para entrar en el ancho", int(re.search(r'f
          and int(re.search(r'font-size="(\d+)"', rt.renderizar(con(PORTADA, titulo="Lumbre"), TEMA_C).split("<text")[1]).group(1)) == 64)
 raro = con(PORTADA, titulo='A <b> & "c"', subtitulo="Más <i>texto</i> & 'algo'")
 chequear("los caracteres especiales no rompen el XML", ET.fromstring(rt.renderizar(raro, TEMA_A)) is not None)
-chequear("el subtítulo largo se parte en líneas sin pasarse de dos", len(rt.envolver("palabra " * 30, 400, 22, False)) == 2)
+chequear("el subtítulo largo se parte en líneas y, si no entra en dos, avisa", len(rt.envolver("palabra " * 8, 400, 22, False)) == 2 and falla(rt.envolver, "palabra " * 30, 400, 22, False, texto="no entra"))
 ba = rt.renderizar(ANTES_DESPUES, TEMA_A)
 chequear("antes_despues llena las barras en proporción (100 de 1.000 son 2 de 20)", ba.count('fill="#FF8A3D"') >= 2 and ET.fromstring(ba) is not None)
 uno = rt.renderizar(con(ANTES_DESPUES, despues={"etiqueta": "x", "valor": 1}), TEMA_A)
@@ -176,6 +176,21 @@ chequear("ninguna skill trae un tema de tarjetas (el estilo se inventa por proye
 codigo = SCRIPT.read_text(encoding="utf-8")
 colores_del_motor = set(re.findall(r"#[0-9A-Fa-f]{6}", codigo.split('"""', 2)[2]))
 chequear("el motor no tiene colores de estilo: solo el gris neutro de la página de comparación", colores_del_motor <= {"#f4f4f4"}, colores_del_motor)
+
+# ---- diagramas (flujo y secuencia) y texto que no entra
+FLUJO = {"tipo": "flujo", "titulo": "Un flujo", "columnas": 2, "nodos": [{"id": "a", "texto": "Uno", "col": 0, "fila": 0}, {"id": "b", "texto": "Dos", "col": 1, "fila": 0},
+         {"id": "c", "texto": "Tres", "col": 0, "fila": 1, "forma": "decision"}], "flechas": [{"de": "a", "a": "b", "texto": "va"}, {"de": "b", "a": "c"}], "pie": "Un flujo de prueba."}
+SECUENCIA = {"tipo": "secuencia", "titulo": "Una secuencia", "participantes": [{"id": "x", "texto": "X"}, {"id": "y", "texto": "Y"}],
+             "pasos": [{"de": "x", "a": "y", "texto": "hola"}, {"de": "y", "a": "y", "texto": "piensa"}, {"nota": "Una nota", "sobre": "x"}, {"bloque": "alt: otro caso"}, {"de": "y", "a": "x", "texto": "chau", "estilo": "punteada"}],
+             "pie": "Una secuencia de prueba."}
+for nombre, d in (("flujo", FLUJO), ("secuencia", SECUENCIA)):
+    svg = rt.renderizar(d, TEMA_A)
+    chequear(f"el diagrama {nombre} sale como SVG válido con título, descripción y sin la decoración del tema", ET.fromstring(svg) is not None and "<title>" in svg and "<desc>" in svg and "#7A3A12" not in svg and "#FF8A3D" in svg)
+chequear("un diagrama sin pie se rechaza", falla(rt.renderizar, {k: v for k, v in FLUJO.items() if k != "pie"}, TEMA_A, texto="pie"))
+chequear("un flujo con una flecha a un nodo inexistente se rechaza", falla(rt.renderizar, {**FLUJO, "flechas": [{"de": "a", "a": "zz"}]}, TEMA_A, texto="no existe"))
+chequear("un flujo con más de 15 nodos se rechaza", falla(rt.renderizar, {**FLUJO, "nodos": [{"id": str(i), "texto": "n", "col": i % 2, "fila": i // 2} for i in range(16)], "flechas": []}, TEMA_A, texto="15"))
+chequear("un texto de nodo que no entra se rechaza en vez de recortarse en silencio", falla(rt.renderizar, {**FLUJO, "nodos": [{"id": "a", "texto": "palabra " * 30, "col": 0, "fila": 0}], "flechas": []}, TEMA_A, texto="no entra"))
+chequear("un título de portada que no entra en las líneas del lienzo avisa en vez de recortarse", falla(rt.renderizar, {**PORTADA, "subtitulo": "supercalifragilisticoespialidoso " * 2}, TEMA_A, texto="no entra") or falla(rt.renderizar, {**PORTADA, "subtitulo": "muy largo " * 40}, TEMA_A))
 
 print("Todo bien." if not mal else f"{mal} casos mal.")
 sys.exit(1 if mal else 0)

@@ -80,7 +80,10 @@ chequear("la documentación de documentar-proyecto exige el visto bueno antes de
 # ---------------- el propio repositorio de la skill
 README = leer(RAIZ / "README.md")
 problemas, n = rd.estado(RAIZ)
-chequear("el README del repositorio muestra 4 diagramas y todos coinciden con su fuente", n == 4 and problemas == [], problemas)
+imgs = re.findall(r'src="(docs/img/diagrama-[\w-]+\.svg)"', README)
+fuentes = re.findall(r"\[docs/diagramas/([\w-]+)\.md\]", README)
+chequear("el README del repositorio muestra 4 diagramas como SVG, cada uno con su fuente Mermaid que existe", len(imgs) == 4 and len(fuentes) == 4 and all((RAIZ / i).exists() for i in imgs)
+         and all((RAIZ / "docs" / "diagramas" / f"{f}.md").exists() for f in fuentes) and problemas == [], (imgs, fuentes, problemas))
 rc, s = correr(SK / "senior" / "scripts" / "diagramas.py", "--raiz", str(RAIZ))
 chequear("los diagramas de docs/diagramas/ del repositorio son legibles", rc == 0 and "4 revisados" in s, s)
 fuentes = sorted((RAIZ / "docs" / "diagramas").glob("*.md"))

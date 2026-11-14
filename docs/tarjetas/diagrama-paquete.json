@@ -1,0 +1,154 @@
+{
+  "tipo": "flujo",
+  "titulo": "Cómo se arma el paquete senior",
+  "columnas": 4,
+  "nodos": [
+    {
+      "id": "u",
+      "texto": "Usuario",
+      "col": 1,
+      "fila": 0,
+      "forma": "caja"
+    },
+    {
+      "id": "s",
+      "texto": "senior",
+      "col": 1,
+      "fila": 1,
+      "forma": "caja"
+    },
+    {
+      "id": "m",
+      "texto": "Método y memoria",
+      "col": 0,
+      "fila": 2,
+      "forma": "caja"
+    },
+    {
+      "id": "r",
+      "texto": "Relevar y documentar",
+      "col": 1,
+      "fila": 2,
+      "forma": "caja"
+    },
+    {
+      "id": "d",
+      "texto": "Diseño de interfaces",
+      "col": 2,
+      "fila": 2,
+      "forma": "caja"
+    },
+    {
+      "id": "c",
+      "texto": "Comandos del usuario",
+      "col": 3,
+      "fila": 2,
+      "forma": "caja"
+    },
+    {
+      "id": "p",
+      "texto": "Proyecto",
+      "col": 1,
+      "fila": 3,
+      "forma": "caja"
+    },
+    {
+      "id": "h",
+      "texto": "Guardias globales (hooks)",
+      "col": 3,
+      "fila": 3,
+      "forma": "caja"
+    },
+    {
+      "id": "v",
+      "texto": "verificar.py",
+      "col": 0,
+      "fila": 4,
+      "forma": "caja"
+    },
+    {
+      "id": "g",
+      "texto": "GitHub: ramas y PR",
+      "col": 1,
+      "fila": 4,
+      "forma": "caja"
+    },
+    {
+      "id": "t",
+      "texto": "Token Diet (opcional)",
+      "col": 3,
+      "fila": 1,
+      "forma": "caja"
+    }
+  ],
+  "flechas": [
+    {
+      "de": "u",
+      "a": "s",
+      "estilo": "solida"
+    },
+    {
+      "de": "s",
+      "a": "m",
+      "estilo": "solida"
+    },
+    {
+      "de": "s",
+      "a": "r",
+      "estilo": "solida"
+    },
+    {
+      "de": "s",
+      "a": "d",
+      "estilo": "solida"
+    },
+    {
+      "de": "s",
+      "a": "c",
+      "estilo": "solida"
+    },
+    {
+      "de": "m",
+      "a": "p",
+      "estilo": "solida"
+    },
+    {
+      "de": "r",
+      "a": "p",
+      "estilo": "solida"
+    },
+    {
+      "de": "d",
+      "a": "p",
+      "estilo": "solida"
+    },
+    {
+      "de": "c",
+      "a": "p",
+      "estilo": "solida"
+    },
+    {
+      "de": "h",
+      "a": "p",
+      "estilo": "punteada",
+      "texto": "frenan"
+    },
+    {
+      "de": "p",
+      "a": "v",
+      "estilo": "solida"
+    },
+    {
+      "de": "p",
+      "a": "g",
+      "estilo": "solida"
+    },
+    {
+      "de": "t",
+      "a": "s",
+      "estilo": "punteada",
+      "texto": "lee PDF, si está"
+    }
+  ],
+  "pie": "Arquitectura del paquete: el usuario habla con la skill senior, que reparte el trabajo entre método, relevamiento, diseño y comandos; todo actúa sobre el proyecto, vigilado por guardias globales, verificado por verificar.py y publicado por ramas y Pull Requests."
+}
