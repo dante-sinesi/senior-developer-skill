@@ -162,7 +162,7 @@ mm.unlink()
 
 # ---------------- los diagramas del propio repositorio
 problemas, n = rd.estado(RAIZ)
-chequear("el README del repositorio sigue en orden con el chequeo de ancho", problemas == [] and n == 4, problemas)
+chequear("el README del repositorio sigue en orden con el chequeo de ancho (sus diagramas son SVG, sin bloques Mermaid)", problemas == [] and n == 0, problemas)
 for f in sorted((RAIZ / "docs" / "diagramas").glob("*.md")):
     cod = re.search(r"```mermaid\n(.*?)```", leer(f), re.S).group(1)
     e = dg.ancho_estimado(dg.tipo_diagrama(cod), cod)

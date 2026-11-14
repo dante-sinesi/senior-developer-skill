@@ -1,0 +1,190 @@
+{
+  "tipo": "flujo",
+  "titulo": "Ciclo de trabajo de un cambio",
+  "columnas": 4,
+  "nodos": [
+    {
+      "id": "a",
+      "texto": "Leer estado",
+      "col": 0,
+      "fila": 0,
+      "forma": "caja"
+    },
+    {
+      "id": "b",
+      "texto": "Plan breve",
+      "col": 1,
+      "fila": 0,
+      "forma": "caja"
+    },
+    {
+      "id": "c",
+      "texto": "Rama propia",
+      "col": 2,
+      "fila": 0,
+      "forma": "caja"
+    },
+    {
+      "id": "d",
+      "texto": "Test rojo",
+      "col": 2,
+      "fila": 1,
+      "forma": "caja"
+    },
+    {
+      "id": "e",
+      "texto": "Código mínimo",
+      "col": 1,
+      "fila": 1,
+      "forma": "caja"
+    },
+    {
+      "id": "f",
+      "texto": "Refactor",
+      "col": 0,
+      "fila": 1,
+      "forma": "caja"
+    },
+    {
+      "id": "g",
+      "texto": "Docs y README",
+      "col": 0,
+      "fila": 2,
+      "forma": "caja"
+    },
+    {
+      "id": "h",
+      "texto": "verificar.py",
+      "col": 1,
+      "fila": 2,
+      "forma": "caja"
+    },
+    {
+      "id": "i",
+      "texto": "Pull Request",
+      "col": 2,
+      "fila": 2,
+      "forma": "caja"
+    },
+    {
+      "id": "j",
+      "texto": "¿Aprobado?",
+      "col": 3,
+      "fila": 2,
+      "forma": "decision"
+    },
+    {
+      "id": "k",
+      "texto": "Fusión",
+      "col": 3,
+      "fila": 3,
+      "forma": "caja"
+    }
+  ],
+  "grupos": [
+    {
+      "texto": "Preparar",
+      "desde": [
+        0,
+        0
+      ],
+      "hasta": [
+        2,
+        0
+      ]
+    },
+    {
+      "texto": "Construir",
+      "desde": [
+        0,
+        1
+      ],
+      "hasta": [
+        2,
+        1
+      ]
+    },
+    {
+      "texto": "Verificar",
+      "desde": [
+        0,
+        2
+      ],
+      "hasta": [
+        1,
+        2
+      ]
+    },
+    {
+      "texto": "Revisar y fusionar",
+      "desde": [
+        2,
+        2
+      ],
+      "hasta": [
+        3,
+        3
+      ]
+    }
+  ],
+  "flechas": [
+    {
+      "de": "a",
+      "a": "b",
+      "estilo": "solida"
+    },
+    {
+      "de": "b",
+      "a": "c",
+      "estilo": "solida"
+    },
+    {
+      "de": "c",
+      "a": "d",
+      "estilo": "solida"
+    },
+    {
+      "de": "d",
+      "a": "e",
+      "estilo": "solida"
+    },
+    {
+      "de": "e",
+      "a": "f",
+      "estilo": "solida"
+    },
+    {
+      "de": "f",
+      "a": "g",
+      "estilo": "solida"
+    },
+    {
+      "de": "g",
+      "a": "h",
+      "estilo": "solida"
+    },
+    {
+      "de": "h",
+      "a": "i",
+      "estilo": "solida"
+    },
+    {
+      "de": "i",
+      "a": "j",
+      "estilo": "solida"
+    },
+    {
+      "de": "j",
+      "a": "k",
+      "estilo": "solida",
+      "texto": "sí, lo dice el usuario"
+    },
+    {
+      "de": "j",
+      "a": "e",
+      "estilo": "punteada",
+      "texto": "hallazgos"
+    }
+  ],
+  "pie": "Ciclo de trabajo de un cambio: leer el estado, planear, abrir una rama, escribir el test que falla, el código mínimo y el refactor, actualizar la documentación, correr verificar.py y abrir el Pull Request; solo se fusiona si el usuario lo aprueba, y los hallazgos vuelven al código."
+}

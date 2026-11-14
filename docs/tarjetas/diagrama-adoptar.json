@@ -1,0 +1,80 @@
+{
+  "tipo": "secuencia",
+  "titulo": "Adoptar un proyecto existente",
+  "participantes": [
+    {
+      "id": "u",
+      "texto": "Usuario"
+    },
+    {
+      "id": "c",
+      "texto": "Claude"
+    },
+    {
+      "id": "s",
+      "texto": "Scripts"
+    },
+    {
+      "id": "d",
+      "texto": "docs/"
+    }
+  ],
+  "pasos": [
+    {
+      "de": "u",
+      "a": "c",
+      "texto": "/adoptar-proyecto"
+    },
+    {
+      "de": "c",
+      "a": "s",
+      "texto": "detectar estado"
+    },
+    {
+      "de": "s",
+      "a": "c",
+      "texto": "plan a crear",
+      "estilo": "punteada"
+    },
+    {
+      "de": "c",
+      "a": "u",
+      "texto": "muestra el plan"
+    },
+    {
+      "de": "u",
+      "a": "c",
+      "texto": "aprueba"
+    },
+    {
+      "de": "c",
+      "a": "s",
+      "texto": "documentar proyecto"
+    },
+    {
+      "de": "s",
+      "a": "d",
+      "texto": "escribe docs provisorios"
+    },
+    {
+      "nota": "Reglas de negocio candidatas: nada se da por cierto",
+      "sobre": "c"
+    },
+    {
+      "de": "c",
+      "a": "u",
+      "texto": "consulta con reglas por confirmar"
+    },
+    {
+      "de": "u",
+      "a": "c",
+      "texto": "confirma o corrige"
+    },
+    {
+      "de": "c",
+      "a": "d",
+      "texto": "pasa lo confirmado y arma sus tests"
+    }
+  ],
+  "pie": "Secuencia de adopción: el usuario pide /adoptar-proyecto, Claude muestra un plan y espera aprobación, los scripts generan documentación provisoria con evidencia, y solo lo que el usuario confirma pasa a ser regla de negocio con sus tests."
+}

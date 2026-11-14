@@ -34,7 +34,7 @@ import sys
 from pathlib import Path
 from xml.sax.saxutils import escape
 
-TIPOS = ("portada", "cifra", "antes_despues")
+TIPOS = ("portada", "cifra", "antes_despues", "flujo", "secuencia")
 CON_CIFRAS = ("cifra", "antes_despues")
 ORIGENES = ("medido", "esperado")
 COMPOSICIONES = ("izquierda", "centrada", "cartel", "dividida")
@@ -130,6 +130,9 @@ def validar(tarjeta):
         for k in ("titulo", "subtitulo"):
             if not tarjeta.get(k):
                 raise TarjetaError(f"la portada necesita «{k}»")
+    elif tipo in ("flujo", "secuencia"):
+        if not tarjeta.get("titulo"):
+            raise TarjetaError("un diagrama necesita «titulo»")
     else:
         if tarjeta.get("origen") not in ORIGENES:
             raise TarjetaError("las tarjetas con cifras necesitan «origen»: medido o esperado")
@@ -179,7 +182,9 @@ def envolver(texto, ancho, tam, mayus, max_lineas=2):
             actual = palabra
     if actual:
         lineas.append(actual)
-    return lineas[:max_lineas]
+    if len(lineas) > max_lineas:
+        raise TarjetaError(f"el texto «{str(texto)[:50]}…» no entra en {max_lineas} líneas de {int(ancho)} px (necesita {len(lineas)}): acortarlo o cambiar la composición")
+    return lineas
 
 
 def _t(x, y, tam, peso, color, contenido, ancla="start", extra=""):
@@ -272,11 +277,20 @@ def renderizar(tarjeta, tema, idioma="es", base="."):
     desc = escape(" ".join(p for p in (tarjeta["pie"], tarjeta.get("nota", "")) if p))
     deco = tema["decoracion"]
     css = _css_fuentes(tema, base)
+    cuerpo_diagrama = None
+    if tarjeta["tipo"] in ("flujo", "secuencia"):
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import diagramas_svg
+        try:
+            cuerpo_diagrama, alto = diagramas_svg.dibujar(tarjeta, tema)
+        except diagramas_svg.DiagramaError as e:
+            raise TarjetaError(str(e))
+        deco = {}  # la decoración del tema está hecha para el lienzo de las tarjetas
     svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{ANCHO}" height="{alto}" viewBox="0 0 {ANCHO} {alto}" role="img" '
            f'font-family="{escape(tema["tipografia"]["familia"], {chr(34): "&quot;"})}">'
            f"<title>{titulo}</title><desc>{desc}</desc>" + (f"<style>{css}</style>" if css else "")
            + f'<rect width="{ANCHO}" height="{alto}" fill="{c["fondo"]}"/>' + deco.get("fondo_svg", "")
-           + _cuerpo(tarjeta, tema, idioma) + deco.get("frente_svg", "") + "</svg>\n")
+           + (cuerpo_diagrama if cuerpo_diagrama is not None else _cuerpo(tarjeta, tema, idioma)) + deco.get("frente_svg", "") + "</svg>\n")
     if len(svg.encode("utf-8")) > MAX_BYTES:
         raise TarjetaError(f"el SVG pesa {len(svg) // 1024} KB (máximo {MAX_BYTES // 1000} KB): menos decoración o fuentes más livianas")
     return svg

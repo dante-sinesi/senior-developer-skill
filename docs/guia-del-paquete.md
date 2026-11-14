@@ -98,7 +98,7 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
   - **Las reglas de negocio nunca se infieren del código:** se preguntan. Cuando no existen requisitos, se elicitan por lotes en un archivo `docs/consultas/NN-tema.md` que el usuario responde cuando puede (con `ok` alcanza).
   - **Diagramas Mermaid con tope de tamaño** (clases hasta 10, secuencia hasta 8 participantes y 20 mensajes, flujo o estados hasta 15 nodos, entidad-relación hasta 10 entidades); si no entra, se divide. Los cambios a diagramas de arquitectura esperan aprobación.
   - **ADR** para decisiones difíciles de revertir.
-  - **README con diagramas** copiados desde `docs/diagramas/` entre marcas (un dato, un lugar) y **tarjetas SVG opcionales** (motor neutro: exige pie de foto, sello MEDIDO o ESPERADO en las cifras, contraste y decoración segura; el estilo lo inventa el diseñador).
+  - **README con diagramas** copiados desde `docs/diagramas/` entre marcas (un dato, un lugar) y **tarjetas SVG opcionales** (motor neutro: exige pie de foto, sello MEDIDO o ESPERADO en las cifras, contraste y decoración segura; el estilo lo inventa el diseñador). Los diagramas de flujo y de secuencia también salen como SVG con el estilo del proyecto, con su fuente Mermaid en `docs/diagramas/`.
   - **Trazabilidad:** cada test cita el ID del requisito; el índice arma la matriz requisito → test → código y marca lo que falta.
 - **Herramientas:** `iniciar_docs.py`, `consultas.py`, `revisar_requisitos.py`, `readme_diagramas.py`, `readme_tarjetas.py` y, desde `senior`, `diagramas.py` y `texto.py`.
 - **No hace:** `revisar_requisitos.py` controla la forma, no si el requisito es correcto ni si hay contradicciones.
