@@ -1,4 +1,4 @@
-# Senior Developer Skill
+<p align="center"><img src="docs/img/portada.svg" alt="senior: método de programador senior para Claude Code" width="760"><br><sub>Portada del repositorio senior: un método de trabajo para programar con Claude Code, con tests primero, cambios mínimos y guardias automáticos.</sub></p>
 
 Paquete de skills para [Claude Code](https://claude.com/claude-code) que hace que Claude trabaje como un **programador senior**: que entienda un sistema antes de tocarlo, escriba los tests primero a partir de las reglas de negocio, mantenga la documentación y el README al día, use Git y GitHub con orden, y tenga la seguridad presente en cada cambio.
 
@@ -17,6 +17,18 @@ Está pensado para cualquier lenguaje y para trabajo **colaborativo**: Claude pr
 | Exceso de comentarios y de texto | Política "solo el porqué", límites de extensión y la regla *un dato, un lugar* |
 | README desactualizado | El README se revisa y actualiza **en cada cambio**, sin excepción |
 | Seguridad como ocurrencia tardía | Lente permanente bajo la familia ISO/IEC 27000 |
+
+## Qué se midió
+
+Cifras medidas con agentes reales, en tareas de código chicas (detalle, límites y tareas en [docs/revision-completa.md](docs/revision-completa.md)):
+
+<p align="center"><img src="docs/img/medido-tests.svg" alt="9 de 9: corridas con tests agregados por el agente con senior (6 de 9 sin skills)" width="760"><br><sub>Medido con agentes reales en tres tareas de código y tres repeticiones: con senior el agente agregó tests en las nueve corridas; sin skills, en seis.</sub></p>
+
+<p align="center"><img src="docs/img/medido-ciego.svg" alt="6 de 6: pedidos en los que se eligió a ciegas el código hecho con senior" width="760"><br><sub>Medido en dos revisiones a ciegas de tres pedidos cada una, con un solo juez: el código hecho con senior se prefirió en los seis.</sub></p>
+
+<p align="center"><img src="docs/img/medido-costo.svg" alt="x1,8: costo de trabajar con senior frente a no usar skills, en tareas chicas" width="760"><br><sub>Medido con agentes reales: 1,31 USD contra 0,69 USD estimados en nueve corridas; el costo viene de las vueltas del método, no del tamaño del texto.</sub></p>
+
+Son pocas tareas, un solo modelo y un solo juez: sirven para no engañarse, no para prometer lo mismo en cualquier proyecto.
 
 ## Contenido
 
@@ -83,106 +95,37 @@ Cada skill de proceso (`senior`, `senior-tdd`, `senior-git`, `senior-seguridad`,
 
 ## Cómo funciona
 
-<!-- diagrama: docs/diagramas/paquete.md#1 -->
 ### Cómo está armado el paquete
 
-```mermaid
-flowchart TB
-    U["Usuario"] --> S["senior: principios, flujo y control"]
-    S --> M["Método: tdd, refactor, docs, git, seguridad"]
-    S --> R["Relevar y documentar"]
-    S --> D["Diseño"]
-    S --> C["Comandos"]
-    M --> P["Proyecto: docs/, README y código"]
-    R --> P
-    D --> P
-    C --> P
-    P --> V["verificar.py"]
-    P --> G["GitHub: ramas y PR"]
-    H["Hooks globales"] -.-> P
-```
-<!-- /diagrama -->
+<p align="center"><img src="docs/img/diagrama-paquete.svg" alt="Cómo está armado el paquete" width="760"><br><sub>Arquitectura del paquete: el usuario habla con la skill senior, que reparte el trabajo entre método, relevamiento, diseño y comandos; todo actúa sobre el proyecto, vigilado por guardias globales, verificado por verificar.py y publicado por ramas y Pull Requests.</sub></p>
 
-`senior` es la puerta de entrada: reparte el trabajo entre las skills del método, del relevamiento, del diseño y los comandos, todas sobre el mismo proyecto. El verificador controla el resultado sin gastar tokens y los hooks globales vigilan lo que se escribe.
+<sub>Fuente editable: [docs/diagramas/paquete.md](docs/diagramas/paquete.md)</sub>
 
-<!-- diagrama: docs/diagramas/ciclo-de-trabajo.md#1 -->
+`senior` es la puerta de entrada: reparte el trabajo entre el método, el relevamiento, el diseño y los comandos, todos sobre el mismo proyecto. El verificador controla el resultado sin gastar tokens, los guardias globales frenan lo que no debe escribirse y Token Diet, si está instalada, se ocupa de leer PDF y archivos largos.
+
 ### Ciclo de trabajo de un cambio
 
-```mermaid
-flowchart LR
-    subgraph P["Preparar"]
-        direction TB
-        A["Leer estado"] --> B["Plan breve"] --> C["Rama"]
-    end
-    subgraph K["Construir"]
-        direction TB
-        D["Test rojo"] --> E["Código mínimo"] --> F["Refactor"]
-    end
-    subgraph V["Verificar"]
-        direction TB
-        G["Docs y README"] --> H["verificar.py"]
-    end
-    subgraph R["Revisar y fusionar"]
-        direction TB
-        I["Pull Request"] --> J{"¿Aprobado?"} --> L["Fusión"]
-    end
-    P --> K --> V --> R
-    V -->|hallazgos| K
-    R -->|ajustes| K
-```
-<!-- /diagrama -->
+<p align="center"><img src="docs/img/diagrama-ciclo.svg" alt="Ciclo de trabajo de un cambio" width="760"><br><sub>Ciclo de trabajo de un cambio: leer el estado, planear, abrir una rama, escribir el test que falla, el código mínimo y el refactor, actualizar la documentación, correr verificar.py y abrir el Pull Request; solo se fusiona si el usuario lo aprueba, y los hallazgos vuelven al código.</sub></p>
+
+<sub>Fuente editable: [docs/diagramas/ciclo-de-trabajo.md](docs/diagramas/ciclo-de-trabajo.md)</sub>
 
 Cada cambio sigue este camino, con el test antes que el código y la aprobación del usuario antes de fusionar. El rigor se ajusta al tamaño del cambio: una corrección de texto no lleva ficha ni diagrama.
 
-<!-- diagrama: docs/diagramas/confirmar-proyecto-existente.md#1 -->
 ### Cómo se confirma un proyecto existente
 
-```mermaid
-sequenceDiagram
-    actor U as Usuario
-    participant C as Claude
-    participant S as Scripts
-    participant D as docs/
-    U->>C: /adoptar-proyecto
-    C->>D: crea docs/ y relevamiento
-    U->>C: /documentar-proyecto
-    C->>S: analiza el código
-    S->>D: genera docs provisorios
-    S->>D: consulta de reglas
-    Note over D: provisorio hasta confirmar
-    U->>D: responde la consulta
-    C->>D: confirma y pasa a vigente
-    C->>D: tests desde los ejemplos
-```
-<!-- /diagrama -->
+<p align="center"><img src="docs/img/diagrama-adoptar.svg" alt="Cómo se confirma un proyecto existente" width="760"><br><sub>Secuencia de adopción: el usuario pide /adoptar-proyecto, Claude muestra un plan y espera aprobación, los scripts generan documentación provisoria con evidencia, y solo lo que el usuario confirma pasa a ser regla de negocio con sus tests.</sub></p>
+
+<sub>Fuente editable: [docs/diagramas/confirmar-proyecto-existente.md](docs/diagramas/confirmar-proyecto-existente.md)</sub>
 
 En un proyecto que ya existe, lo generado desde el código queda provisorio y con evidencia, y las reglas de negocio salen como una consulta. Solo lo que el usuario confirma se vuelve requisito vigente y respalda tests.
 
-<!-- diagrama: docs/diagramas/hooks.md#1 -->
-### Cómo frenan los hooks
+### Cómo frenan los guardias
 
-```mermaid
-sequenceDiagram
-    participant C as Claude
-    participant H as Hook
-    participant K as Configuración
-    actor U as Usuario
-    C->>H: escribe fuera del proyecto
-    H->>K: ¿autorizada? ¿qué modo?
-    alt está autorizada
-        H-->>C: pasa
-    else modo denegar, por defecto
-        H-->>C: bloquea y da la ruta nueva
-        H->>K: registra el bloqueo
-        C->>C: rehace dentro del proyecto
-    else modo preguntar
-        H->>U: pregunta y espera
-    end
-    U->>K: al volver: bloqueos o permitir
-```
-<!-- /diagrama -->
+<p align="center"><img src="docs/img/diagrama-guardias.svg" alt="Cómo frenan los guardias" width="760"><br><sub>Secuencia de un guardia: ante una escritura fuera del proyecto, sobre un archivo protegido o con un secreto, el hook consulta la configuración, bloquea y explica sin interrumpir el trabajo, registra el bloqueo y el usuario decide al volver si autoriza esa ruta.</sub></p>
 
-Cuando Claude intenta algo protegido, el hook deja pasar lo autorizado de antemano y, si no, bloquea sin interrumpir y le da la ruta para rehacerlo dentro del proyecto. Lo bloqueado queda registrado para que el usuario lo revise al volver.
+<sub>Fuente editable: [docs/diagramas/hooks.md](docs/diagramas/hooks.md)</sub>
+
+Cuando Claude intenta algo protegido (escribir fuera del proyecto, tocar un archivo protegido o dejar un secreto en el código), el guardia consulta la configuración y, si no está autorizado, bloquea sin interrumpir y explica cómo rehacerlo dentro del proyecto. Lo bloqueado queda registrado para que el usuario lo revise al volver.
 
 
 
