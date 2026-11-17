@@ -29,6 +29,7 @@ REGLAS = (  # (nombre en el registro, qué frena, cómo se autoriza)
     ("archivos protegidos", "editar `.env`, claves, el interior de `.git/` y los archivos de bloqueo de dependencias", "`/permitir <ruta>`"),
     ("secretos", "escribir claves o datos personales en archivos que van a git, leer `.env`, `git add -f` y claves en mensajes de commit", "`/permitir .env` para leer y editar `.env`"),
     ("autoría", "commits, Pull Requests e issues con Claude o coautores", "no se autoriza: en GitHub figura solo el usuario"),
+    ("fusión con CI", "`gh pr merge` de un Pull Request con chequeos de CI en rojo o pendientes", "`/permitir-fusion N` (vale para una sola fusión)"),
 )
 
 
@@ -56,7 +57,7 @@ def normal(ruta):
 
 
 def cargar(raiz):
-    datos = {"modo": "denegar", "permitidos": [], "bloqueos": [], "hermanos": True}
+    datos = {"modo": "denegar", "permitidos": [], "bloqueos": [], "hermanos": True, "fusiones": []}
     try:
         leido = json.loads(ruta_config(raiz).read_text(encoding="utf-8-sig"))
         if isinstance(leido, dict):
@@ -73,6 +74,27 @@ def guardar(raiz, datos):
     ruta = ruta_config(raiz)
     ruta.parent.mkdir(parents=True, exist_ok=True)
     ruta.write_text(json.dumps(datos, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+
+
+def autorizar_fusion(raiz, numero):
+    """El usuario autoriza UNA fusión pese a chequeos sin verde: de un Pull Request (por número) o, sin número, del Pull Request actual."""
+    d = cargar(raiz)
+    clave = str(numero) if numero else "actual"
+    if clave not in d["fusiones"]:
+        d["fusiones"].append(clave)
+    guardar(raiz, d)
+    return clave
+
+
+def consumir_fusion(raiz, numero):
+    """True si había una autorización para este Pull Request y se gastó. Con número solo sirve la de ese número; sin número (rama, URL sin número), la «actual»."""
+    d = cargar(raiz)
+    clave = str(numero) if numero else "actual"
+    if clave not in d["fusiones"]:
+        return False
+    d["fusiones"].remove(clave)
+    guardar(raiz, d)
+    return True
 
 
 def esta_permitido(raiz, ruta):
@@ -184,6 +206,8 @@ def explicacion(raiz):
             lineas.append(f"  - {ruta}" + (f" — {motivo}" if motivo else "") + (f" ({fecha})" if fecha else ""))
     else:
         lineas.append("Autorizado de antemano: nada.")
+    if d["fusiones"]:
+        lineas.append("Fusiones autorizadas una vez (pese a chequeos sin verde): " + ", ".join("el Pull Request " + x if x != "actual" else "el de la rama actual" for x in d["fusiones"]) + ".")
     lineas += resumen_bloqueos(raiz)
     lineas.append(f"Configuración: {ruta_config(raiz)}")
     return chr(10).join(lineas)

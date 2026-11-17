@@ -10,6 +10,7 @@ Comandos (una línea que empiece así; el resto del mensaje sigue su curso norma
     /quitar-permiso <ruta>              la revoca
     /hooks-modo denegar|preguntar       «denegar» no interrumpe (por defecto); «preguntar» pregunta y espera
     /hooks-hermanos si|no               escribir o no en otros proyectos tuyos de la misma carpeta (por defecto sí)
+    /permitir-fusion [N]                autoriza UNA fusión del Pull Request N (o el de la rama actual) aunque sus chequeos de CI no estén en verde
     /permisos                           muestra lo configurado y lo último que se bloqueó
 
 No autoriza raíces de disco, la carpeta del usuario ni rutas casi en la raíz. Responde con un mensaje que Claude ve como
@@ -23,7 +24,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-COMANDO = re.compile(r"^\s*/(permitir|quitar-permiso|hooks-modo|hooks-hermanos|permisos)\b\s*(.*)$", re.IGNORECASE)
+COMANDO = re.compile(r"^\s*/(permitir-fusion|permitir|quitar-permiso|hooks-modo|hooks-hermanos|permisos)\b\s*(.*)$", re.IGNORECASE)
 
 
 def separar_ruta_y_motivo(resto):
@@ -53,6 +54,12 @@ def aplicar(mh, raiz, orden, resto):
         d["permitidos"] = [p for p in d["permitidos"] if mh.normal(p["ruta"] if isinstance(p, dict) else p) != mh.normal(destino)]
         mh.guardar(raiz, d)
         return "Permiso quitado." if len(d["permitidos"]) < antes else "Esa ruta no estaba autorizada."
+    if orden == "permitir-fusion":
+        numero = resto.strip().lstrip("#")
+        if numero and not numero.isdigit():
+            return "Falta el número: /permitir-fusion N (sin número vale para el Pull Request de la rama actual)."
+        clave = mh.autorizar_fusion(raiz, numero)
+        return ("Autorizada una vez la fusión del Pull Request " + clave if clave != "actual" else "Autorizada una vez la fusión del Pull Request de la rama actual") + " aunque sus chequeos no estén en verde; se gasta al usarla."
     if orden == "hooks-modo":
         valor = resto.strip().lower()
         if valor not in mh.MODOS:

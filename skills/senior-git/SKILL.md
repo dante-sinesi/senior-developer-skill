@@ -54,9 +54,14 @@ python <esta-skill>/scripts/validar_commits.py           # formato de commits y 
 python <esta-skill>/scripts/guardia_autoria.py comprobar # autoría: solo el usuario, sin Claude ni coautores
 git push -u origin feat/descuento-volumen                # solo con aprobación
 gh pr create --title "..." --body-file pr.md             # solo con aprobación
+python <esta-skill>/scripts/ci.py estado                 # chequeos del PR: ANTES de proponer fusionarlo
 ```
 
 `validar_commits.py` revisa el formato de los commits de la rama respecto de `main`/`master` y el nombre de la rama. No puede comprobar el idioma: eso lo revisa quien escribe.
+
+## Integración continua (CI) en GitHub Actions
+
+**Antes de proponer fusionar un Pull Request se corre `python <esta-skill>/scripts/ci.py estado`** (chequeos del PR): con algo en rojo o pendiente no se propone fusionar y se informa al usuario, aunque ya lo hubiera pedido. Como una instrucción sola no se cumple (medido), el guardia `hook_fusion_ci.py` bloquea cada `gh pr merge` con chequeos sin verde; para fusionar igual, **solo el usuario** escribe en el chat `/permitir-fusion N`. `ci.py generar` arma el flujo de CI de un proyecto (solo con el visto bueno del usuario) y `ci.py auditar` revisa el que existe. Detalle en `references/ci.md`.
 
 ## Descripción y Topics del repositorio
 
