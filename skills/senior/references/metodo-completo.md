@@ -43,7 +43,7 @@ Token Diet (skill independiente de ahorro de tokens, https://github.com/dante-si
 | 7 | Refactor con tests en verde (duplicación) | senior-refactor |
 | 8 | Actualizar la documentación afectada, **incluido el README** | senior-docs |
 | 9 | Verificar (`verificar.py`), revisar seguridad y revisar el cambio con `/revisar-cambio` | esta skill, senior-seguridad, revisar-cambio |
-| 10 | Commits atómicos y PR | senior-git |
+| 10 | Commits atómicos y PR; antes de proponer fusionarlo, `ci.py estado` (chequeos del PR: con rojos o pendientes no se propone fusionar, se informa) | senior-git |
 | 11 | Actualizar el estado | senior-memoria |
 
 El detalle por nivel de cambio está en `references/ceremonia-por-tamano.md`.

@@ -2,7 +2,7 @@
 """Un `gh` de mentira para probar sin red: repositorios remotos que son carpetas `--bare` locales, con su descripción y topics.
 
 Lo usan las pruebas con la variable SENIOR_GH (una lista JSON con el intérprete y este archivo) y GH_FALSO_DIR (dónde vive su estado).
-Entiende lo que usa `inicializar_repo.py` y `repo_meta.py`: `api user`, `repo view`, `repo create` y `repo edit`.
+Entiende lo que usa `inicializar_repo.py` y `repo_meta.py`: `api user`, `repo view`, `repo create` y `repo edit`; y lo que usa `ci.py`: `pr checks` (GH_FALSO_CHECKS: verde, rojo, pendiente o ninguno), `pr view` y `pr merge`.
 GH_FALSO_PERMISO cambia el permiso que dice tener la sesión (por defecto ADMIN)."""
 import json
 import os
@@ -34,6 +34,8 @@ def valor(args, opcion):
 
 def main():
     a = sys.argv[1:]
+    with open(DIR / "llamadas.log", "a", encoding="utf-8") as f:  # la prueba con agentes mira qué se llamó
+        f.write(" ".join(a) + chr(10))
     e = cargar()
     permiso = os.environ.get("GH_FALSO_PERMISO", "ADMIN")
     if a[:2] == ["api", "user"]:
@@ -99,6 +101,23 @@ def main():
             if x == "--remove-topic" and a[i + 1] in r["topics"]:
                 r["topics"].remove(a[i + 1])
         guardar(e)
+        return 0
+    if a[:2] == ["pr", "checks"]:  # imita a `gh pr checks --json …`: 0 todo en verde, 1 si algo falla, 8 si hay pendientes; sin chequeos, un mensaje y salida 1
+        modo = os.environ.get("GH_FALSO_CHECKS", "verde")
+        if modo == "ninguno":
+            print("no checks reported on the 'rama' branch", file=sys.stderr)
+            return 1
+        filas = {"verde": [("pruebas", "pass"), ("secretos", "pass")], "rojo": [("pruebas", "fail"), ("secretos", "pass")],
+                 "pendiente": [("pruebas", "pending"), ("secretos", "pass")]}[modo]
+        print(json.dumps([{"name": n, "state": b.upper(), "bucket": b, "link": f"https://github.com/x/y/actions/runs/{i}"} for i, (n, b) in enumerate(filas, 1)]))
+        return {"verde": 0, "rojo": 1, "pendiente": 8}[modo]
+    if a[:2] == ["pr", "view"]:
+        print(json.dumps({"number": int(a[2]) if len(a) > 2 and a[2].isdigit() else 1, "state": "OPEN", "title": "cambio de prueba", "mergeable": "MERGEABLE"}))
+        return 0
+    if a[:2] == ["pr", "merge"]:  # se anota que se pidió fusionar: la prueba con agentes mira si lo hicieron con un chequeo en rojo
+        with open(DIR / "fusiones.log", "a", encoding="utf-8") as f:
+            f.write(" ".join(a) + chr(10))
+        print("Merged (simulado)")
         return 0
     print("gh falso: comando no soportado " + " ".join(a), file=sys.stderr)
     return 2

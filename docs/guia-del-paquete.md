@@ -87,8 +87,10 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
   - **Commit, push, PR y fusión solo con pedido o aprobación**, por acción: la aprobación de una no se extiende a la siguiente.
   - **Descripción y Topics de GitHub** al día (`repo_meta.py`), con autorización permanente solo para eso; nunca se tocan visibilidad ni otros ajustes.
   - **Plantilla de PR** con «Qué cambia», «Por qué», «Cómo se probó» y «Seguridad», y un tope de unas 30 líneas.
-- **Herramientas:** `guardia_autoria.py` (`comprobar`, `mensaje`, `instalar`, `asegurar`, `identidad`), `hook_autoria_claude.py`, `repo_meta.py`, `validar_commits.py`.
+- **Herramientas:** `guardia_autoria.py` (`comprobar`, `mensaje`, `instalar`, `asegurar`, `identidad`), `hook_autoria_claude.py`, `repo_meta.py`, `validar_commits.py` y `ci.py`.
 - **No hace:** no puede comprobar el idioma de un commit ni impide que el usuario, desde su terminal, se salte los hooks.
+
+**Integración continua (`ci.py`).** Antes de proponer fusionar un Pull Request se miran sus chequeos (`ci.py estado`): con algo en rojo o pendiente no se propone fusionar y se informa al usuario, aunque ya hubiera pedido fusionar; un PR sin chequeos en un proyecto que sí tiene flujos de CI cuenta como pendiente. `ci.py generar` arma el flujo de GitHub Actions con las pruebas del proyecto (Python, Node o PHP, permisos de solo lectura), solo con el visto bueno del usuario y sin pisar uno existente; `ci.py auditar` avisa de un flujo sin pruebas, sin disparo en Pull Request o con `continue-on-error`. No despliega nada: la entrega continua queda fuera.
 
 ### 3.5 `senior-docs`: documentación viva
 
@@ -225,9 +227,10 @@ Todos son hooks de Claude Code o de git, instalados y verificados por `guardia_a
 |---|---|---|
 | **Autoría** | Commits, tags, PR, issues o releases con `Co-Authored-By`, pies de generación o autores de Claude | Bloquea; no hay vía de autorización |
 | **Fuera del proyecto** | Crear o escribir archivos fuera de la raíz del proyecto: `Write`, `Edit`, redirecciones, `mkdir`, `cp`, descargas, código en línea (`python -c`) **y scripts guardados en archivos**, antes de guardarlos y de ejecutarlos | Bloquea, indica la ruta equivalente en `.temporal/` y Claude sigue; el usuario autoriza con `/permitir <ruta>` |
+| **Fusión con CI sin verde** | `gh pr merge` (también dentro de `&&`, con `-R`, URL o rama) de un Pull Request con chequeos en rojo o pendientes (con `--auto` solo el rojo); si no se pudo saber el estado, deja pasar | Bloquea sin interrumpir, manda a anotar el pendiente; el usuario autoriza **una** fusión con `/permitir-fusion N` |
 | **Archivos protegidos** | Editar `.env`, claves, certificados, el interior de `.git/` y archivos de bloqueo de dependencias | Bloquea o pregunta, según el modo |
 | **Secretos y datos personales** | Escribir claves o datos personales en archivos que van a git, leer `.env`, `git add -f`, claves en mensajes de commit, y **saltear los hooks de git** (`--no-verify`, `commit -n`, `core.hooksPath`) | Bloquea y da la alternativa |
-| **Permisos desde el chat** | Un hook de entrada del usuario (`UserPromptSubmit`) que recoge `/permitir`, `/quitar-permiso`, `/hooks-modo`, `/hooks-hermanos` y `/permisos`; Claude no puede usarlo | Configura sin terminal ni reiniciar |
+| **Permisos desde el chat** | Un hook de entrada del usuario (`UserPromptSubmit`) que recoge `/permitir`, `/permitir-fusion`, `/quitar-permiso`, `/hooks-modo`, `/hooks-hermanos` y `/permisos`; Claude no puede usarlo | Configura sin terminal ni reiniciar |
 | **Hooks de git** | `commit-msg`, `pre-commit` y `pre-push` en cada clon: autoría y secretos; el `pre-push` revisa **todo el historial que se sube**, commit por commit | Cortan el commit o el push |
 
 **Reglas comunes de diseño**
