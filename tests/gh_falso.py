@@ -111,6 +111,10 @@ def main():
                  "pendiente": [("pruebas", "pending"), ("secretos", "pass")]}[modo]
         print(json.dumps([{"name": n, "state": b.upper(), "bucket": b, "link": f"https://github.com/x/y/actions/runs/{i}"} for i, (n, b) in enumerate(filas, 1)]))
         return {"verde": 0, "rojo": 1, "pendiente": 8}[modo]
+    if a[:2] == ["pr", "view"] and "headRefOid" in " ".join(a):  # el commit cabeza del Pull Request: el HEAD de la carpeta actual salvo GH_FALSO_SHA
+        sha = os.environ.get("GH_FALSO_SHA") or subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+        print(json.dumps({"headRefOid": sha}))
+        return 0
     if a[:2] == ["pr", "view"]:
         print(json.dumps({"number": int(a[2]) if len(a) > 2 and a[2].isdigit() else 1, "state": "OPEN", "title": "cambio de prueba", "mergeable": "MERGEABLE"}))
         return 0

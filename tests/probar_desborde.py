@@ -45,8 +45,12 @@ chequear("el visor no deja que un display propio le gane al atributo hidden", "[
 skill = (RAIZ / "skills" / "senior-diseno" / "SKILL.md").read_text(encoding="utf-8")
 chequear("el SKILL.md de diseño explica el chequeo de desborde", "desborde" in skill.lower() and "390" in skill)
 
-if not capturar.buscar_navegador():
-    print("ok   (sin Edge ni Chrome: se omiten las pruebas que miden en un navegador)")
+PRUEBA_VIVA = None
+if capturar.buscar_navegador():
+    (P / "vivo.html").write_text(CABEZA + "<p>vivo</p>", encoding="utf-8")
+    PRUEBA_VIVA = desborde.medir(P / "vivo.html", 390)  # ¿el navegador de esta máquina responde? (un Edge colgado devuelve vacío)
+if not capturar.buscar_navegador() or PRUEBA_VIVA is None:
+    print("ok   (" + ("sin Edge ni Chrome" if not capturar.buscar_navegador() else "el navegador de esta máquina no respondió a una página trivial") + ": se omiten las pruebas que miden en un navegador)")
     print("Todo bien." if not mal else f"{mal} casos mal.")
     sys.exit(1 if mal else 0)
 

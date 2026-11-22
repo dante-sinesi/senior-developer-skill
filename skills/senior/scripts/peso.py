@@ -3,7 +3,8 @@
 
 Qué comprueba (solo en un proyecto que tenga una carpeta `skills/`; en cualquier otro se omite):
   - descripción de cada skill: hasta 800 caracteres (se paga en TODAS las sesiones);
-  - suma de las descripciones: hasta 10.000 caracteres (~2.500 tokens fijos por sesión);
+  - suma de las descripciones: hasta 10.000 caracteres (~2.500 tokens fijos por sesión). No suman las de las skills con `disable-model-invocation: true`
+    (comandos que solo invoca el usuario): su descripción no se carga en el contexto, aunque sigue valiendo el tope de 800 por cada una;
   - cuerpo de cada SKILL.md (se paga al activarse): hasta 3.500 tokens y 150 líneas;
   - cada archivo de references/ (se lee solo si hace falta): hasta 5.500 tokens;
   - ningún script sin caso de uso: cada `scripts/*.py` tiene que aparecer nombrado en alguna documentación (SKILL.md, references o README) o ser
@@ -57,12 +58,16 @@ def analizar(raiz):
     documentacion = readme + "\n".join(p.read_text(encoding="utf-8", errors="replace") for p in carpeta.rglob("*.md"))
     codigo = {p: p.read_text(encoding="utf-8", errors="replace") for p in carpeta.rglob("*.py")}
     total_desc = 0
+    solo_usuario = 0
     for d in skills:
         texto = (d / "SKILL.md").read_text(encoding="utf-8", errors="replace")
         fm, cuerpo = partir(texto)
         desc = descripcion_de(fm)
         excepcion = EXCEPCION.search(cuerpo)
-        total_desc += len(desc)
+        if re.search(r"(?m)^disable-model-invocation:\s*true", fm):
+            solo_usuario += len(desc)
+        else:
+            total_desc += len(desc)
         lineas, toks = len(cuerpo.splitlines()), tokens(cuerpo)
         filas.append((d.name, len(desc), lineas, toks))
 
@@ -93,7 +98,7 @@ def analizar(raiz):
                 hallazgos.append(("FALLA", d.name, f"scripts/{n} no se menciona en ninguna documentación ni lo usa otro script: sin caso de uso anotado"))
     if total_desc > MAX_DESCRIPCIONES:
         hallazgos.append(("FALLA", "(paquete)", f"las descripciones suman {total_desc} caracteres y el tope es {MAX_DESCRIPCIONES} (~{MAX_DESCRIPCIONES // 4} tokens fijos por sesión)"))
-    resumen = {"skills": len(skills), "descripciones_caracteres": total_desc, "filas": filas}
+    resumen = {"skills": len(skills), "descripciones_caracteres": total_desc, "descripciones_solo_usuario": solo_usuario, "filas": filas}
     return hallazgos, resumen
 
 
@@ -112,7 +117,7 @@ def main():
         print(json.dumps({"hallazgos": hallazgos, "resumen": resumen}, ensure_ascii=False, indent=1))
     else:
         fallas = [h for h in hallazgos if h[0] == "FALLA"]
-        print(f"Peso: {resumen['skills']} skills, descripciones {resumen['descripciones_caracteres']} de {MAX_DESCRIPCIONES} caracteres; {len(fallas)} fallas, {len(hallazgos) - len(fallas)} justificadas.")
+        print(f"Peso: {resumen['skills']} skills, descripciones {resumen['descripciones_caracteres']} de {MAX_DESCRIPCIONES} caracteres (más {resumen['descripciones_solo_usuario']} de comandos solo del usuario, que no entran al contexto); {len(fallas)} fallas, {len(hallazgos) - len(fallas)} justificadas.")
         for sev, skill, msg in hallazgos:
             print(f"  {sev:11} {skill}: {msg}")
     return 1 if any(h[0] == "FALLA" for h in hallazgos) else 0

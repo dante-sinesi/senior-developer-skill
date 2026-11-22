@@ -10,6 +10,8 @@ Comandos (una línea que empiece así; el resto del mensaje sigue su curso norma
     /quitar-permiso <ruta>              la revoca
     /hooks-modo denegar|preguntar       «denegar» no interrumpe (por defecto); «preguntar» pregunta y espera
     /hooks-hermanos si|no               escribir o no en otros proyectos tuyos de la misma carpeta (por defecto sí)
+    /ci-modo local <comando de pruebas>   las pruebas locales reemplazan a la CI de GitHub (sin minutos, por ejemplo); `ci.py local` las corre y anota el commit
+    /ci-modo estricto                   vuelve a mandar la CI de GitHub (por defecto)
     /permitir-fusion [N]                autoriza UNA fusión del Pull Request N (o el de la rama actual) aunque sus chequeos de CI no estén en verde
     /permisos                           muestra lo configurado y lo último que se bloqueó
 
@@ -24,7 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-COMANDO = re.compile(r"^\s*/(permitir-fusion|permitir|quitar-permiso|hooks-modo|hooks-hermanos|permisos)\b\s*(.*)$", re.IGNORECASE)
+COMANDO = re.compile(r"^\s*/(ci-modo|permitir-fusion|permitir|quitar-permiso|hooks-modo|hooks-hermanos|permisos)\b\s*(.*)$", re.IGNORECASE)
 
 
 def separar_ruta_y_motivo(resto):
@@ -54,6 +56,25 @@ def aplicar(mh, raiz, orden, resto):
         d["permitidos"] = [p for p in d["permitidos"] if mh.normal(p["ruta"] if isinstance(p, dict) else p) != mh.normal(destino)]
         mh.guardar(raiz, d)
         return "Permiso quitado." if len(d["permitidos"]) < antes else "Esa ruta no estaba autorizada."
+    if orden == "ci-modo":
+        partes = resto.strip().split(None, 1)
+        modo = partes[0].lower() if partes else ""
+        if modo not in ("local", "estricto"):
+            return "Modos de CI válidos: local o estricto (/ci-modo local <comando de pruebas>)."
+        comando = partes[1] if len(partes) > 1 else ""
+        mh.fijar_ci_modo(raiz, modo, comando)
+        if modo == "estricto":
+            return "Modo de CI: estricto. Manda la CI de GitHub."
+        if comando:
+            return f"Modo de CI: local. Las pruebas locales reemplazan a la CI de GitHub; comando que fijó el usuario: {comando}."
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "senior-git" / "scripts"))
+        import ci
+        plan = ci.detectar(raiz)
+        if plan:
+            return ("Modo de CI: local. Las pruebas locales reemplazan a la CI de GitHub; sin comando fijado se usa el detectado del proyecto: "
+                    + " && ".join(p["probar"] for _, p in plan) + ". Para otro, el usuario escribe /ci-modo local <comando de pruebas>.")
+        return ("Modo de CI: local, pero no se detectaron pruebas en el proyecto: el usuario tiene que indicar el comando con /ci-modo local <comando de pruebas>, "
+                "si no `ci.py local` no tiene qué correr.")
     if orden == "permitir-fusion":
         numero = resto.strip().lstrip("#")
         if numero and not numero.isdigit():

@@ -1,9 +1,16 @@
 name: Pruebas
 
+# Pensado para gastar pocos minutos de Actions (Windows cuenta doble): un solo trabajo en cada Pull Request y sin repetir la corrida al fusionar.
 on:
-  push:
-    branches: [main]
   pull_request:
+  schedule:
+    - cron: "0 9 * * 1"  # los lunes: acá se mira además la compatibilidad con Python 3.10
+  workflow_dispatch:
+
+# Una corrida nueva del mismo Pull Request cancela la anterior; las semanales y las manuales no se cancelan entre sí.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   baterias:
@@ -12,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.12"]
+        python: ${{ github.event_name == 'pull_request' && fromJSON('["3.12"]') || fromJSON('["3.10", "3.12"]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

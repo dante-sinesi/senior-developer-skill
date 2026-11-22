@@ -7,12 +7,17 @@
   generar  Arma `.github/workflows/ci.yml` con las pruebas del proyecto (Python con unittest o pytest, Node con `npm test`, PHP con Composer: un trabajo por
            lenguaje), con permisos de solo lectura y la rama principal detectada. Sin --aplicar solo muestra el plan. Es configuración persistente del
            repositorio: se aplica solo con el visto bueno del usuario, nunca pisa un flujo existente y, si no encuentra cómo correr pruebas, no escribe nada.
+  local    Corre las pruebas del proyecto EN ESTA MÁQUINA y, solo si pasan, anota el commit verificado. Es lo que reemplaza a la CI de GitHub cuando el usuario
+           activó `/ci-modo local` (por ejemplo, sin minutos de Actions): el guardia de fusión deja pasar un Pull Request cuyo commit tiene esta anotación.
+           El comando lo fija el USUARIO (`/ci-modo local <comando>`; sin comando, el detectado del proyecto): quien lo corre no elige qué se prueba. Exige el árbol sin
+           cambios sin commitear (si no, el commit anotado no sería lo que se probó) y el mismo HEAD al empezar y al terminar. Puede tardar: lanzarlo con tiempo de espera largo.
   auditar  Lee los flujos existentes y avisa: sin pruebas, `continue-on-error`, `|| true`, acciones por rama móvil (@master o @main) y sin disparo en Pull Request.
            Es una lectura de texto (sin analizador de YAML): ignora las líneas comentadas y puede equivocarse con bloques `run` largos.
 
 Uso:
     python ci.py estado [--pr N|URL|rama] [--repo dueño/nombre] [--raiz .]
     python ci.py generar [--raiz .] [--os ubuntu-latest] [--aplicar]
+    python ci.py local [--raiz .]
     python ci.py auditar [--raiz .]
 Solo biblioteca estándar. `gh` se busca en el PATH; la variable SENIOR_GH (una lista JSON) lo reemplaza para probar sin red.
 """
@@ -117,7 +122,8 @@ def detectar(raiz):
     if py_tests or "pytest" in textos_py.lower():
         pytest = "pytest" in textos_py.lower() or (raiz / "pytest.ini").exists()
         instalar = "pip install -r requirements.txt" if (raiz / "requirements.txt").exists() else ("pip install ." if (raiz / "pyproject.toml").exists() else None)
-        res.append(("python", {"instalar": instalar, "probar": "python -m pytest" if pytest else "python -m unittest discover -s tests -t ."}))
+        corredor = (raiz / "tests" / "correr_todo.py").exists()  # el proyecto trae su propio corredor de baterías
+        res.append(("python", {"instalar": instalar, "probar": "python tests/correr_todo.py" if corredor else ("python -m pytest" if pytest else "python -m unittest discover -s tests -t .")}))
     pkg = raiz / "package.json"
     if pkg.exists():
         try:
@@ -194,6 +200,64 @@ def cmd_generar(a):
     return 0
 
 
+# ---------------------------------------------------------------- local
+def modo_hooks():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "senior" / "scripts"))
+    import modo_hooks as mh
+    return mh
+
+
+def sha_cabeza(raiz, pr=None, repo=None):
+    """El commit cabeza de un Pull Request según `gh pr view`, o None si no se pudo saber."""
+    gh = gh_cmd()
+    if not gh:
+        return None
+    cmd = gh + ["pr", "view"] + ([str(pr)] if pr else []) + (["--repo", repo] if repo else []) + ["--json", "headRefOid"]
+    try:
+        r = subprocess.run(cmd, cwd=raiz, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
+        return json.loads(r.stdout or "{}").get("headRefOid") or None
+    except (OSError, subprocess.TimeoutExpired, ValueError):
+        return None
+
+
+def git(raiz, *args):
+    r = subprocess.run(["git", *args], cwd=raiz, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    return r.returncode, (r.stdout or "").strip()
+
+
+def cmd_local(a):
+    raiz = Path(a.raiz).resolve()
+    codigo, sha0 = git(raiz, "rev-parse", "HEAD")
+    if codigo != 0:
+        print("No es un repositorio de git con commits: no hay nada que verificar.")
+        return 2
+    if git(raiz, "status", "--porcelain")[1]:
+        print("El árbol tiene cambios sin commitear: lo que se probaría no sería el commit. Commitear (con la aprobación del usuario) y volver a correr `ci.py local`. No se anotó nada.")
+        return 1
+    mh = modo_hooks()
+    config = mh.cargar(mh.raiz_del_proyecto(raiz))
+    comando = config["ci_comando"] or " && ".join(p["probar"] for _, p in detectar(raiz))
+    if not comando:
+        print("No hay comando de pruebas: el usuario lo fija con `/ci-modo local <comando de pruebas>` (o el proyecto tiene que tener tests detectables).")
+        return 2
+    print(f"Corriendo las pruebas locales para {sha0[:8]}: {comando}")
+    try:
+        r = subprocess.run(comando, cwd=raiz, shell=True, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=3600)
+    except subprocess.TimeoutExpired:
+        print("Las pruebas pasaron de una hora: se cortaron. No se anotó nada.")
+        return 1
+    cola = "\n".join(((r.stdout or "") + (r.stderr or "")).strip().splitlines()[-12:])
+    if git(raiz, "rev-parse", "HEAD")[1] != sha0:
+        print("El commit cambió mientras corrían las pruebas: lo probado no es lo que quedó. No se anotó nada.")
+        return 1
+    if r.returncode != 0:
+        print("Las pruebas locales FALLARON (no se anotó nada):\n" + cola)
+        return 1
+    mh.anotar_verificacion_local(mh.raiz_del_proyecto(raiz), sha0)
+    print(f"Pruebas locales en verde: commit {sha0[:8]} verificado.\n" + cola)
+    return 0
+
+
 # ---------------------------------------------------------------- auditar
 def cmd_auditar(a):
     archivos = flujos(a.raiz)
@@ -227,7 +291,7 @@ def main():
         sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="orden", required=True)
-    for nombre in ("estado", "generar", "auditar"):
+    for nombre in ("estado", "generar", "local", "auditar"):
         s = sub.add_parser(nombre)
         s.add_argument("--raiz", default=".")
         if nombre == "estado":
@@ -237,7 +301,7 @@ def main():
             s.add_argument("--os", default="ubuntu-latest")
             s.add_argument("--aplicar", action="store_true")
     a = ap.parse_args()
-    sys.exit({"estado": cmd_estado, "generar": cmd_generar, "auditar": cmd_auditar}[a.orden](a))
+    sys.exit({"estado": cmd_estado, "generar": cmd_generar, "local": cmd_local, "auditar": cmd_auditar}[a.orden](a))
 
 
 if __name__ == "__main__":

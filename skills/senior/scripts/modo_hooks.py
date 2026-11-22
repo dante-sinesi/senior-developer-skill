@@ -57,7 +57,7 @@ def normal(ruta):
 
 
 def cargar(raiz):
-    datos = {"modo": "denegar", "permitidos": [], "bloqueos": [], "hermanos": True, "fusiones": []}
+    datos = {"modo": "denegar", "permitidos": [], "bloqueos": [], "hermanos": True, "fusiones": [], "ci_modo": "estricto", "ci_comando": "", "ci_local": []}
     try:
         leido = json.loads(ruta_config(raiz).read_text(encoding="utf-8-sig"))
         if isinstance(leido, dict):
@@ -67,6 +67,10 @@ def cargar(raiz):
     if datos["modo"] not in MODOS:
         datos["modo"] = "denegar"
     datos["hermanos"] = datos["hermanos"] is not False
+    if datos["ci_modo"] not in ("estricto", "local"):
+        datos["ci_modo"] = "estricto"
+    datos["ci_comando"] = str(datos["ci_comando"] or "")
+    datos["ci_local"] = [x for x in datos["ci_local"] if isinstance(x, dict) and x.get("sha")]
     return datos
 
 
@@ -74,6 +78,26 @@ def guardar(raiz, datos):
     ruta = ruta_config(raiz)
     ruta.parent.mkdir(parents=True, exist_ok=True)
     ruta.write_text(json.dumps(datos, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+
+
+def fijar_ci_modo(raiz, modo, comando=""):
+    """El usuario fija el modo de CI («estricto» o «local») y, en modo local, el comando de pruebas que se correrá en su máquina."""
+    d = cargar(raiz)
+    d["ci_modo"] = modo
+    if modo == "local":
+        d["ci_comando"] = comando.strip()
+    guardar(raiz, d)
+
+
+def anotar_verificacion_local(raiz, sha):
+    """Las pruebas locales pasaron para este commit (solo `ci.py local` lo anota). Se guardan las últimas 30."""
+    d = cargar(raiz)
+    d["ci_local"] = [x for x in d["ci_local"] if x["sha"] != sha][-29:] + [{"sha": sha, "fecha": ahora()}]
+    guardar(raiz, d)
+
+
+def hay_verificacion_local(raiz, sha):
+    return any(x["sha"] == sha for x in cargar(raiz)["ci_local"])
 
 
 def autorizar_fusion(raiz, numero):
@@ -206,6 +230,7 @@ def explicacion(raiz):
             lineas.append(f"  - {ruta}" + (f" — {motivo}" if motivo else "") + (f" ({fecha})" if fecha else ""))
     else:
         lineas.append("Autorizado de antemano: nada.")
+    lineas.append("CI: modo " + d["ci_modo"] + (" (las pruebas locales reemplazan a la CI de GitHub; comando: " + (d["ci_comando"] or "el detectado del proyecto") + ")" if d["ci_modo"] == "local" else " (la CI de GitHub manda)") + ".")
     if d["fusiones"]:
         lineas.append("Fusiones autorizadas una vez (pese a chequeos sin verde): " + ", ".join("el Pull Request " + x if x != "actual" else "el de la rama actual" for x in d["fusiones"]) + ".")
     lineas += resumen_bloqueos(raiz)

@@ -9,3 +9,18 @@
 ## Códigos de salida de `ci.py estado`
 
 0 todo en verde o sin CI; 1 hay chequeos en rojo; 2 hay pendientes; 3 no se pudo saber. Con `--pr` acepta un número, una URL o una rama, y con `--repo dueño/nombre` otro repositorio.
+
+## Sin minutos de CI: el modo local
+
+Cuando la CI de GitHub no está disponible (por ejemplo, se acabaron los minutos de Actions), cada Pull Request quedaría bloqueado por el guardia. Para no autorizar de a uno, el usuario activa **`/ci-modo local <comando de pruebas>`** en el chat (solo él puede: Claude no puede cambiar el modo ni el comando) y vuelve con **`/ci-modo estricto`**.
+
+Si no sabes qué comando poner, `/ci-modo local` a secas usa el detectado del proyecto (el corredor `tests/correr_todo.py`, pytest, unittest, `npm test` o Composer) y el chat dice cuál quedó; el modo y el comando se guardan, así que se hace una sola vez. Al escribir `/` en el chat aparece `/ci-modo` con los dos modos en su pista (`local [comando de pruebas] | estricto`).
+
+En modo local la verificación local **reemplaza** a la CI de GitHub: `python <esta-skill>/scripts/ci.py local` corre en esta máquina el comando que fijó el usuario (sin comando, el detectado del proyecto) y, **solo si pasan**, anota el commit verificado. El guardia deja fusionar un Pull Request en rojo o pendiente si el commit cabeza **tiene esa anotación**; con GitHub en verde pasa siempre. Condiciones:
+- **Árbol sin cambios sin commitear** y el mismo commit al empezar y al terminar: si no, lo probado no sería lo que se fusiona y no se anota nada.
+- **Quien lo corre no elige qué se prueba:** el comando sale de la configuración del usuario.
+- Un commit nuevo deja de estar verificado y hay que volver a correrlo. Puede tardar: se lanza con tiempo de espera largo o en segundo plano.
+- Si no se puede saber el commit del Pull Request, el guardia deja pasar, como con cualquier falla interna.
+- `/permitir-fusion N` sigue valiendo como autorización de una sola vez.
+
+Limitación conocida: es una barrera contra descuidos, no contra una evasión deliberada (un script que escriba la anotación a mano no se ve).
