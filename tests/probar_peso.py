@@ -82,6 +82,17 @@ for i in range(14):
 rc, s = correr(PESO, p)
 chequear("la suma de las descripciones tiene tope", "las descripciones suman" in s and "(paquete)" in s, s)
 
+# 3b. las descripciones de comandos que solo invoca el usuario no entran al contexto: no suman al total
+p = proyecto("solo-usuario")
+(p / "README.md").write_text("".join(f"`u{i}` " for i in range(14)), encoding="utf-8")
+for i in range(14):
+    skill(p, f"u{i}", desc="d" * 790)
+    ruta = p / "skills" / f"u{i}" / "SKILL.md"
+    NL = chr(10)
+    ruta.write_text(ruta.read_text(encoding="utf-8").replace("---" + NL, "---" + NL + "disable-model-invocation: true" + NL, 1), encoding="utf-8")
+rc, s = correr(PESO, p)
+chequear("las descripciones de skills solo del usuario no suman al total (pero cada una sigue con su tope)", rc == 0 and "las descripciones suman" not in s, s)
+
 # 4. un script sin caso de uso y una skill fuera del README
 p = proyecto("huerfanos")
 (p / "README.md").write_text("`con` \n", encoding="utf-8")

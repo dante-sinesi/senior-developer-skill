@@ -61,7 +61,7 @@ python <esta-skill>/scripts/ci.py estado                 # chequeos del PR: ANTE
 
 ## Integración continua (CI) en GitHub Actions
 
-**Antes de proponer fusionar un Pull Request se corre `python <esta-skill>/scripts/ci.py estado`** (chequeos del PR): con algo en rojo o pendiente no se propone fusionar y se informa al usuario, aunque ya lo hubiera pedido. Como una instrucción sola no se cumple (medido), el guardia `hook_fusion_ci.py` bloquea cada `gh pr merge` con chequeos sin verde; para fusionar igual, **solo el usuario** escribe en el chat `/permitir-fusion N`. `ci.py generar` arma el flujo de CI de un proyecto (solo con el visto bueno del usuario) y `ci.py auditar` revisa el que existe. Detalle en `references/ci.md`.
+**Antes de proponer fusionar un Pull Request se corre `python <esta-skill>/scripts/ci.py estado`** (chequeos del PR): con algo en rojo o pendiente no se propone fusionar y se informa al usuario, aunque ya lo hubiera pedido. Como una instrucción sola no se cumple (medido), el guardia `hook_fusion_ci.py` bloquea cada `gh pr merge` con chequeos sin verde; para fusionar igual, **solo el usuario** escribe en el chat `/permitir-fusion N`. Sin minutos de CI, el usuario activa `/ci-modo local <comando>` y `ci.py local` corre las pruebas en la máquina y anota el commit verificado. `ci.py generar` arma el flujo de CI de un proyecto (solo con el visto bueno del usuario) y `ci.py auditar` revisa el que existe. Detalle en `references/ci.md`.
 
 ## Descripción y Topics del repositorio
 

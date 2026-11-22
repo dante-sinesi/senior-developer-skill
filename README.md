@@ -90,6 +90,8 @@ Listo: `senior` se activa solo cuando pides un cambio de código. Para empezar u
 | `cerrar-sesion` | Cierra la jornada y deja todo anotado. |
 | `inicializar-repositorio` | Deja un proyecto listo y publicado en GitHub. |
 | `trabajo-autonomo` | Trabaja solo durante horas, en una rama propia. |
+| `ci-modo` | Elige si, antes de fusionar, vale la CI de GitHub o las pruebas de tu máquina. |
+| `permitir`, `permitir-fusion`, `quitar-permiso`, `hooks-modo`, `hooks-hermanos`, `permisos` | Atajos de los comandos del chat que configuran los guardias: aparecen al escribir `/`. |
 | `auditar-consumo` | Mide cuánto espacio gastan las skills. |
 
 ## Más información

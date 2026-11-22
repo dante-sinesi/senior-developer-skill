@@ -21,6 +21,7 @@ import sys
 from pathlib import Path
 
 CI = Path(__file__).resolve().parent / "ci.py"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "senior" / "scripts"))
 
 FUSION = re.compile(r"(?:^|[;&|(\n])\s*(?:&\s*)?(?:\S*[\\/])?gh(?:\.exe)?\b(?P<antes>(?:\s+(?:-R|--repo)[ =]\S+)*)\s+pr\s+merge\b(?P<args>[^;&|\n]*)", re.IGNORECASE)
@@ -95,7 +96,13 @@ def main():
                 numero = numero_de(f["objetivo"])
                 if modo_hooks.consumir_fusion(raiz, numero):  # el usuario la autorizó de antemano: esta fusión pasa y la autorización se gasta
                     continue
-                bloqueo = (f, numero, texto)
+                local = modo_hooks.cargar(raiz)["ci_modo"] == "local"
+                if local:  # sin CI de GitHub (por ejemplo, sin minutos): vale la verificación local de ESE commit
+                    import ci
+                    sha = ci.sha_cabeza(cwd, f["objetivo"], f["repo"])
+                    if sha is None or modo_hooks.hay_verificacion_local(raiz, sha):  # no poder saber el commit deja pasar, como el resto de las fallas internas
+                        continue
+                bloqueo = (f, numero, texto, local)
                 break
     except Exception:  # noqa: BLE001 motivo: si algo falla, el hook deja pasar y no frena nada (con SENIOR_HOOK_DEPURAR=1 el error se ve)
         if os.environ.get("SENIOR_HOOK_DEPURAR") == "1":
@@ -103,13 +110,19 @@ def main():
         return 0
     if not bloqueo:
         return 0
-    f, numero, texto = bloqueo
+    f, numero, texto, local = bloqueo
     cual = f"el Pull Request {numero}" if numero else ("el Pull Request " + f["objetivo"] if f["objetivo"] else "el Pull Request de la rama actual")
     clave = numero or "actual"
     detalle = f"se intentó fusionar {cual} con chequeos sin verde ({texto.split(': ', 1)[-1] if texto else 'sin detalle'})"
     pregunta = f"Claude quiere fusionar {cual}, pero sus chequeos de CI no están en verde ({texto.split(': ', 1)[-1] if texto else 'sin detalle'}). ¿Autorizás esta fusión?"
-    instruccion = ("no se fusiona con chequeos sin verde. Anotá en `docs/pendientes.md`: «Fusionar " + cual + ": chequeos sin verde. Para fusionarlo igual, el usuario escribe en el chat "
-                   f"`/permitir-fusion {clave}`» (vos no podés darte esa autorización) y dejalo dicho en tu resumen final. Mientras tanto seguí con otra tarea.")
+    if local:
+        instruccion = ("estás en modo de CI local y no hay una verificación local del commit de este Pull Request: corré `python \"" + CI.as_posix() + "\" local` (ejecuta las pruebas del proyecto en esta máquina y anota el "
+                       "commit verificado; necesita el árbol sin cambios sin commitear, o sea todo commiteado, y puede tardar: lanzalo con tiempo de espera largo o en segundo plano) y repetí la fusión. "
+                       f"Si las pruebas fallan, no se fusiona: anotá el pendiente en `docs/pendientes.md` y seguí con otra tarea. Para fusionar igual, el usuario escribe en el chat `/permitir-fusion {clave}`.")
+    else:
+        instruccion = ("no se fusiona con chequeos sin verde. Anotá en `docs/pendientes.md`: «Fusionar " + cual + ": chequeos sin verde. Para fusionarlo igual, el usuario escribe en el chat "
+                       f"`/permitir-fusion {clave}`; para dejar de autorizar de a uno mientras la CI de GitHub no esté disponible, `/ci-modo local <comando de pruebas>`» "
+                       "(vos no podés darte esa autorización) y dejalo dicho en tu resumen final. Mientras tanto seguí con otra tarea.")
     print(modo_hooks.respuesta(raiz, "fusión con CI", detalle, pregunta, instruccion))
     return 0
 

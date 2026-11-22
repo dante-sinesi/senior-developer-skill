@@ -85,14 +85,15 @@ def evaluar(ruta, js, ancho=1280, alto=800, quitar_herramientas=True, navegador=
         pagina.write_text(ENVOLTURA.format(ancho=ancho, alto=alto, contenido=html.escape(texto, quote=True), js=js), encoding="utf-8")
         cmd = [navegador, "--headless=new", "--disable-gpu", "--no-first-run", f"--user-data-dir={perfil}", "--virtual-time-budget=5000",
                "--dump-dom", pagina.as_uri()]
-        try:
-            salida = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90).stdout
-        except subprocess.TimeoutExpired:
-            return None
-        m = re.search(r'<pre id="resultado">(.*?)</pre>', salida, re.S)
-        if not m or not m.group(1).strip():
-            return None
-        return json.loads(html.unescape(m.group(1)))
+        for _intento in range(2):  # un navegador lento a veces no devuelve nada la primera vez: se reintenta una vez
+            try:
+                salida = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90).stdout
+            except subprocess.TimeoutExpired:
+                continue
+            m = re.search(r'<pre id="resultado">(.*?)</pre>', salida, re.S)
+            if m and m.group(1).strip():
+                return json.loads(html.unescape(m.group(1)))
+        return None
     finally:
         shutil.rmtree(paso, ignore_errors=True)
 

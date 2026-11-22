@@ -4,7 +4,7 @@ Qué abarca el paquete y cómo ataca cada una de sus habilidades. Es una guía d
 
 ## 1. Qué es y qué problema ataca
 
-`senior` es un paquete de 18 skills para Claude Code que hace que el trabajo de programar se parezca al de una persona senior: entiende antes de tocar, cambia lo mínimo, prueba antes de construir, deja todo documentado y no sorprende a nadie. No es una herramienta que programa por sí sola: es un **método**, más **guardias automáticos** que impiden lo que no debe pasar aunque nadie se acuerde de la regla.
+`senior` es un paquete de 25 skills (seis son solo atajos de comandos del chat) para Claude Code que hace que el trabajo de programar se parezca al de una persona senior: entiende antes de tocar, cambia lo mínimo, prueba antes de construir, deja todo documentado y no sorprende a nadie. No es una herramienta que programa por sí sola: es un **método**, más **guardias automáticos** que impiden lo que no debe pasar aunque nadie se acuerde de la regla.
 
 Los problemas concretos que ataca, y con qué:
 
@@ -91,6 +91,8 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
 - **No hace:** no puede comprobar el idioma de un commit ni impide que el usuario, desde su terminal, se salte los hooks.
 
 **Integración continua (`ci.py`).** Antes de proponer fusionar un Pull Request se miran sus chequeos (`ci.py estado`): con algo en rojo o pendiente no se propone fusionar y se informa al usuario, aunque ya hubiera pedido fusionar; un PR sin chequeos en un proyecto que sí tiene flujos de CI cuenta como pendiente. `ci.py generar` arma el flujo de GitHub Actions con las pruebas del proyecto (Python, Node o PHP, permisos de solo lectura), solo con el visto bueno del usuario y sin pisar uno existente; `ci.py auditar` avisa de un flujo sin pruebas, sin disparo en Pull Request o con `continue-on-error`. No despliega nada: la entrega continua queda fuera.
+
+**Sin minutos de CI: el modo local.** Si la CI de GitHub no está disponible (por ejemplo, sin minutos), el usuario activa `/ci-modo local <comando de pruebas>` desde el chat y `ci.py local` corre las pruebas en la máquina y anota el commit verificado: el guardia deja fusionar sin autorizar PR por PR (con el árbol sin cambios sin commitear y el comando fijado por el usuario). El flujo de CI del propio paquete gasta pocos minutos: un solo trabajo por Pull Request (Python 3.12) y la compatibilidad con 3.10 una vez por semana.
 
 ### 3.5 `senior-docs`: documentación viva
 
@@ -227,10 +229,10 @@ Todos son hooks de Claude Code o de git, instalados y verificados por `guardia_a
 |---|---|---|
 | **Autoría** | Commits, tags, PR, issues o releases con `Co-Authored-By`, pies de generación o autores de Claude | Bloquea; no hay vía de autorización |
 | **Fuera del proyecto** | Crear o escribir archivos fuera de la raíz del proyecto: `Write`, `Edit`, redirecciones, `mkdir`, `cp`, descargas, código en línea (`python -c`) **y scripts guardados en archivos**, antes de guardarlos y de ejecutarlos | Bloquea, indica la ruta equivalente en `.temporal/` y Claude sigue; el usuario autoriza con `/permitir <ruta>` |
-| **Fusión con CI sin verde** | `gh pr merge` (también dentro de `&&`, con `-R`, URL o rama) de un Pull Request con chequeos en rojo o pendientes (con `--auto` solo el rojo); si no se pudo saber el estado, deja pasar | Bloquea sin interrumpir, manda a anotar el pendiente; el usuario autoriza **una** fusión con `/permitir-fusion N` |
+| **Fusión con CI sin verde** | `gh pr merge` (también dentro de `&&`, con `-R`, URL o rama) de un Pull Request con chequeos en rojo o pendientes (con `--auto` solo el rojo); si no se pudo saber el estado, deja pasar | Bloquea sin interrumpir, manda a anotar el pendiente; el usuario autoriza **una** fusión con `/permitir-fusion N`, o activa `/ci-modo local` para que valga la verificación local de cada commit |
 | **Archivos protegidos** | Editar `.env`, claves, certificados, el interior de `.git/` y archivos de bloqueo de dependencias | Bloquea o pregunta, según el modo |
 | **Secretos y datos personales** | Escribir claves o datos personales en archivos que van a git, leer `.env`, `git add -f`, claves en mensajes de commit, y **saltear los hooks de git** (`--no-verify`, `commit -n`, `core.hooksPath`) | Bloquea y da la alternativa |
-| **Permisos desde el chat** | Un hook de entrada del usuario (`UserPromptSubmit`) que recoge `/permitir`, `/permitir-fusion`, `/quitar-permiso`, `/hooks-modo`, `/hooks-hermanos` y `/permisos`; Claude no puede usarlo | Configura sin terminal ni reiniciar |
+| **Permisos desde el chat** | Un hook de entrada del usuario (`UserPromptSubmit`) que recoge `/permitir`, `/permitir-fusion`, `/ci-modo`, `/quitar-permiso`, `/hooks-modo`, `/hooks-hermanos` y `/permisos`; Claude no puede usarlo | Configura sin terminal ni reiniciar |
 | **Hooks de git** | `commit-msg`, `pre-commit` y `pre-push` en cada clon: autoría y secretos; el `pre-push` revisa **todo el historial que se sube**, commit por commit | Cortan el commit o el push |
 
 **Reglas comunes de diseño**
