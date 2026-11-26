@@ -5,7 +5,7 @@ Uso:
     python seguridad.py [--raiz .] [--auditar] [--json] [--max 30]
 
 Qué revisa:
-  1. Alertas por lenguaje definidas en senior-lenguajes/perfiles/*.json
+  1. Alertas por lenguaje definidas en senior/perfiles/*.json
      (SQL concatenado, XSS, secretos serializados, falta de sesión/CSRF,
      despacho dinámico, etc.).
   2. Secretos escritos en el código (claves, tokens, contraseñas, claves privadas).
@@ -53,7 +53,7 @@ def localizar_perfiles():
     env = os.environ.get("SENIOR_PERFILES")
     if env:
         return Path(env)
-    return Path(__file__).resolve().parents[2] / "senior-lenguajes" / "perfiles"
+    return Path(__file__).resolve().parents[1] / "perfiles"
 
 
 def cargar_perfiles():

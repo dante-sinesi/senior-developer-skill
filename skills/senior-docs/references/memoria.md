@@ -56,7 +56,7 @@ Si se nota una duplicación, un bug o una mejora mientras se trabaja en otra cos
 ## Índice y mapa de conceptos
 
 `scripts/indexar_docs.py` (solo biblioteca estándar):
-- `indexar`: genera `docs/INDEX.md` y `docs/.grafo.json`. Une documentos, requisitos (RN-001, RF-012…), tests y código por enlaces `[[id]]` y por IDs citados en el código; suma clases, funciones y tablas detectadas con los perfiles de `senior-lenguajes`. Marca requisitos sin test e IDs usados sin documento.
+- `indexar`: genera `docs/INDEX.md` y `docs/.grafo.json`. Une documentos, requisitos (RN-001, RF-012…), tests y código por enlaces `[[id]]` y por IDs citados en el código; suma clases, funciones y tablas detectadas con los perfiles de `senior/perfiles/`. Marca requisitos sin test e IDs usados sin documento.
 - `consultar <término>` y `vecinos <id>`: navegan el mapa sin leer todo.
 
 Regenerar el índice con `indexar` después de tocar documentación; `verificar.py docs` solo lo revisa y nunca modifica archivos. `docs/INDEX.md` se versiona junto con el cambio (su salida no tiene fechas, así que no ensucia el historial); `docs/.grafo.json` es regenerable y `iniciar_docs.py` lo deja ignorado en `docs/.gitignore`.

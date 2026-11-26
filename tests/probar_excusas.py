@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 RAIZ = Path(__file__).resolve().parents[1]
-SKILLS = ["senior", "senior-tdd", "senior-git", "senior-seguridad", "senior-refactor"]
+SKILLS = ["senior", "senior-tdd", "senior-git", "senior-seguridad", "refactor"]
 mal = 0
 
 
@@ -16,7 +16,8 @@ def chequear(nombre, cond, extra=""):
 
 
 for s in SKILLS:
-    t = (RAIZ / "skills" / s / "SKILL.md").read_text(encoding="utf-8")
+    ruta = RAIZ / "skills" / "senior" / "references" / "refactor.md" if s == "refactor" else RAIZ / "skills" / s / "SKILL.md"
+    t = ruta.read_text(encoding="utf-8")
     if s == "senior":
         t += (RAIZ / "skills" / s / "references" / "metodo-completo.md").read_text(encoding="utf-8")  # el núcleo es corto: las excusas viven en la capa completa
     m = re.search(r"^## Excusas frecuentes[^\n]*\n(.*?)(?=^## |\Z)", t, re.M | re.S)
