@@ -119,7 +119,7 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
   - **Guardado continuo:** el estado se actualiza en cada hito (test que pasa a verde, commit, paso de la ficha, bloqueo), no al cierre, porque un cierre brusco no ejecuta ningún hook.
   - **Qué entra en el estado:** lo costoso de redescubrir (una decisión y su motivo, un callejón sin salida, el comando exacto que funciona), no lo que se ve en el código.
   - **Fuera de alcance va a la bandeja,** no al olvido ni al arreglo de paso.
-  - **Hook de apertura opcional** (`cargar_estado.py`, evento `SessionStart`): se propone y solo se instala con aprobación.
+  - **Recordatorio automático** (`cargar_estado.py`, evento `SessionStart`, lo registra el instalador): al abrir, retomar, limpiar y compactar trae escala, estado, documentos por tipo, commits de código sin documentar y la secuencia de trabajo, en hasta unas 600 palabras. Solo en proyectos con `docs/ESTADO.md`.
 - **Herramientas:** `cargar_estado.py` e `indexar_docs.py` (`indexar`, `consultar`, `vecinos`).
 - **No hace:** `verificar.py docs` solo revisa y nunca modifica archivos.
 
@@ -162,7 +162,7 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
 ### 3.11 `adoptar-proyecto` (`/adoptar-proyecto`): arranque ordenado
 
 - **Problema:** imponer toda la metodología de golpe.
-- **Cómo lo ataca:** (1) plan en solo lectura (`plan_adopcion.py`: si el proyecto es nuevo o existente y qué le falta); (2) el usuario lo aprueba o quita acciones; (3) con aprobación, crea `docs/`, el README desde la plantilla y, si ya existe, el relevamiento; completa el `.gitignore` de secretos y activa los hooks; (4) pregunta **una sola vez** la escala del proyecto (pequeño, mediano o grande); (5) completa a mano lo que el script no puede inferir; (6) propone aparte la guardia de autoría, el hook de apertura y la plantilla de PR.
+- **Cómo lo ataca:** (1) plan en solo lectura (`plan_adopcion.py`: si el proyecto es nuevo o existente y qué le falta); (2) el usuario lo aprueba o quita acciones; (3) con aprobación, crea `docs/`, el README desde la plantilla y, si ya existe, el relevamiento; completa el `.gitignore` de secretos y activa los hooks; (4) pregunta **una sola vez** la escala del proyecto (pequeño, mediano o grande); (5) completa a mano lo que el script no puede inferir; (6) propone aparte el ancla en `CLAUDE.md`, la guardia de autoría y la plantilla de PR.
 - **No hace:** nunca pisa archivos existentes y nada se escribe sin aprobación.
 - **Costo orientativo:** un proyecto nuevo, unos 2.000 a 4.000 tokens; uno existente, de 10.000 a 50.000.
 

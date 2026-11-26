@@ -11,7 +11,7 @@ y qué le falta. Con --aplicar crea, sin pisar nada existente:
   - README.md desde la plantilla (si no existe)
   - docs/relevamiento.md (solo en proyectos existentes)
   - el índice de documentación
-Lo que requiere decisiones (stack, reglas de negocio, hook de apertura, plantilla
+Lo que requiere decisiones (stack, reglas de negocio, ancla en CLAUDE.md, plantilla
 de PR, git init) solo se propone: nunca lo hace este script.
 Solo biblioteca estándar.
 """
@@ -96,7 +96,6 @@ def construir_plan(info, tipo):
         plan.append(("manual", "Buscar secretos ya escritos o versionados (secretos.py todo): lo que aparezca se saca del código y la clave se rota, no alcanza con borrarla"))
     plan.append(("propuesta", "Ancla del método en el CLAUDE.md del proyecto: la secuencia de todo cambio de código, que sigue a la vista tras compactar "
                               "y llega a los agentes delegados (senior/scripts/ancla.py; sin --aplicar solo la muestra)"))
-    plan.append(("propuesta", "Hook de apertura que carga ESTADO.md (requiere aprobación aparte)"))
     plan.append(("propuesta", "Plantilla de Pull Request de GitHub (.github/pull_request_template.md)"))
     if not info["git"]:
         plan.append(("propuesta", "Inicializar git (la carpeta no es un repositorio)"))
