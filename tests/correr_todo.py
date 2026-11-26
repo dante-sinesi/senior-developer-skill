@@ -30,6 +30,7 @@ def main():
     vacia = AQUI.parent / ".temporal" / "casa-vacia"
     vacia.mkdir(parents=True, exist_ok=True)
     entorno = {**os.environ, "SENIOR_TOKEN_DIET_HOME": str(vacia)}
+    entorno.pop("CLAUDE_PROJECT_DIR", None)  # los hooks la toman como raíz del proyecto: heredada, las pruebas mirarían otra carpeta
     for b in baterias:
         t = time.perf_counter()
         r = subprocess.run([sys.executable, str(b)], capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=AQUI.parent, env=entorno)
