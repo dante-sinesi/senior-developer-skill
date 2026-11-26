@@ -42,6 +42,8 @@ Le pides algo a `senior` y él reparte el trabajo. Los guardias vigilan el proye
 
 Primero se lee y se planea, después se escribe la prueba y recién ahí el código. Nada se fusiona sin tu aprobación. El rigor se ajusta al tamaño del cambio: una corrección de texto no lleva ficha ni diagrama.
 
+Hasta el cambio más chico sigue el mismo orden: leer lo documentado, probar, programar, verificar y anotar. Si un paso no corresponde, Claude lo dice.
+
 ### Cómo se incorpora un proyecto que ya existe
 
 <p align="center"><img src="docs/img/diagrama-adoptar.svg" alt="Cómo se incorpora un proyecto que ya existe" width="760"><br><sub>Cómo se incorpora un proyecto que ya existe: Claude propone un plan, tú lo apruebas y solo lo que confirmas pasa a ser regla.</sub></p>

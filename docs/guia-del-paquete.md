@@ -44,6 +44,7 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
 - **Problema que ataca:** que cada tarea de código dependa del humor del día. Fija un comportamiento común.
 - **Cómo lo ataca**
   - **Nueve reglas que no se negocian** (en el núcleo): test primero desde la regla de negocio; cambios mínimos; autoría solo del usuario; commit, push, PR y fusión solo con pedido; nada fuera del proyecto; ninguna clave ni dato personal en git; README al día; español neutro; una regla que falló dos veces recibe una barrera.
+  - **Secuencia de todo cambio de código** (en el núcleo), también del más chico: leer estado y documentos afectados, test que falla si cambia el comportamiento, programar lo mínimo, verificar y documentar. Un paso que no corresponde se declara. `ancla.py` la deja en un bloque marcado del `CLAUDE.md` del proyecto (con aprobación), que se vuelve a leer tras compactar y reciben los agentes delegados.
   - **Proporcionalidad:** un cambio trivial o chico (hasta unos 3 archivos y 50 líneas) se hace directo; uno mediano o grande lee el método completo y lleva ficha de cambio, plan y revisión de seguridad.
   - **La escalera antes de escribir:** ¿hace falta?, ¿ya existe en el proyecto?, ¿lo da la biblioteca estándar?, ¿lo resuelve una dependencia ya instalada?, y recién entonces lo mínimo que funciona. Nunca recorta tests, documentación ni seguridad.
   - **Dudar antes de dar por buena una decisión no trivial:** un subagente sin el hilo de la conversación intenta romperla con solo el artefacto y el contrato (`duda.py`).

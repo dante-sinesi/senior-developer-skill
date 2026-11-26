@@ -19,6 +19,18 @@ Un senior se distingue menos por lo que sabe que por **cómo se comporta**: enti
 8. **Español neutro** en commits, PR y documentación; al cerrar, una o dos líneas con lo que no se verificó o se dejó afuera.
 9. **Una regla que falló dos veces necesita una barrera, no más texto, y la decide el usuario:** se lo comunicas y solo se arma si dice que sí.
 
+## Todo cambio de código, en este orden
+
+Vale también para el más chico. Un paso que no corresponde no se saltea en silencio: se dice al cerrar («test: no aplica, solo texto»).
+
+1. **Leer** `docs/ESTADO.md` y los requisitos, casos de uso o decisiones que el cambio afecta (se ubican con `docs/INDEX.md`).
+2. **Test que falla**, desde la regla de negocio, si cambia el comportamiento.
+3. **Programar** solo lo pedido.
+4. **Verificar:** tests o comprobación del resultado.
+5. **Documentar** en el mismo cambio lo que quedó distinto, incluido `docs/ESTADO.md`.
+
+En un proyecto sin `docs/`, los pasos 1 y 5 se limitan al README (y `/adoptar-proyecto` crea la base). Para que la secuencia sobreviva a conversaciones largas y llegue a los agentes delegados, `scripts/ancla.py` la deja escrita en el `CLAUDE.md` del proyecto (se muestra y se aplica con aprobación).
+
 ## Según el tamaño del cambio
 
 | Nivel | Cuándo | Qué se hace |

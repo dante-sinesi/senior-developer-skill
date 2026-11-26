@@ -94,6 +94,8 @@ def construir_plan(info, tipo):
                          "claves, credenciales y datos personales antes de commitear y de subir"))
     if tipo == "existente":
         plan.append(("manual", "Buscar secretos ya escritos o versionados (secretos.py todo): lo que aparezca se saca del código y la clave se rota, no alcanza con borrarla"))
+    plan.append(("propuesta", "Ancla del método en el CLAUDE.md del proyecto: la secuencia de todo cambio de código, que sigue a la vista tras compactar "
+                              "y llega a los agentes delegados (senior/scripts/ancla.py; sin --aplicar solo la muestra)"))
     plan.append(("propuesta", "Hook de apertura que carga ESTADO.md (requiere aprobación aparte)"))
     plan.append(("propuesta", "Plantilla de Pull Request de GitHub (.github/pull_request_template.md)"))
     if not info["git"]:
