@@ -67,7 +67,7 @@ Para decisiones importantes y difíciles de revertir: `docs/decisiones/ADR-001.m
 
 ## Cuando se diseña una interfaz
 
-Las decisiones de diseño viven en `docs/diseno/notas/decisiones.md` (IDs `D-001`…), que mantiene `senior-diseno`. Los ADR las **citan** por ID, sin copiarlas. Los requisitos de usabilidad y accesibilidad se documentan aquí como requisitos no funcionales.
+Las decisiones de diseño viven en `docs/diseno/notas/decisiones.md` (IDs `D-001`…), que mantiene `senior-diseno` (paquete de diseño, opcional). Los ADR las **citan** por ID, sin copiarlas. Los requisitos de usabilidad y accesibilidad se documentan aquí como requisitos no funcionales.
 
 ## Trazabilidad
 
@@ -75,4 +75,4 @@ Cada test cita el ID del requisito que verifica (en un comentario o nombre). `se
 
 ## Tarjetas SVG para el README (opcional)
 
-Un repositorio nuevo puede tener un README con tarjetas SVG (portada y cifras) en lugar de uno simple; se elige en `/inicializar-repositorio`. `scripts/readme_tarjetas.py` es un motor **neutro**: dibuja portada, cifra y antes-y-después desde JSON en `docs/tarjetas/`, exige el pie de foto, pone el sello MEDIDO o ESPERADO en las cifras, ajusta el texto y comprueba el contraste; el estilo es un tema que el diseñador inventa por proyecto (`senior-diseno/references/tarjetas-readme.md`). Los SVG no se hacen a mano: `generar` los regenera y `verificar.py tarjetas` avisa si quedó alguno desactualizado. También dibuja diagramas de flujo y de secuencia (`tipo` flujo o secuencia, con `diagramas_svg.py`) en el mismo estilo; un texto que no entra se avisa y no se recorta. Los diagramas de `docs/` siguen siendo Mermaid, que es la fuente editable.
+Un repositorio nuevo puede tener un README con tarjetas SVG (portada y cifras) en lugar de uno simple; se elige en `/inicializar-repositorio` y el motor lo trae el paquete de diseño (`senior-diseno`). Sin él, el README es simple.

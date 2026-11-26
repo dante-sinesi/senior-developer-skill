@@ -152,5 +152,19 @@ chequear("senior pregunta la escala una sola vez y la deja evolucionar", "se pre
 chequear("cerrar-sesion corre estado, que evoluciona sin preguntar", "escala.py estado" in (RAIZ / "skills" / "cerrar-sesion" / "SKILL.md").read_text(encoding="utf-8"))
 chequear("el README la explica", "Escala del proyecto" in readme and "`escala`" in readme)
 
+
+# 12. escala: el nivel grande con interfaz exige la tarjeta
+G = RAIZ / ".temporal" / "proy-escala-interfaz"
+if G.exists():
+    shutil.rmtree(G, onerror=_forzar)
+(G / "docs").mkdir(parents=True)
+(G / "index.html").write_text("<html></html>", encoding="utf-8")
+chequear("hay_interfaz detecta páginas y Godot", escala.hay_interfaz(G))
+chequear("grande con interfaz y sin tarjeta: falta la tarjeta", any("tarjeta de estilo" in f for f in escala.faltantes(G, "grande")))
+(G / "docs/diseno/estilo").mkdir(parents=True)
+(G / "docs/diseno/estilo/tarjeta.html").write_text("<html></html>", encoding="utf-8")
+chequear("con tarjeta ya no falta", not any("tarjeta de estilo" in f for f in escala.faltantes(G, "grande")))
+chequear("el mediano la recomienda y el grande la exige", "tarjeta de estilo viva" in escala.texto_niveles("mediano") and "obligatoria" in escala.texto_niveles("grande"))
+
 print("Todo bien." if not mal else f"{mal} casos mal.")
 sys.exit(1 if mal else 0)

@@ -32,16 +32,9 @@
       "forma": "caja"
     },
     {
-      "id": "d",
-      "texto": "Diseño de interfaces",
-      "col": 2,
-      "fila": 2,
-      "forma": "caja"
-    },
-    {
       "id": "c",
       "texto": "Comandos del usuario",
-      "col": 3,
+      "col": 2,
       "fila": 2,
       "forma": "caja"
     },
@@ -99,11 +92,6 @@
     },
     {
       "de": "s",
-      "a": "d",
-      "estilo": "solida"
-    },
-    {
-      "de": "s",
       "a": "c",
       "estilo": "solida"
     },
@@ -114,11 +102,6 @@
     },
     {
       "de": "r",
-      "a": "p",
-      "estilo": "solida"
-    },
-    {
-      "de": "d",
       "a": "p",
       "estilo": "solida"
     },

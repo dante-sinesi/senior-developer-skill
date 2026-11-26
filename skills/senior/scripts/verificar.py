@@ -504,9 +504,11 @@ def chequeo_peso(raiz, args):
 
 def chequeo_tarjetas(raiz, args):
     """Si el proyecto usa tarjetas SVG en el README (docs/tarjetas): que estén al día respecto de sus JSON y estilo, con su pie de foto, y sin SVG hechos a mano."""
-    ruta = Path(__file__).resolve().parents[2] / "senior-docs" / "scripts" / "readme_tarjetas.py"
+    ruta = Path(__file__).resolve().parents[2] / "senior-diseno" / "scripts" / "readme_tarjetas.py"
     if not ruta.exists():
-        return ["Tarjetas: no se encontró senior-docs/scripts/readme_tarjetas.py."], True
+        if not (raiz / "docs" / "tarjetas").is_dir():
+            return [], True
+        return ["Tarjetas: el proyecto usa tarjetas SVG, pero no está instalado el paquete de diseño (senior-diseno): no se comprobaron."], True
     import importlib.util
     espec = importlib.util.spec_from_file_location("readme_tarjetas", ruta)
     modulo = importlib.util.module_from_spec(espec)
