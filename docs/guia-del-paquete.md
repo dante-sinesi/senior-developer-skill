@@ -4,7 +4,7 @@ Qué abarca el paquete y cómo ataca cada una de sus habilidades. Es una guía d
 
 ## 1. Qué es y qué problema ataca
 
-`senior` es un paquete de 27 skills (nueve son solo atajos de comandos del chat) para Claude Code que hace que el trabajo de programar se parezca al de una persona senior: entiende antes de tocar, cambia lo mínimo, prueba antes de construir, deja todo documentado y no sorprende a nadie. No es una herramienta que programa por sí sola: es un **método**, más **guardias automáticos** que impiden lo que no debe pasar aunque nadie se acuerde de la regla.
+`senior` es un paquete de 25 skills (nueve son solo atajos de comandos del chat) para Claude Code que hace que el trabajo de programar se parezca al de una persona senior: entiende antes de tocar, cambia lo mínimo, prueba antes de construir, deja todo documentado y no sorprende a nadie. No es una herramienta que programa por sí sola: es un **método**, más **guardias automáticos** que impiden lo que no debe pasar aunque nadie se acuerde de la regla.
 
 Los problemas concretos que ataca, y con qué:
 
@@ -18,7 +18,7 @@ Los problemas concretos que ataca, y con qué:
 | Claude figurando como autor en GitHub | Hooks que lo bloquean antes de que exista el commit | `senior-git` |
 | Archivos creados fuera del proyecto | Hook global que bloquea y redirige a `.temporal/` | `senior` (hooks) |
 | Sistemas heredados que nadie entiende | Relevamiento de lo barato a lo caro y tests de caracterización | `senior-relevar` |
-| Interfaces genéricas o saturadas | Método de tres alternativas más reglas objetivas verificadas por script | `senior-diseno` |
+| Interfaces genéricas o saturadas | Método de tres alternativas más reglas objetivas verificadas por script | `senior-diseno` (paquete aparte) |
 | Revisiones que opinan sin casos | Hallazgos numerados, cada uno con un caso concreto | `revisar-cambio` |
 
 ## 2. Cómo está armado: cinco capas
@@ -108,7 +108,7 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
   - **README simple:** se escribe para quien llega por primera vez, con párrafos cortos, palabras de todos los días y explicaciones abstractas apoyadas en diagramas; lo técnico va al final o en `docs/` (`references/readme-simple.md`).
   - **README con diagramas** copiados desde `docs/diagramas/` entre marcas (un dato, un lugar) y **tarjetas SVG opcionales** (motor neutro: exige pie de foto, sello MEDIDO o ESPERADO en las cifras, contraste y decoración segura; el estilo lo inventa el diseñador). Los diagramas de flujo y de secuencia también salen como SVG con el estilo del proyecto, con su fuente Mermaid en `docs/diagramas/`.
   - **Trazabilidad:** cada test cita el ID del requisito; el índice arma la matriz requisito → test → código y marca lo que falta.
-- **Herramientas:** `iniciar_docs.py`, `consultas.py`, `revisar_requisitos.py`, `readme_diagramas.py`, `readme_tarjetas.py` y, desde `senior`, `diagramas.py` y `texto.py`.
+- **Herramientas:** `iniciar_docs.py`, `consultas.py`, `revisar_requisitos.py`, `readme_diagramas.py` y, desde `senior`, `diagramas.py` y `texto.py`.
 - **No hace:** `revisar_requisitos.py` controla la forma, no si el requisito es correcto ni si hay contradicciones.
 
 ### 3.6 `senior-memoria`: que una sesión nueva continúe sin repetir nada
@@ -188,30 +188,13 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
 - **Cómo lo ataca:** corre `verificar.py`; actualiza `ESTADO.md` (dónde quedó, próximo paso, bloqueos); confirma el README; actualiza la portada de GitHub si el proyecto cambió; sube la escala si el proyecto creció; avisa de reglas que fallaron dos veces y de bloqueos de hooks que reinciden; menciona pendientes; regenera el índice; **propone** el commit (no lo hace); y cierra con un resumen de cinco líneas.
 - **No hace:** es opcional (el estado ya se guarda en cada hito) y no commitea ni empuja sin aprobación.
 
-### 3.15 `senior-diseno`: diseño de interfaces
-
-- **Problema:** interfaces genéricas, saturadas o «hechas por IA».
-- **Cómo lo ataca:** dos partes separadas a propósito. **Un método:** briefing y UX; estilo (tarjeta de estilo viva, con tres alternativas A, B y C); **tres alternativas que difieren en estructura** (disposición, jerarquía, navegación, recorrido) en bosquejos HTML desktop y mobile; el usuario da feedback y la elegida evoluciona; revisión final con script y capturas. **Reglas objetivas verificadas por script que no tocan el aspecto:** una familia tipográfica ideal y dos como máximo, etiqueta visible y específica en cada campo, un máximo de cuatro campos visibles y una sola acción principal, contraste y accesibilidad, estados de hover y foco, sistema de diseño sin duplicados.
-- **El aspecto es libre:** estilo, paleta, ilustración, movimiento y tono se deciden por proyecto. No hay plantillas con estilo ni límites de expresión.
-- **Liviano por defecto:** un trabajo chico lleva tres esqueletos y una sola hoja de notas; uno grande, la ronda completa.
-- **Herramientas:** `crear_bosquejos.py`, `ver_propuestas.py`, `tarjeta_estilo.py`, `revisar_diseno.py`, `capturar.py`, `colores.py`, `paquete_interfaz.py`, `importar_preferencias.py`, `htmlmin.py`.
-- **No hace:** los bosquejos no llevan tests (el TDD empieza al implementar). Las capturas dependen de que haya un navegador utilizable.
-
-**Sin desborde horizontal.** `desborde.py` mide en Edge o Chrome (sin interfaz) que una página no se salga de su ancho a 390 y a 1280 px; `revisar_diseno.py todo` lo marca FALLA y las plantillas de bosquejo traen una base estructural que lo previene. **Visor de propuestas.** El diseñador lo usa siempre que propone un diseño (estilos, direcciones, versiones nuevas, pantallas, SVG) y lo abre en el navegador, nunca con capturas. Cada ronda trae `ver.html`, una sola página que muestra todas las direcciones, pantallas o imágenes y SVG en desktop, mobile o ambas a la vez, una por una o lado a lado, sin abrir ni generar archivo por archivo. Las alternativas de cada pantalla y las pestañas van en un panel lateral colapsable, con desplazamiento propio si no entran (flechas arriba y abajo cambian de alternativa, izquierda y derecha de pestaña; el panel se pliega al ícono de las tres líneas) y un botón lleva la vista a pantalla completa. La página no tiene barras: todo se escala para entrar en la ventana y la versión mobile nunca queda más alta que la desktop, se angosta manteniendo su proporción. Es una estructura neutra (sin estilo del proyecto) que se regenera con `ver_propuestas.py crear <carpeta>`; las propuestas se agrupan por nombre (`pantalla__propuesta__modo.ext`). Si la app no tiene uno de los modos (`--modos mobile` o `desktop`) el visor no muestra los botones de vista (con un solo modo no hay nada que elegir), y si a una propuesta le falta un modo que la app sí tiene, aparece como pendiente.
-
-### 3.16 `auditar-diseno` (`/auditar-diseno`)
-
-- **Problema:** un proyecto que no usó `senior-diseno` desde el principio.
-- **Cómo lo ataca:** `auditar_proyecto.py` (solo lectura) escribe `docs/diseno/auditoria/AAAA-MM-DD.md` con hallazgos y propuestas **ordenadas por impacto y esfuerzo**; después una lectura de diseño (especificidad, diez heurísticas de 0 a 4, carga cognitiva) que el script no ve. Lo mecánico va a `docs/pendientes.md`; lo que exige decisiones abre una ronda de bosquejos.
-- **No hace:** no modifica el proyecto.
-
-### 3.17 `auditar-consumo` (`/auditar-consumo`)
+### 3.15 `auditar-consumo` (`/auditar-consumo`)
 
 - **Problema:** sesiones que se llenan sin saber por qué.
 - **Cómo lo ataca:** `consumo.py` mide, sin gastar tokens del modelo, lo que se paga en cada sesión (descripciones de skills, `CLAUDE.md`, índice de la memoria), lo que se paga al activar una skill y lo que se lee solo si hace falta; propone recortes ordenados por rendimiento. Con `--repo` mide las skills del repositorio en lugar de las instaladas, para ver un recorte antes de reinstalar. Si Token Diet está instalada, su auditoría es la de referencia.
 - **No hace:** solo mide y propone; los números son estimaciones (caracteres / 4, margen de ±30 %).
 
-### 3.18 `trabajo-autonomo` (`/trabajo-autonomo`): sesiones largas sin supervisión
+### 3.16 `trabajo-autonomo` (`/trabajo-autonomo`): sesiones largas sin supervisión
 
 - **Problema:** dejar una tarea trabajando horas sin que se pierda lo hecho, se mezcle con el trabajo del usuario o se frene esperando una respuesta que nadie da.
 - **Cómo lo ataca**
@@ -222,6 +205,8 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
   - **Al volver:** el informe (`.temporal/autonomo/<tema>/informe.md`) lista commits, criterios, bloqueos y cómo revisar; subir, abrir el PR y fusionar se aprueban por separado.
 - **Herramienta:** `autonomo.py`. El script no tiene ninguna operación de `push`, `merge`, `rebase`, `reset` ni `tag`.
 - **No hace:** no decide por el usuario una regla de negocio ni saltea los hooks de seguridad.
+
+**Diseño de interfaces.** Es un paquete aparte y opcional (`senior-diseno` y `auditar-diseno`, con el visor de propuestas y las tarjetas SVG del README). `senior` lo usa si está instalado y no depende de él.
 
 ## 4. Los guardias: qué se bloquea solo
 

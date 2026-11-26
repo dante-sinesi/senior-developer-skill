@@ -254,13 +254,15 @@ def analizar(args, raiz, secretos, meta):
             r["bloqueos"].append("hay que elegir el tipo de README: simple (`--readme simple`) o con tarjetas SVG (`--readme tarjetas --estilo <tema.json>`). "
                                  "Se le pregunta al usuario; como orientación, los repositorios privados suelen llevar README simple y los públicos tarjetas.")
         elif args.readme == "tarjetas":
-            if not args.estilo:
+            if not (SKILLS / "senior-diseno" / "scripts" / "readme_tarjetas.py").exists():
+                r["bloqueos"].append("el README con tarjetas necesita el paquete de diseño (senior-diseno), que no está instalado: instalarlo o elegir `--readme simple`.")
+            elif not args.estilo:
                 r["bloqueos"].append("el README con tarjetas necesita el estilo elegido (`--estilo <tema.json>`): el diseñador propone tres a partir de la descripción, "
                                      "el usuario elige uno y recién ahí se genera.")
             elif not Path(args.estilo).exists():
                 r["bloqueos"].append(f"no existe el estilo {args.estilo}.")
             else:
-                tarjetas = cargar("senior-docs", "readme_tarjetas.py")
+                tarjetas = cargar("senior-diseno", "readme_tarjetas.py")
                 try:
                     tarjetas.validar_tema(tarjetas.cargar_json(args.estilo))
                     tarjetas.validar(datos_de_portada(nombre, args.descripcion or "descripción", tarjetas))
@@ -348,7 +350,7 @@ def ejecutar(args, raiz, r, secretos, meta):
     # 3. README
     if r["falta_readme"]:
         if args.readme == "tarjetas":
-            tarjetas = cargar("senior-docs", "readme_tarjetas.py")
+            tarjetas = cargar("senior-diseno", "readme_tarjetas.py")
             try:
                 escribir_readme_con_tarjetas(raiz, nombre, args.descripcion, args.estilo, tarjetas)
             except tarjetas.TarjetaError as e:

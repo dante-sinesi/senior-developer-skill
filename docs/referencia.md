@@ -34,17 +34,13 @@ Los chequeos son **heurísticas**: marcan candidatos a revisar, no veredictos.
 
 Esa mecánica es de **Token Diet** ([token-diet-skill](https://github.com/dante-sinesi/token-diet-skill)), la skill de ahorro de tokens: leer un PDF entero cuesta 4 veces más y convertirlo antes ahorra ~74 % (medido con agentes reales). Este paquete **no trae** conversor ni hook de lectura. Con Token Diet 1.0.2 o posterior instalada, un PDF se bloquea una sola vez y con el comando exacto; sin ella, el PDF se lee entero. Al abrir la primera sesión de un proyecto, el paquete avisa una vez cómo instalarla.
 
+## Auditar el consumo
+
+`/auditar-consumo` mide, sin modificar nada, cuánto contexto se paga en cada sesión (descripciones de skills, `CLAUDE.md`, índice de la memoria, `ESTADO.md`), cuánto al activarse una skill y qué conviene recortar primero. Las reglas para cuidar el contexto día a día están en `senior/references/tokens.md`. Con `--repo` mide las skills de la carpeta `skills/` del proyecto en lugar de las instaladas, para ver el efecto de un recorte sin reinstalar.
+
 ## Diseño de interfaces
 
-La skill `senior-diseno` forma parte del paquete: un **método** (briefing, tres alternativas que difieren en estructura, feedback del usuario, evolución) y **reglas objetivas con control automático** que no tocan el aspecto artístico (una familia tipográfica ideal y dos como máximo, etiqueta visible en cada campo, hasta 4 campos visibles, una acción principal, contraste, foco, estados y contenido real). Cada pantalla se diseña según su modo (decidir, hacer una tarea, entender o recorrer una obra). El estilo es libre. Es una sola sesión y un solo flujo: se diseña, se aprueba y se implementa con las reglas de `senior`.
-
-- Los artefactos viven en `docs/diseno/` (tarjeta de estilo, rondas de bosquejos, preferencias, decisiones, variables de diseño, contratos de campos, auditorías).
-- **Tarjeta de estilo (antes de las pantallas):** en proyectos medianos y grandes con interfaz, primero se define la identidad gráfica con tres alternativas de estilo (A, B y C) y feedback del usuario; la elegida queda como **tarjeta viva** (`senior-diseno/scripts/tarjeta_estilo.py`): una página que usa las variables reales del sistema y muestra la paleta, la tipografía y las piezas firma en todos sus estados. Las tres alternativas de estructura se diseñan después con ese estilo. Cada componente nuevo se agrega a la tarjeta en el mismo cambio, y `verificar.py diseno` falla si queda vieja. La tarjeta es un catálogo de estados y no una pantalla, así que la no saturación (cantidad de acciones y de campos) no se le aplica; sí el contraste, las etiquetas, los estados y la tipografía. En un juego o programa que no es una página, la tarjeta es una muestra dentro del propio programa (por ejemplo una escena de Godot con su tema); esa muestra la construye quien implementa y no se verifica por script, solo su tabla de componentes.
-- Los bosquejos no llevan tests; el TDD empieza al implementar la pantalla.
-- Al implementar, `verificar.py diseno` comprueba que el código use las variables de diseño y las etiquetas del contrato de campos.
-- `/auditar-consumo` mide, sin modificar nada, cuánto contexto se paga en cada sesión (descripciones de skills, `CLAUDE.md`, índice de la memoria, `ESTADO.md`), cuánto al activarse una skill y qué conviene recortar primero. Las reglas para cuidar el contexto día a día están en `senior/references/tokens.md`. Con `--repo` mide las skills de la carpeta `skills/` del proyecto en lugar de las instaladas, para ver el efecto de un recorte sin reinstalar.
-- `/auditar-diseno` revisa un proyecto existente sin modificarlo: informe automático más una lectura de diseño (especificidad, diez heurísticas de 0 a 4, carga cognitiva).
-- **Paquete de inicio:** las reglas de diseño se pueden escribir como 10 requisitos no funcionales provisorios (`senior-diseno/scripts/paquete_interfaz.py`), propuestos al adoptar un proyecto con interfaz. El usuario acepta, cambia o descarta cada uno, y la trazabilidad los reconoce como verificados por el chequeo que declaran.
+Es un paquete aparte y opcional (`senior-diseno`, `auditar-diseno`, visor de propuestas y tarjetas SVG del README). Con él instalado, `verificar.py diseno` y `verificar.py tarjetas` incluyen sus comprobaciones y `/inicializar-repositorio` ofrece el README con tarjetas; sin él, `senior` funciona igual y lo dice cuando hace falta.
 
 ## Regla de autoría
 
@@ -107,7 +103,7 @@ Se detectan formatos conocidos (AWS, GitHub, Anthropic, OpenAI, Stripe, Slack, G
 
 1. La identidad de Git del repositorio, solo local, con tu sesión de GitHub.
 2. `git init` en `main` si hace falta, y el `.gitignore` con los archivos de secretos.
-3. El `README.md`, si falta, **simple** (título, descripción y lo que contiene la carpeta) o **con tarjetas SVG**: se pregunta siempre (como orientación, los repositorios privados suelen llevarlo simple y los públicos con tarjetas). Con tarjetas, el diseñador propone **tres estilos distintos** a partir de la descripción, se muestran lado a lado, elegís uno y recién ahí se genera la portada. El paquete no trae ningún estilo: lo único fijo son las reglas objetivas de `senior-docs/scripts/readme_tarjetas.py` (pie de foto en cada tarjeta, sello MEDIDO o ESPERADO en las cifras, contraste, decoración segura) y los SVG salen de JSON en `docs/tarjetas/`, nunca a mano.
+3. El `README.md`, si falta, **simple** (título, descripción y lo que contiene la carpeta) o **con tarjetas SVG** (necesita el paquete de diseño): se pregunta siempre (como orientación, los repositorios privados suelen llevarlo simple y los públicos con tarjetas). Con tarjetas, el diseñador propone **tres estilos distintos** a partir de la descripción, se muestran lado a lado, elegís uno y recién ahí se genera la portada. El paquete no trae ningún estilo: lo único fijo son las reglas objetivas de `senior-docs/scripts/readme_tarjetas.py` (pie de foto en cada tarjeta, sello MEDIDO o ESPERADO en las cifras, contraste, decoración segura) y los SVG salen de JSON en `docs/tarjetas/`, nunca a mano.
 4. El repositorio remoto: lo crea si no existe y lo asocia como `origin`.
 5. **La descripción y los topics, que son obligatorios**: Claude los redacta leyendo el proyecto, y `repo_meta.py` los valida, no pisa una descripción ajena y comprueba el resultado.
 6. Los hooks de Git de autoría y de secretos y un escaneo de claves y datos personales **antes** de commitear.
@@ -194,10 +190,8 @@ El instalador copia las skills a `~/.claude/skills` (sin tocar las demás), regi
 | `senior-git` | Ramas por cambio, Conventional Commits en español neutro, Pull Requests, y la descripción y los Topics del repositorio al día |
 | `senior-seguridad` | Lista de revisión, chequeos automáticos y modo formal con registro de riesgos |
 | `senior-lenguajes` | Perfiles de PHP, JavaScript/TypeScript, CSS, SQL y HTML; alta de lenguajes nuevos |
-| `senior-diseno` | Diseño de interfaces: tarjeta de estilo, método (tres alternativas, feedback, evolución) y reglas objetivas con script; el estilo es libre |
 | `documentar-proyecto` | Comando `/documentar-proyecto`: genera la documentación que falta de un proyecto existente, provisoria y con evidencia |
 | `auditar-consumo` | Comando `/auditar-consumo`: mide cuánto contexto consumen las skills, `CLAUDE.md` y la memoria, y propone qué recortar |
-| `auditar-diseno` | Comando `/auditar-diseno`: revisa la interfaz de un proyecto existente sin modificarlo |
 | `adoptar-proyecto` | Comando `/adoptar-proyecto`: plan, aprobación y creación de la base documental |
 | `cerrar-sesion` | Comando `/cerrar-sesion`: cierre ordenado opcional |
 | `inicializar-repositorio` | Comando `/inicializar-repositorio`: de un enlace o un nombre a un repositorio de GitHub listo y publicado |

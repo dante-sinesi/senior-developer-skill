@@ -75,7 +75,7 @@ Se probaron dos hábitos que parecían faltarle al método: **depurar por causa 
 | Secretos y datos personales (`secretos.py`) | — (no existía) | 7,5 | Activar la protección de subida de GitHub (la activa el usuario), ampliar formatos (Azure, Twilio, Mailgun, JSON de cuentas de servicio) y medir la precisión con falsos positivos de proyectos reales. | 8,5 |
 | `senior-lenguajes` | 6,5 | 6,5 | Perfiles para Python, Go, Rust, C# y Java (hoy solo PHP, JS/TS, CSS, SQL y HTML) y llevar `probar_perfil.py` a `tests/`. | 8 |
 | `senior-relevar` | 8 | 8 | Leer md, txt, csv y json sin depender de `markitdown`, y probarlo con PDF y Word reales de un proyecto del usuario. | 8,5 |
-| `senior-diseno` y tarjeta de estilo | 7 | 7 | Probarlo en dos proyectos reales (una web y un juego), recortar sus 12 referencias y validar con la revisión a ciegas del usuario. Su descripción ya bajó de 1.034 a 773 caracteres. | 8 |
+| Diseño (ahora paquete aparte) | 7 | 7 | Probarlo en dos proyectos reales (una web y un juego), recortar sus 12 referencias y validar con la revisión a ciegas del usuario. Su descripción ya bajó de 1.034 a 773 caracteres. | 8 |
 | `/documentar-proyecto` | 6,5 | 7 | Probarlo en tres proyectos reales (PHP, JS y Python), mapear las importaciones dentro de un mismo módulo y calibrar qué cuenta como «umbral» (hoy entra el tope de un bucle). | 8 |
 | `/adoptar-proyecto` y `/cerrar-sesion` | 7,5 | 7,5 | Pruebas de punta a punta sobre un proyecto vacío y uno existente, con el plan mostrado antes de escribir. | 8,5 |
 | `/revisar-cambio` y `/auditar-*` | 7,5 | 7,5 | Ejemplos de informe reales en `references/` y que `auditar-diseno` quede cubierto por una prueba (usa el script de `senior-diseno`, no tiene uno propio). | 8,5 |
@@ -164,6 +164,7 @@ Se probaron dos hábitos que parecían faltarle al método: **depurar por causa 
 | 2026-11-26 | Barrera de lectura: en proyectos con `docs/ESTADO.md` no se edita código sin haber leído en la sesión el estado y los requisitos (`hook_lectura_previa.py`, por sesión y subagente, se vuelve a pedir tras compactar); comando del usuario `/docs-modo exigir` o `aviso`. | Punto 21, tercera barrera; ninguna nota (probada con entradas simuladas, no en sesión viva). |
 | 2026-11-26 | Barrera de documentación al abrir un Pull Request (`hook_docs_pr.py`), en proyectos medianos o grandes: `feat` o algo nuevo sin documentación se bloquea, el resto pide una justificación escrita; `/permitir-sin-docs` del usuario. | Punto 21; ninguna nota (probada con repositorios de ejemplo y entradas simuladas, no con agentes reales). |
 | 2026-11-26 | Orden de las fuentes: `verificar.py fuentes` (`fuentes.py`) pide que cada caso de uso y secuencia cite un requisito o decisión existente o se marque como inferido del código; falla en lo nuevo y avisa en lo anterior. | Punto 21 pasa a Parcial; ninguna nota. |
+| 2026-11-26 | Recorte: el diseñador (`senior-diseno`, `auditar-diseno`, visor y tarjetas SVG del README) sale a un paquete propio; `senior` lo usa solo si está instalado. Estado previo etiquetado en Git. | La fila del diseño queda como referencia de cuando era parte del paquete; ninguna nota. |
 
 ### Detalle del PR #28 (revisión completa)
 

@@ -107,7 +107,7 @@ Si el proyecto está en GitHub (o lo estará), se completa la descripción y los
 
 ## Interfaces y diseño
 
-Si el cambio toca una interfaz y **todavía no hay una dirección de diseño aprobada**, se diseña primero con `senior-diseno` (método de tres alternativas, feedback y reglas objetivas) y recién después se implementa. Los artefactos de diseño viven en `docs/diseno/`.
+Si el cambio toca una interfaz y **todavía no hay una dirección de diseño aprobada**, se diseña primero (con `senior-diseno`, del paquete de diseño, si está instalado) (método de tres alternativas, feedback y reglas objetivas) y recién después se implementa. Los artefactos de diseño viven en `docs/diseno/`.
 
 - **Los bosquejos no llevan tests**; el TDD empieza al implementar la pantalla.
 - **Al implementar:** usar las variables de diseño sin copiar sus valores, programar cada componente una sola vez y usar las etiquetas de los formularios **exactamente** como figuran en el contrato de campos (`verificar.py diseno` lo comprueba).
@@ -139,7 +139,7 @@ Atajos que se ofrecen solos cuando el trabajo aprieta. Si aparece uno de estos p
 - `senior-memoria`: estado, fichas, pendientes, índice y mapa de conceptos.
 - `senior-relevar`: entender un sistema antes de tocarlo.
 - `revisar-cambio`: revisar un diff, una rama o un Pull Request con un informe de hallazgos numerados (comando `/revisar-cambio`).
-- `senior-diseno`: diseñar interfaces (método y reglas objetivas) antes de implementarlas; `auditar-diseno` revisa una existente.
+- `senior-diseno` y `auditar-diseno` (paquete de diseño aparte, opcional): diseñar interfaces antes de implementarlas y revisar una existente.
 - `senior-tdd`: ciclo rojo-verde-refactor, código heredado, interfaz, base de prueba.
 - `senior-refactor`: duplicación y limpieza segura.
 - `senior-docs`: requisitos, diagramas legibles, decisiones, trazabilidad.

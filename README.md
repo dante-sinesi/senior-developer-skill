@@ -88,8 +88,6 @@ Listo: `senior` se activa solo cuando pides un cambio de código. Para empezar u
 | `senior-relevar` | Entiende un sistema ajeno antes de tocarlo. |
 | `documentar-proyecto` | Reconstruye la documentación que le falta a un proyecto. |
 | `adoptar-proyecto` | Prepara un proyecto, nuevo o existente, para trabajar así. |
-| `senior-diseno` | Diseña pantallas y las muestra en escritorio y celular. |
-| `auditar-diseno` | Revisa el diseño de una interfaz que ya existe. |
 | `revisar-cambio` | Revisa un cambio antes de subirlo. |
 | `cerrar-sesion` | Cierra la jornada y deja todo anotado. |
 | `inicializar-repositorio` | Deja un proyecto listo y publicado en GitHub. |
@@ -98,10 +96,12 @@ Listo: `senior` se activa solo cuando pides un cambio de código. Para empezar u
 | `permitir`, `permitir-fusion`, `permitir-sin-docs`, `quitar-permiso`, `hooks-modo`, `hooks-hermanos`, `docs-modo`, `permisos` | Atajos de los comandos del chat que configuran los guardias: aparecen al escribir `/`. |
 | `auditar-consumo` | Mide cuánto espacio gastan las skills. |
 
+El diseño de interfaces es un paquete aparte y opcional: si está instalado, `senior` lo usa para diseñar antes de implementar.
+
 ## Más información
 
 - [Guía del paquete](docs/guia-del-paquete.md): qué hace cada pieza y cómo.
-- [Referencia de funcionamiento](docs/referencia.md): el detalle técnico de guardias, secretos, diseño y más.
+- [Referencia de funcionamiento](docs/referencia.md): el detalle técnico de guardias, secretos y más.
 - [Revisión crítica](docs/revision-completa.md): qué está medido, qué falta y cómo se mejora.
 
 ## Para quien colabora
