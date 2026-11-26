@@ -22,7 +22,7 @@ Las plantillas están en `plantillas/`. Si el proyecto no tiene `docs/`, `senior
 
 ## Protocolo de inicio de sesión
 
-1. Leer `docs/ESTADO.md`. Si está instalado el hook de apertura, ya llegó como contexto.
+1. Leer `docs/ESTADO.md`. Con el recordatorio registrado, ya llegó como contexto.
 2. Si hay una ficha "en curso", leer solo sus pasos abiertos.
 3. Para ubicar un concepto, **no leer documentos completos**: consultar el mapa. Cada resultado indica los tokens aproximados de abrirlo: lo chico se lee entero, lo grande por partes.
    ```
@@ -66,9 +66,9 @@ Si se nota una duplicación, un bug o una mejora mientras se trabaja en otra cos
 
 Regenerar el índice con `indexar` después de tocar documentación; `verificar.py docs` solo lo revisa y nunca modifica archivos. `docs/INDEX.md` se versiona junto con el cambio (su salida no tiene fechas, así que no ensucia el historial); `docs/.grafo.json` es regenerable y `iniciar_docs.py` lo deja ignorado en `docs/.gitignore`.
 
-## Hook de apertura (opcional, con aprobación)
+## Recordatorio al abrir y al compactar
 
-El script `scripts/cargar_estado.py` imprime un resumen del estado. Como hook `SessionStart` de Claude Code hace que cada sesión arranque sabiendo dónde quedó el trabajo. Es **el único hook recomendado**. Proponerlo al usuario y, si acepta, configurarlo con la skill `update-config`; nunca instalarlo sin su aprobación. Si no hay `docs/ESTADO.md`, el script no imprime nada.
+`scripts/cargar_estado.py --hook` es un hook `SessionStart` que registra el instalador (`guardia_autoria.py asegurar`): al abrir, retomar, limpiar y compactar una sesión entran como contexto la escala, el estado (recortado si es largo, hasta unas 600 palabras en total), los documentos que hay y cuántos commits de código pasaron desde el último cambio en la documentación. Fuera de un proyecto con `docs/ESTADO.md` no hace nada. Busca el proyecto desde la carpeta de la sesión hacia arriba: una sesión abierta por encima del proyecto no lo recibe.
 
 ## Cierre ordenado
 

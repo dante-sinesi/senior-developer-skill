@@ -9,8 +9,8 @@ Qué hace:
   1. Comprueba Python 3.10 o superior, Git, el CLI `gh` (opcional, para GitHub) y `pip`.
   2. Copia las skills de este repositorio a ~/.claude/skills, reemplazando las del paquete (no toca ninguna otra
      skill) y pasando los archivos de texto a fin de línea de Unix.
-  3. Registra en ~/.claude/settings.json los cinco hooks globales de Claude Code (autoría, lectura de documentos
-     externos, escritura fuera del proyecto, archivos protegidos y permisos desde el chat), conservando los ajustes que ya haya y con una copia de seguridad.
+  3. Registra en ~/.claude/settings.json los hooks globales de Claude Code (un despachador de controles, los permisos
+     desde el chat y el recordatorio del estado al abrir y compactar), conservando los ajustes que ya haya y con una copia de seguridad.
   4. Comprueba si Token Diet (skill de ahorro de tokens, recomendada, no obligatoria) está instalada y lo informa.
   5. Imprime un informe con lo que quedó listo y los pasos que faltan (por ejemplo `gh auth login` y la identidad
      de Git de cada repositorio).

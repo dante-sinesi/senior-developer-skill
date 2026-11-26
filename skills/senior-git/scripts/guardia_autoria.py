@@ -254,6 +254,9 @@ HOOKS_CLAUDE = (  # hooks globales de Claude Code que esta guardia mantiene acti
      "nombre": "de control de acciones (autoría, documentos externos, escritura fuera del proyecto, archivos protegidos y secretos)"},
     {"script": "hook_permisos_chat.py", "skill": "senior", "evento": "UserPromptSubmit", "matcher": None,
      "nombre": "de permisos desde el chat"},
+    # al abrir, retomar, limpiar y compactar; fuera de un proyecto con docs/ESTADO.md no hace nada
+    {"script": "cargar_estado.py", "skill": "senior-memoria", "evento": "SessionStart", "matcher": None, "args": "--hook",
+     "nombre": "de recordatorio del estado del proyecto"},
 )
 # hooks sueltos de versiones anteriores: los reemplaza el despachador y se sacan para que no corran dos veces
 HOOKS_SUELTOS = ("hook_autoria_claude.py", "hook_lectura_externa.py", "hook_fuera_del_proyecto.py", "hook_archivos_protegidos.py", "hook_secretos_claude.py")
@@ -354,7 +357,8 @@ def asegurar_claude(solo_verificar):
                     entrada = h
         if entrada is not None:
             m = re.search(r'"([^"]*' + re.escape(hook["script"]) + r')"', entrada["command"])
-            if m and Path(m.group(1)).exists():
+            # al día solo si apunta a donde el script está hoy: una skill que cambió de lugar deja el archivo viejo en el disco
+            if m and Path(m.group(1)).exists() and (not script.exists() or os.path.normcase(os.path.normpath(m.group(1))) == os.path.normcase(os.path.normpath(str(script)))):
                 lineas.append(f"hook global de Claude Code {hook['nombre']} activo")
                 continue
         if solo_verificar:
@@ -367,7 +371,7 @@ def asegurar_claude(solo_verificar):
                           ("no hay un Python que funcione" if not py else f"no existe {script}"))
             falta = True
             continue
-        comando = f'{py} "{script.as_posix()}"'
+        comando = f'{py} "{script.as_posix()}"' + (f" {hook['args']}" if hook.get("args") else "")
         if entrada is not None:
             entrada["command"] = comando
         else:

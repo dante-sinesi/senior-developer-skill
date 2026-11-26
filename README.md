@@ -12,7 +12,7 @@ Este paquete le enseña a trabajar con más cuidado: entender antes de tocar, pr
 
 - **Código con pruebas.** Cada cambio empieza por una prueba que sale de la regla del negocio.
 - **Cambios chicos y ordenados.** Una rama por cambio y un Pull Request claro que apruebas tú.
-- **Memoria entre sesiones.** El estado del proyecto queda escrito en el propio repositorio.
+- **Memoria entre sesiones.** El estado del proyecto queda escrito en el propio repositorio y Claude lo vuelve a recibir al abrir o compactar una conversación.
 - **Documentación al día.** El README y los documentos se actualizan con cada cambio.
 - **Seguridad desde el principio.** Ninguna clave llega a GitHub y Claude nunca figura como autor.
 
