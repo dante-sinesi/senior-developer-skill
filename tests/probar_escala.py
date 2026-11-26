@@ -56,7 +56,7 @@ escribir("app.py", "x = 1\n")
 chequear("sin docs/ no avisa nada", escala.evaluar(P) == ([], True))
 
 # 3. con ESTADO.md sin escala: pide declararla
-plantilla = (RAIZ / "skills" / "senior-memoria" / "plantillas" / "ESTADO.md").read_text(encoding="utf-8")
+plantilla = (RAIZ / "skills" / "senior-docs" / "plantillas" / "ESTADO.md").read_text(encoding="utf-8")
 chequear("la plantilla de ESTADO trae la línea de escala", "**Escala del proyecto:**" in plantilla)
 escribir("docs/ESTADO.md", "# Estado del proyecto\n\n**Última actualización:** 2026-01-01\n\n## Dónde estamos\n")
 lin, ok = escala.evaluar(P)

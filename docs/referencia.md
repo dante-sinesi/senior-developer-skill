@@ -53,7 +53,7 @@ En todo lo que se sube a GitHub figura **únicamente el usuario**: Claude no apa
   - **Hook global de escritura fuera del proyecto** (`senior/scripts/hook_fuera_del_proyecto.py`): lo frena sin interrumpir (o pregunta al usuario, según el modo) cuando Claude intenta crear algo fuera de la raíz del proyecto. Lo de paso va en `.temporal/`, que `temporal.py` crea y git ignora.
   - **Lectura previa de la documentación** (`senior/scripts/hook_lectura_previa.py`, dentro del despachador): en un proyecto con `docs/ESTADO.md`, no se edita código sin haber leído con Read el estado y, si los hay, el índice, un requisito o un caso de uso; se vuelve a pedir tras compactar o limpiar. `/docs-modo aviso` (del usuario) lo deja en advertencia. No ve ediciones hechas con comandos de consola.
   - **Documentación en el Pull Request** (`senior-git/scripts/hook_docs_pr.py`): en proyectos de escala mediana o grande, `gh pr create` no pasa si la rama cambia código sin tocar requisitos, casos de uso, secuencias, diagramas ni decisiones. Los tipos que no son `feat` pasan con la línea «Documentación: sin cambios porque <motivo>», salvo que agreguen algo nuevo. `/permitir-sin-docs` autoriza uno.
-  - **Hook global de recordatorio** (`senior-memoria/scripts/cargar_estado.py`, al abrir, retomar, limpiar y compactar): en un proyecto con `docs/ESTADO.md` trae como contexto la escala, el estado, los documentos que hay y cuántos commits de código pasaron sin tocar la documentación. En los demás no hace nada.
+  - **Hook global de recordatorio** (`senior-docs/scripts/cargar_estado.py`, al abrir, retomar, limpiar y compactar): en un proyecto con `docs/ESTADO.md` trae como contexto la escala, el estado, los documentos que hay y cuántos commits de código pasaron sin tocar la documentación. En los demás no hace nada.
   - **Hook global de archivos protegidos** (`senior/scripts/hook_archivos_protegidos.py`): frena sin interrumpir (o pregunta al usuario, según el modo) antes de que Claude edite secretos (`.env`, claves y certificados), el interior de `.git/` o los archivos de bloqueo de dependencias (`package-lock.json`, `composer.lock`, `poetry.lock`...), que se generan con el gestor de paquetes. Nunca bloquea del todo.
 - Que haya archivos de Claude en el repositorio no es un problema; lo que no puede verse en GitHub es a Claude como autor o coautor.
 - Los commits usan la identidad del usuario, configurada solo de forma local en el repositorio: la de la sesión de GitHub si ya hay una y, si no, la que el usuario indique cuando Claude le pregunta en nombre de quién se hace el trabajo. La skill no trae ninguna identidad fija.
@@ -181,12 +181,11 @@ El instalador copia las skills a `~/.claude/skills` (sin tocar las demás), regi
 | Skill | Para qué sirve |
 |---|---|
 | `senior` | Puerta de entrada: principios, flujo de trabajo, puntos de control y el verificador (`verificar.py`) |
-| `senior-memoria` | Estado del proyecto, fichas de cambio, pendientes, índice y mapa de conceptos |
 | `senior-relevar` | Entender un sistema ajeno o heredado antes de modificarlo; ingesta opcional de documentos externos (PDF, Word, PowerPoint, Excel) a Markdown |
 | `senior-tdd` | Ciclo rojo-verde-refactor, código heredado, pruebas de interfaz y guardia de base de prueba |
 | `senior-refactor` | Detección de duplicación y refactor seguro |
 | `revisar-cambio` | Comando `/revisar-cambio`: revisa un diff, una rama o un Pull Request y entrega hallazgos numerados, cada uno con su caso concreto, su arreglo y qué pasa si se omite |
-| `senior-docs` | Requisitos (elicitación por lotes en un Markdown que el usuario responde, y revisión automática de su redacción), diagramas legibles, decisiones de arquitectura y README |
+| `senior-docs` | Requisitos (elicitación por lotes en un Markdown que el usuario responde, y revisión automática de su redacción), diagramas legibles, decisiones de arquitectura y README; y la memoria: estado, fichas de cambio, pendientes, índice y mapa de conceptos |
 | `senior-git` | Ramas por cambio, Conventional Commits en español neutro, Pull Requests, y la descripción y los Topics del repositorio al día |
 | `senior-seguridad` | Lista de revisión, chequeos automáticos y modo formal con registro de riesgos |
 | `senior-lenguajes` | Perfiles de PHP, JavaScript/TypeScript, CSS, SQL y HTML; alta de lenguajes nuevos |

@@ -4,7 +4,7 @@ Qué abarca el paquete y cómo ataca cada una de sus habilidades. Es una guía d
 
 ## 1. Qué es y qué problema ataca
 
-`senior` es un paquete de 25 skills (nueve son solo atajos de comandos del chat) para Claude Code que hace que el trabajo de programar se parezca al de una persona senior: entiende antes de tocar, cambia lo mínimo, prueba antes de construir, deja todo documentado y no sorprende a nadie. No es una herramienta que programa por sí sola: es un **método**, más **guardias automáticos** que impiden lo que no debe pasar aunque nadie se acuerde de la regla.
+`senior` es un paquete de 24 skills (nueve son solo atajos de comandos del chat) para Claude Code que hace que el trabajo de programar se parezca al de una persona senior: entiende antes de tocar, cambia lo mínimo, prueba antes de construir, deja todo documentado y no sorprende a nadie. No es una herramienta que programa por sí sola: es un **método**, más **guardias automáticos** que impiden lo que no debe pasar aunque nadie se acuerde de la regla.
 
 Los problemas concretos que ataca, y con qué:
 
@@ -12,7 +12,7 @@ Los problemas concretos que ataca, y con qué:
 |---|---|---|
 | Tests que certifican los errores del código | El test sale de la regla de negocio, nunca de lo que el código devuelve hoy | `senior-tdd` |
 | Cambios que se desbordan («ya que estoy…») | Cambio mínimo, refactor acordado y en paso aparte | `senior`, `senior-refactor` |
-| Contexto que se pierde entre sesiones | Estado, fichas y pendientes dentro del repositorio | `senior-memoria` |
+| Contexto que se pierde entre sesiones | Estado, fichas y pendientes dentro del repositorio | `senior-docs` |
 | Documentación vieja o que no se entiende | Documentación viva, con IDs, diagramas con tope de tamaño y chequeos por script | `senior-docs` |
 | Claves o datos personales en GitHub | Cuatro capas de barrera (`.gitignore`, hook de Claude, hooks de git, protección de GitHub) | `senior` (secretos) |
 | Claude figurando como autor en GitHub | Hooks que lo bloquean antes de que exista el commit | `senior-git` |
@@ -111,7 +111,7 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
 - **Herramientas:** `iniciar_docs.py`, `consultas.py`, `revisar_requisitos.py`, `readme_diagramas.py` y, desde `senior`, `diagramas.py` y `texto.py`.
 - **No hace:** `revisar_requisitos.py` controla la forma, no si el requisito es correcto ni si hay contradicciones.
 
-### 3.6 `senior-memoria`: que una sesión nueva continúe sin repetir nada
+**Memoria: que una sesión nueva continúe sin repetir nada**
 
 - **Problema:** las conversaciones se pierden; el repositorio no.
 - **Cómo lo ataca**
@@ -124,14 +124,14 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
 - **Herramientas:** `cargar_estado.py` e `indexar_docs.py` (`indexar`, `consultar`, `vecinos`).
 - **No hace:** `verificar.py docs` solo revisa y nunca modifica archivos.
 
-### 3.7 `senior-relevar`: entender un sistema antes de tocarlo
+### 3.6 `senior-relevar`: entender un sistema antes de tocarlo
 
 - **Problema:** cambiar lo que no se entiende es la causa más común de roturas.
 - **Cómo lo ataca:** de **lo barato a lo caro**. (1) Memoria previa; (2) inventario automático sin tokens (`relevar.py`: lenguajes, manifiestos, tests, integración continua, documentación, historial, archivos grandes y muy modificados, marcas TODO); (3) mapa de conceptos; (4) lectura dirigida solo de lo central, anotando **hipótesis, no verdades**; (5) convenciones del proyecto (se respetan por sobre cualquier preferencia); (6) reglas de negocio por confirmar con el usuario; (7) riesgos; (8) plan de tests de caracterización; (9) entregable `docs/relevamiento.md`.
 - **PDF y documentos externos:** los resuelve Token Diet si está instalada; este paquete no trae conversor.
 - **No hace:** no propone rediseños (describe, no corrige) y no relee todo el código «para tener el panorama».
 
-### 3.8 `senior-seguridad`: seguridad como lente permanente
+### 3.7 `senior-seguridad`: seguridad como lente permanente
 
 - **Problema:** la seguridad dejada para el final.
 - **Cómo lo ataca**
@@ -142,14 +142,14 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
 - **Herramientas:** `seguridad.py` (vía `verificar.py seguridad`), perfiles de `senior-lenguajes`, plantilla de riesgos.
 - **No hace:** las alertas son heurísticas por patrón: se leen como «revisar». Un falso positivo se descarta con `senior-ignore: ID motivo`.
 
-### 3.9 `senior-lenguajes`: perfiles de lenguaje
+### 3.8 `senior-lenguajes`: perfiles de lenguaje
 
 - **Problema:** soportar un lenguaje nuevo no debería exigir tocar código.
 - **Cómo lo ataca:** cada lenguaje es un **archivo de datos** (`perfiles/<lenguaje>.json`) con extensiones, símbolos (expresiones regulares), herramienta de tests, convenciones estándar de la comunidad (nunca estilo personal) y alertas de seguridad con su control ISO. Perfiles incluidos: PHP, JavaScript (con TypeScript), CSS, SQL y HTML.
 - **Alta de un lenguaje:** investigar en la documentación oficial, redactar el borrador, probarlo con `probar_perfil.py`, mostrarlo al usuario y **solo con su aprobación** guardarlo (un perfil incorrecto produciría falsas alarmas o ceguera en todos los proyectos).
 - **No hace:** nunca guarda un perfil sin aprobación.
 
-### 3.10 `revisar-cambio` (`/revisar-cambio`): revisión rigurosa, solo informa
+### 3.9 `revisar-cambio` (`/revisar-cambio`): revisión rigurosa, solo informa
 
 - **Problema:** revisiones de gusto, sin casos y que se pierden.
 - **Cómo lo ataca**
@@ -160,21 +160,21 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
 - **Herramientas:** `contexto.py`, `impacto.py`, `guardia_listones.py`.
 - **No hace:** no cambia código; commits y PR siguen necesitando aprobación.
 
-### 3.11 `adoptar-proyecto` (`/adoptar-proyecto`): arranque ordenado
+### 3.10 `adoptar-proyecto` (`/adoptar-proyecto`): arranque ordenado
 
 - **Problema:** imponer toda la metodología de golpe.
 - **Cómo lo ataca:** (1) plan en solo lectura (`plan_adopcion.py`: si el proyecto es nuevo o existente y qué le falta); (2) el usuario lo aprueba o quita acciones; (3) con aprobación, crea `docs/`, el README desde la plantilla y, si ya existe, el relevamiento; completa el `.gitignore` de secretos y activa los hooks; (4) pregunta **una sola vez** la escala del proyecto (pequeño, mediano o grande); (5) completa a mano lo que el script no puede inferir; (6) propone aparte el ancla en `CLAUDE.md`, la guardia de autoría y la plantilla de PR.
 - **No hace:** nunca pisa archivos existentes y nada se escribe sin aprobación.
 - **Costo orientativo:** un proyecto nuevo, unos 2.000 a 4.000 tokens; uno existente, de 10.000 a 50.000.
 
-### 3.12 `inicializar-repositorio` (`/inicializar-repositorio`): de una carpeta a GitHub
+### 3.11 `inicializar-repositorio` (`/inicializar-repositorio`): de una carpeta a GitHub
 
 - **Problema:** armar a mano identidad, `.gitignore`, hooks, repositorio remoto, descripción, topics y primer push.
 - **Cómo lo ataca:** un script hace lo mecánico y el modelo solo redacta la descripción y los topics. Se le da un enlace, `dueño/nombre` o un nombre. **Plan sin escribir** que muestra qué existe y qué **bloquea** (falta la visibilidad, la descripción o los topics; claves a la vista; un `origin` distinto; un remoto con contenido). Con `--aplicar`: identidad local, `git init` en `main`, `.gitignore`, hooks, repositorio remoto, descripción y topics, README (**simple o con tarjetas SVG**, que se pregunta siempre), protección de subida de GitHub en repositorios públicos, commits y push.
 - **README con tarjetas:** el diseñador crea **tres estilos** distintos a partir de la descripción, se muestran en el visor de propuestas (en el ancho de escritorio y el de celular del README, lado a lado) y el usuario elige.
 - **No hace:** nunca fuerza un push, no mezcla historias distintas, no pisa una descripción ajena ni sube una carpeta con claves a la vista. No cubre Pull Requests ni cambiar la visibilidad.
 
-### 3.13 `documentar-proyecto` (`/documentar-proyecto`): reconstruir la documentación desde el código
+### 3.12 `documentar-proyecto` (`/documentar-proyecto`): reconstruir la documentación desde el código
 
 - **Problema:** proyectos existentes sin documentación.
 - **Cómo lo ataca:** requiere el proyecto adoptado. Siete etapas: cinco **por script, sin tokens** (`estructura`: módulos, clases y entidad-relación; `interfaces`: rutas HTTP y variables de entorno; `dominio`: una entidad por tabla; `adr`: decisiones visibles en el stack; `reglas`: consulta por lotes con reglas de negocio candidatas) y dos **con el modelo, por módulo y por flujo** (`requisitos` funcionales y `secuencias`), siempre con aprobación y costo declarado.
@@ -182,19 +182,19 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
 - **Heurísticas medidas:** las reglas candidatas tienen precisión de 95 % y recall de 87 % en un corpus de reserva etiquetado; cada candidata muestra su confianza (alta, media o baja).
 - **No hace:** no ejecuta nada ni ve código dinámico o rutas generadas; dice lo que no cubre.
 
-### 3.14 `cerrar-sesion` (`/cerrar-sesion`): control de calidad final
+### 3.13 `cerrar-sesion` (`/cerrar-sesion`): control de calidad final
 
 - **Problema:** irse sin dejar el estado ni los pendientes al día.
 - **Cómo lo ataca:** corre `verificar.py`; actualiza `ESTADO.md` (dónde quedó, próximo paso, bloqueos); confirma el README; actualiza la portada de GitHub si el proyecto cambió; sube la escala si el proyecto creció; avisa de reglas que fallaron dos veces y de bloqueos de hooks que reinciden; menciona pendientes; regenera el índice; **propone** el commit (no lo hace); y cierra con un resumen de cinco líneas.
 - **No hace:** es opcional (el estado ya se guarda en cada hito) y no commitea ni empuja sin aprobación.
 
-### 3.15 `auditar-consumo` (`/auditar-consumo`)
+### 3.14 `auditar-consumo` (`/auditar-consumo`)
 
 - **Problema:** sesiones que se llenan sin saber por qué.
 - **Cómo lo ataca:** `consumo.py` mide, sin gastar tokens del modelo, lo que se paga en cada sesión (descripciones de skills, `CLAUDE.md`, índice de la memoria), lo que se paga al activar una skill y lo que se lee solo si hace falta; propone recortes ordenados por rendimiento. Con `--repo` mide las skills del repositorio en lugar de las instaladas, para ver un recorte antes de reinstalar. Si Token Diet está instalada, su auditoría es la de referencia.
 - **No hace:** solo mide y propone; los números son estimaciones (caracteres / 4, margen de ±30 %).
 
-### 3.16 `trabajo-autonomo` (`/trabajo-autonomo`): sesiones largas sin supervisión
+### 3.15 `trabajo-autonomo` (`/trabajo-autonomo`): sesiones largas sin supervisión
 
 - **Problema:** dejar una tarea trabajando horas sin que se pierda lo hecho, se mezcle con el trabajo del usuario o se frene esperando una respuesta que nadie da.
 - **Cómo lo ataca**

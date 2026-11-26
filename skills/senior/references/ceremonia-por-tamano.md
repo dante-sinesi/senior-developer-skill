@@ -22,7 +22,7 @@ Esta tabla mide **un cambio**. La escala (`escala.py niveles`: pequeño, mediano
 
 ## Ficha de cambio (nivel mediano o grande)
 
-Vive en `docs/cambios/AAAA-MM-DD-nombre.md`. Plantilla en `senior-memoria/plantillas/ficha-cambio.md`. Lo esencial:
+Vive en `docs/cambios/AAAA-MM-DD-nombre.md`. Plantilla en `senior-docs/plantillas/ficha-cambio.md`. Lo esencial:
 
 - Qué y por qué.
 - Requisitos que toca (con sus IDs).

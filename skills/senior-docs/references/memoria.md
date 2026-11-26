@@ -1,8 +1,3 @@
----
-name: senior-memoria
-description: Memoria persistente del proyecto dentro del repositorio (docs/): estado, fichas de cambio, bandeja de pendientes, deuda técnica, y un índice con mapa de conceptos para recuperar información sin leer todo. Usar al abrir una sesión o retomar un proyecto, al terminar un hito, al notar algo fuera de alcance, al registrar una decisión, o cuando haya que ubicar un requisito, concepto o archivo en un proyecto con documentación. También para proponer el hook de apertura automática. Úsala aunque el usuario no hable de "memoria", cada vez que el trabajo pueda cortarse o continuarse en otra sesión.
----
-
 # Memoria del proyecto
 
 Las conversaciones se pierden; el repositorio no. Todo lo que una sesión futura necesite para continuar vive en `docs/`. El diseño busca tres cosas: no perder el contexto entre sesiones, no perder lo que se nota de pasada, y no perder lo que quedó a medias.
@@ -15,10 +10,10 @@ Las conversaciones se pierden; el repositorio no. Todo lo que una sesión futura
 | Ficha de cambio | `docs/cambios/AAAA-MM-DD-nombre.md` | Un cambio mediano o grande con alcance y pasos con casillas. |
 | Bandeja de pendientes | `docs/pendientes.md` | Lo notado fuera de alcance. |
 | Deuda técnica | `docs/deuda-tecnica.md` | Decisiones pospuestas, siempre con `motivo:`. |
-| Decisiones | `docs/decisiones/ADR-000.md` | El porqué de decisiones importantes (ver `senior-docs`). |
+| Decisiones | `docs/decisiones/ADR-000.md` | El porqué de decisiones importantes (ver `SKILL.md`). |
 | Índice y mapa | `docs/INDEX.md`, `docs/.grafo.json` | Navegar sin leer todo. Se regeneran con el script. |
 
-Las plantillas están en `plantillas/`. Si el proyecto no tiene `docs/`, `senior-docs` la crea con `scripts/iniciar_docs.py` (nunca pisa archivos existentes).
+Las plantillas están en `../plantillas/`. Si el proyecto no tiene `docs/`, se crea con `scripts/iniciar_docs.py` (nunca pisa archivos existentes).
 
 ## Protocolo de inicio de sesión
 

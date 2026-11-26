@@ -16,7 +16,7 @@ Chequeos (sin argumento corre "todo"):
               tiene lo que exige su nivel (ver escala.py)
   evidencia   las citas archivo:línea de la documentación inferida del código existen (ver documentar-proyecto)
   docs        marca requisitos sin test e IDs sin documento (solo lectura: el
-              índice se regenera aparte con senior-memoria/scripts/indexar_docs.py indexar)
+              índice se regenera aparte con senior-docs/scripts/indexar_docs.py indexar)
   fuentes     cada caso de uso y secuencia cita un requisito o decisión que existe, o dice que salió del código; lo
               ya existente solo se avisa (ver fuentes.py)
   requisitos  calidad del texto de docs/requisitos/: encabezado, IDs, enlaces, ejemplos verificables,
@@ -183,7 +183,7 @@ def chequeo_estado(raiz, args):
     salida, ok = [], True
     estado = raiz / "docs" / "ESTADO.md"
     if not estado.exists():
-        return ["Estado: falta docs/ESTADO.md (crearlo con senior-memoria)."], False
+        return ["Estado: falta docs/ESTADO.md (crearlo con senior-docs)."], False
     if es_repo(raiz):
         ultimo, _ = git(raiz, "log", "-1", "--format=%ct")
         if ultimo.isdigit() and estado.stat().st_mtime + 60 < int(ultimo):
@@ -210,9 +210,9 @@ def chequeo_docs(raiz, args):
     carpeta = raiz / "docs"
     if not carpeta.is_dir():
         return ["Docs: no existe la carpeta docs/ (se omite)."], True
-    indexador = Path(__file__).resolve().parents[2] / "senior-memoria" / "scripts" / "indexar_docs.py"
+    indexador = Path(__file__).resolve().parents[2] / "senior-docs" / "scripts" / "indexar_docs.py"
     if not indexador.exists():
-        return ["Docs: no se encontró senior-memoria/scripts/indexar_docs.py."], False
+        return ["Docs: no se encontró senior-docs/scripts/indexar_docs.py."], False
     # Solo lectura: se calcula el índice en memoria; verificar nunca modifica el árbol de trabajo.
     import importlib.util
     espec = importlib.util.spec_from_file_location("indexar_docs", indexador)

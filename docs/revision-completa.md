@@ -69,7 +69,7 @@ Se probaron dos hábitos que parecían faltarle al método: **depurar por causa 
 | `senior-tdd` | 7,5 | 7,5 | La guardia de base de datos hoy mira pocos patrones: sumar detección por `.env`, Django, Laravel y Prisma, versionar su prueba y agregar un ejemplo de rojo derivado de una regla. | 8,5 |
 | `senior-refactor` | 7 | 7 | Detectar duplicación por estructura (`ast`, nombres normalizados) en lugar de similitud de texto, con umbral configurable y una propuesta de extracción. | 8 |
 | `senior-docs` y diagramas | 8 | 8 | Soportar subgrafos en el estimador de ancho, comprobar el render real con Mermaid en una verificación opcional y avisar de enlaces rotos entre documentos. | 8,5 |
-| `senior-memoria` | 7,5 | 7,5 | Que `verificar.py estado` detecte un `ESTADO.md` más viejo que los últimos commits y que las fichas viejas se archiven con propuesta. | 8,5 |
+| Memoria (ahora dentro de `senior-docs`) | 7,5 | 7,5 | Que `verificar.py estado` detecte un `ESTADO.md` más viejo que los últimos commits y que las fichas viejas se archiven con propuesta. | 8,5 |
 | `senior-git` (autoría) | 8,5 | 9 | Falta una prueba de punta a punta (rama, commit, PR) y que `asegurar` avise cuando las skills instaladas están desactualizadas (punto ciego 11). | 9 |
 | `senior-seguridad` | 7 | 7,5 | Cuando haya herramientas instaladas (`bandit`, `semgrep`), usarlas además de las expresiones regulares, y sumar una plantilla de registro de riesgos ISO 27005. | 8,5 |
 | Secretos y datos personales (`secretos.py`) | — (no existía) | 7,5 | Activar la protección de subida de GitHub (la activa el usuario), ampliar formatos (Azure, Twilio, Mailgun, JSON de cuentas de servicio) y medir la precisión con falsos positivos de proyectos reales. | 8,5 |
@@ -165,6 +165,7 @@ Se probaron dos hábitos que parecían faltarle al método: **depurar por causa 
 | 2026-11-26 | Barrera de documentación al abrir un Pull Request (`hook_docs_pr.py`), en proyectos medianos o grandes: `feat` o algo nuevo sin documentación se bloquea, el resto pide una justificación escrita; `/permitir-sin-docs` del usuario. | Punto 21; ninguna nota (probada con repositorios de ejemplo y entradas simuladas, no con agentes reales). |
 | 2026-11-26 | Orden de las fuentes: `verificar.py fuentes` (`fuentes.py`) pide que cada caso de uso y secuencia cite un requisito o decisión existente o se marque como inferido del código; falla en lo nuevo y avisa en lo anterior. | Punto 21 pasa a Parcial; ninguna nota. |
 | 2026-11-26 | Recorte: el diseñador (`senior-diseno`, `auditar-diseno`, visor y tarjetas SVG del README) sale a un paquete propio; `senior` lo usa solo si está instalado. Estado previo etiquetado en Git. | La fila del diseño queda como referencia de cuando era parte del paquete; ninguna nota. |
+| 2026-11-26 | `senior-memoria` se une a `senior-docs` (scripts, plantillas y una referencia `memoria.md`): una sola skill para documentar y recordar. | Ninguna nota. |
 
 ### Detalle del PR #28 (revisión completa)
 
