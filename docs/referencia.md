@@ -171,10 +171,12 @@ Son pocas corridas y parte de la corrección usa los propios scripts del paquete
 ```bash
 git clone https://github.com/dante-sinesi/senior-developer-skill.git
 cd senior-developer-skill
-python instalar.py --instalar-dependencias
+python instalar.py
 ```
 
-El instalador copia las skills a `~/.claude/skills` (sin tocar las demás), registra los dos hooks globales de Claude Code (un despachador, `hook_senior.py`, que corre en un solo proceso los controles de autoría, escritura fuera del proyecto, archivos protegidos y secretos, y el de permisos desde el chat) y termina con un informe de qué quedó listo y qué falta (`--verificar` solo informa). Después abrí una sesión nueva de Claude Code para que se apliquen los hooks. En cada proyecto, la skill resuelve en nombre de quién se hacen los commits: usa la identidad local o la sesión de `gh` y, si no hay ninguna, te pregunta tu usuario de GitHub y tu correo. Instalación manual: copiar las carpetas de `skills/` a `~/.claude/skills`, todas juntas.
+El instalador copia las skills a `~/.claude/skills` (sin tocar las demás), registra los tres hooks globales de Claude Code (el despachador `hook_senior.py`, que corre en un solo proceso los controles previos a cada acción, el de permisos desde el chat y el recordatorio al abrir y compactar) y termina con un informe de qué quedó listo y qué falta (`--verificar` solo informa). Después abrí una sesión nueva de Claude Code para que se apliquen los hooks. En cada proyecto, la skill resuelve en nombre de quién se hacen los commits: usa la identidad local o la sesión de `gh` y, si no hay ninguna, te pregunta tu usuario de GitHub y tu correo. Instalación manual: copiar las carpetas de `skills/` a `~/.claude/skills`, todas juntas.
+
+**Al actualizar,** el instalador lista y saca las skills que instaló antes y que el paquete ya no trae (según su registro y una lista cerrada de nombres retirados). No las borra: quedan en `~/.claude/senior-retiradas`. No toca las del usuario, las que registre otro paquete ni el diseñador, que ahora se instala desde su propio paquete.
 
 ## Las piezas del paquete, una por una
 

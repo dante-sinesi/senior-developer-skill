@@ -71,6 +71,8 @@ También hay una barrera para la documentación: en un proyecto que la tiene, Cl
 
 3. Abre una sesión nueva de Claude Code.
 
+Para actualizar, repite el instalador: saca las piezas que el paquete ya no trae, sin borrarlas.
+
 Listo: `senior` se activa solo cuando pides un cambio de código. Para empezar un proyecto, escribe `/adoptar-proyecto`. Opcional: [Token Diet](https://github.com/dante-sinesi/token-diet-skill) ayuda a leer PDF y archivos largos sin gastar de más.
 
 ## Las piezas
