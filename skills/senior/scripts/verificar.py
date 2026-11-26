@@ -17,6 +17,8 @@ Chequeos (sin argumento corre "todo"):
   evidencia   las citas archivo:línea de la documentación inferida del código existen (ver documentar-proyecto)
   docs        marca requisitos sin test e IDs sin documento (solo lectura: el
               índice se regenera aparte con senior-memoria/scripts/indexar_docs.py indexar)
+  fuentes     cada caso de uso y secuencia cita un requisito o decisión que existe, o dice que salió del código; lo
+              ya existente solo se avisa (ver fuentes.py)
   requisitos  calidad del texto de docs/requisitos/: encabezado, IDs, enlaces, ejemplos verificables,
               palabras ambiguas y estado (ver senior-docs/scripts/revisar_requisitos.py)
   readme      el README.md de GitHub existe, está completo, enlaza a docs/,
@@ -53,6 +55,7 @@ import diagramas  # noqa: E402
 import escala  # noqa: E402 motivo: sys.path se ajusta antes, igual que los imports vecinos
 import guardia_listones  # noqa: E402 motivo: sys.path se ajusta antes, igual que los imports vecinos
 import secretos  # noqa: E402
+import fuentes  # noqa: E402
 import seguridad  # noqa: E402
 import texto  # noqa: E402
 
@@ -224,6 +227,11 @@ def chequeo_docs(raiz, args):
     if not avisos:
         return [f"Docs: todos los requisitos tienen test y todos los IDs tienen documento{pista}."], True
     return ["Docs: pendientes de trazabilidad:"] + [f"  {a.replace('**', '')}" for a in avisos], False
+
+
+def chequeo_fuentes(raiz, args):
+    """Mandan los requisitos y las decisiones; el código es evidencia, no fuente."""
+    return fuentes.evaluar(raiz, args.base)
 
 
 def chequeo_diagramas(raiz, args):
@@ -551,7 +559,7 @@ def chequeo_seguridad(raiz, args):
 
 CHEQUEOS = {
     "tamano": chequeo_tamano, "alcance": chequeo_alcance, "deuda": chequeo_deuda, "estado": chequeo_estado, "escala": chequeo_escala, "evidencia": chequeo_evidencia,
-    "docs": chequeo_docs, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
+    "docs": chequeo_docs, "fuentes": chequeo_fuentes, "requisitos": chequeo_requisitos, "readme": chequeo_readme, "texto": chequeo_texto, "diagramas": chequeo_diagramas,
     "comentarios": chequeo_comentarios, "listones": chequeo_listones, "autoria": chequeo_autoria,
     "diseno": chequeo_diseno, "seguridad": chequeo_seguridad, "secretos": chequeo_secretos, "tarjetas": chequeo_tarjetas, "peso": chequeo_peso,
 }

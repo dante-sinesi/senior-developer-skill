@@ -102,6 +102,7 @@ Principio de diseño: **lo que se puede verificar con un script no se le pide al
   - **Un dato, un lugar:** regla → requisito, decisión → ADR, estado → `ESTADO.md`, pasos → ficha; el resto enlaza con `[[ID]]`. Lo que desborda su límite se divide o se mueve, **nunca se recorta**.
   - **Siete tipos de requisitos** con prefijo (RN negocio, RU usuario, RD dominio, RF funcional, RNF no funcional, RT transición, RI interfaces externas), un archivo por requisito y ejemplos con valores concretos de los que salen los tests.
   - **Las reglas de negocio nunca se infieren del código:** se preguntan. Cuando no existen requisitos, se elicitan por lotes en un archivo `docs/consultas/NN-tema.md` que el usuario responde cuando puede (con `ok` alcanza).
+  - **Orden de las fuentes:** mandan los requisitos y las decisiones; el código es evidencia. `verificar.py fuentes` pide que cada caso de uso y secuencia cite uno que exista o diga que fue inferido del código; falla en los que agrega la rama y avisa en los anteriores.
   - **Diagramas Mermaid con tope de tamaño** (clases hasta 10, secuencia hasta 8 participantes y 20 mensajes, flujo o estados hasta 15 nodos, entidad-relación hasta 10 entidades); si no entra, se divide. Los cambios a diagramas de arquitectura esperan aprobación.
   - **ADR** para decisiones difíciles de revertir.
   - **README simple:** se escribe para quien llega por primera vez, con párrafos cortos, palabras de todos los días y explicaciones abstractas apoyadas en diagramas; lo técnico va al final o en `docs/` (`references/readme-simple.md`).

@@ -43,6 +43,7 @@ Reglas de oro:
 - **Un archivo por requisito**, con su ID (`RN-001.md`) y el encabezado de la plantilla `plantillas/requisito.md`.
 - Los requisitos de negocio llevan **ejemplos con valores concretos** (entrada → resultado esperado). De ahí salen los tests (`senior-tdd`).
 - **Nunca se infiere una regla de negocio mirando qué hace el código**: se pregunta al usuario. El código puede estar equivocado.
+- **Orden de las fuentes:** primero los requisitos y las decisiones del usuario; el código es evidencia, no fuente. Cada caso de uso y cada diagrama de secuencia cita el requisito o la decisión que lo respalda; si salió de leer el código, se marca «inferido del código, por confirmar» (`verificar.py fuentes`).
 - Los requisitos de seguridad se registran como RNF con la etiqueta `iso:` del control correspondiente (ver `senior-seguridad`). Los controles de políticas, personas o seguridad física que el código no resuelve se registran como RNF o RT, sin pretender cubrirlos.
 
 ## Diagramas (Mermaid, legibles)
