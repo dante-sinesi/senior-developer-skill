@@ -13,6 +13,7 @@ Comandos (una línea que empiece así; el resto del mensaje sigue su curso norma
     /ci-modo local <comando de pruebas>   las pruebas locales reemplazan a la CI de GitHub (sin minutos, por ejemplo); `ci.py local` las corre y anota el commit
     /ci-modo estricto                   vuelve a mandar la CI de GitHub (por defecto)
     /permitir-fusion [N]                autoriza UNA fusión del Pull Request N (o el de la rama actual) aunque sus chequeos de CI no estén en verde
+    /docs-modo exigir|aviso             sin leer la documentación no se edita código (por defecto) o solo se advierte
     /permisos                           muestra lo configurado y lo último que se bloqueó
 
 No autoriza raíces de disco, la carpeta del usuario ni rutas casi en la raíz. Responde con un mensaje que Claude ve como
@@ -26,7 +27,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-COMANDO = re.compile(r"^\s*/(ci-modo|permitir-fusion|permitir|quitar-permiso|hooks-modo|hooks-hermanos|permisos)\b\s*(.*)$", re.IGNORECASE)
+COMANDO = re.compile(r"^\s*/(ci-modo|permitir-fusion|permitir|quitar-permiso|hooks-modo|hooks-hermanos|docs-modo|permisos)\b\s*(.*)$", re.IGNORECASE)
 
 
 def separar_ruta_y_motivo(resto):
@@ -97,6 +98,14 @@ def aplicar(mh, raiz, orden, resto):
         d["hermanos"] = valor != "no"
         mh.guardar(raiz, d)
         return "Proyectos hermanos: " + ("permitidos." if d["hermanos"] else "no permitidos.")
+    if orden == "docs-modo":
+        valor = resto.strip().lower()
+        if valor not in mh.MODOS_DOCS:
+            return "Modos de documentación válidos: exigir o aviso."
+        d = mh.cargar(raiz)
+        d["docs_modo"] = valor
+        mh.guardar(raiz, d)
+        return f"Modo de documentación: {valor}."
     return "Mostrale al usuario esta información completa, tal cual: " + mh.explicacion(raiz)
 
 

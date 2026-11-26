@@ -17,7 +17,7 @@ def chequear(nombre, cond, extra=""):
 
 hook = (RAIZ / "skills" / "senior" / "scripts" / "hook_permisos_chat.py").read_text(encoding="utf-8")
 comandos = re.search(r"COMANDO = re\.compile\(.*?/\(([a-z|-]+)\)", hook).group(1).split("|")
-chequear("el hook de chat reconoce los comandos esperados", set(comandos) == {"ci-modo", "permitir-fusion", "permitir", "quitar-permiso", "hooks-modo", "hooks-hermanos", "permisos"}, comandos)
+chequear("el hook de chat reconoce los comandos esperados", set(comandos) == {"ci-modo", "permitir-fusion", "permitir", "quitar-permiso", "hooks-modo", "hooks-hermanos", "docs-modo", "permisos"}, comandos)
 readme = (RAIZ / "README.md").read_text(encoding="utf-8")
 for c in comandos:
     ruta = RAIZ / "skills" / c / "SKILL.md"

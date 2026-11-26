@@ -10,6 +10,7 @@ corre los controles que corresponden a esa herramienta dentro del mismo proceso:
   escritura fuera del proyecto (`hook_fuera_del_proyecto.py`)  Write, Edit, NotebookEdit, Bash, PowerShell
   archivos protegidos (`hook_archivos_protegidos.py`)     Write, Edit, NotebookEdit
   secretos y datos personales (`hook_secretos_claude.py`) Read, Grep, Write, Edit, NotebookEdit, Bash, PowerShell
+  lectura previa de la documentación (`hook_lectura_previa.py`)  Read, Write, Edit, NotebookEdit
 
 Cada hook sigue funcionando solo (con la misma entrada y la misma salida) y conserva sus reglas: este script no decide nada, solo los
 ejecuta y junta lo que dicen. Si alguno bloquea (código de salida 2, o una decisión «deny»), se corta ahí y esa es la respuesta; si alguno
@@ -30,6 +31,7 @@ HOOKS = (  # (skill, archivo, herramientas a las que aplica), en el orden en que
     ("senior", "hook_fuera_del_proyecto.py", {"Write", "Edit", "NotebookEdit", "Bash", "PowerShell"}),
     ("senior", "hook_archivos_protegidos.py", {"Write", "Edit", "NotebookEdit"}),
     ("senior", "hook_secretos_claude.py", {"Read", "Grep", "Write", "Edit", "NotebookEdit", "Bash", "PowerShell"}),
+    ("senior", "hook_lectura_previa.py", {"Read", "Write", "Edit", "NotebookEdit"}),  # último: solo anota o exige si los anteriores dejan pasar
 )
 HERRAMIENTAS = sorted(set().union(*(h[2] for h in HOOKS)))
 
@@ -64,6 +66,13 @@ def decision_de(salida):
         return None
 
 
+def aviso_de(salida):
+    try:
+        return "additionalContext" in json.loads(salida)["hookSpecificOutput"]
+    except (ValueError, KeyError, TypeError):
+        return False
+
+
 def main():
     for flujo in (sys.stdin, sys.stdout, sys.stderr):
         if hasattr(flujo, "reconfigure"):
@@ -78,7 +87,7 @@ def main():
         if depurando():
             raise
         return 0
-    pregunta = None
+    pregunta = aviso = None
     for skill, archivo, herramientas in HOOKS:
         if herramienta not in herramientas:
             continue
@@ -100,8 +109,10 @@ def main():
             return 0
         if decision == "ask" and pregunta is None:
             pregunta = salida
-    if pregunta:
-        print(pregunta.strip())
+        elif decision is None and aviso is None and aviso_de(salida):
+            aviso = salida
+    if pregunta or aviso:
+        print((pregunta or aviso).strip())
     return 0
 
 
