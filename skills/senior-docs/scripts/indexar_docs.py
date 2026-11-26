@@ -16,7 +16,7 @@ Qué hace "indexar":
      markdown) y requisitos/ADRs (RN-001, RF-012, RNF-003...) mencionados en
      otros documentos, en el código o en los tests.
   3. Detecta clases, funciones y tablas del código con los perfiles de
-     senior-lenguajes y las suma al mapa (solo en .grafo.json, no en INDEX.md).
+     senior y las suma al mapa (solo en .grafo.json, no en INDEX.md).
   4. Escribe docs/INDEX.md (índice legible, con trazabilidad) y
      docs/.grafo.json (para consultar sin leer todo).
 La salida es determinista (sin fechas), así no ensucia el historial de git.
@@ -160,9 +160,9 @@ def es_test(rel):
 
 
 def cargar_perfiles():
-    """Perfiles de lenguaje (senior-lenguajes/perfiles/*.json) indexados por extensión."""
+    """Perfiles de lenguaje (senior/perfiles/*.json) indexados por extensión."""
     env = os.environ.get("SENIOR_PERFILES")
-    carpeta = Path(env) if env else Path(__file__).resolve().parents[2] / "senior-lenguajes" / "perfiles"
+    carpeta = Path(env) if env else Path(__file__).resolve().parents[2] / "senior" / "perfiles"
     por_ext = {}
     if not carpeta.is_dir():
         return por_ext

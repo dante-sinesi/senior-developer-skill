@@ -40,7 +40,7 @@ Token Diet (skill independiente de ahorro de tokens, https://github.com/dante-si
 | 4 | Crear la rama | senior-git |
 | 5 | La escalera antes de escribir (ver más abajo) y rojo: test que falla por la razón correcta, escrito desde la regla de negocio | esta skill, senior-tdd |
 | 6 | Verde: el mínimo código que lo hace pasar | senior-tdd |
-| 7 | Refactor con tests en verde (duplicación) | senior-refactor |
+| 7 | Refactor con tests en verde (duplicación) | `references/refactor.md` |
 | 8 | Actualizar la documentación afectada, **incluido el README** | senior-docs |
 | 9 | Verificar (`verificar.py`), revisar seguridad y revisar el cambio con `/revisar-cambio` | esta skill, senior-seguridad, revisar-cambio |
 | 10 | Commits atómicos y PR; antes de proponer fusionarlo, `ci.py estado` (chequeos del PR: con rojos o pendientes no se propone fusionar, se informa) | senior-git |
@@ -140,11 +140,11 @@ Atajos que se ofrecen solos cuando el trabajo aprieta. Si aparece uno de estos p
 - `revisar-cambio`: revisar un diff, una rama o un Pull Request con un informe de hallazgos numerados (comando `/revisar-cambio`).
 - `senior-diseno` y `auditar-diseno` (paquete de diseño aparte, opcional): diseñar interfaces antes de implementarlas y revisar una existente.
 - `senior-tdd`: ciclo rojo-verde-refactor, código heredado, interfaz, base de prueba.
-- `senior-refactor`: duplicación y limpieza segura.
+- Refactor (`references/refactor.md`): duplicación y limpieza segura.
 - `senior-docs`: requisitos, diagramas legibles, decisiones, trazabilidad; y la memoria del proyecto: estado, fichas, pendientes, índice y mapa de conceptos.
 - `senior-git`: ramas, commits convencionales, PRs.
 - `senior-seguridad`: lente ISO/IEC 27000, lista de revisión, modo formal.
-- `senior-lenguajes`: perfiles de PHP, JS, CSS, SQL, HTML y alta de lenguajes nuevos.
+- Lenguajes (`references/lenguajes.md`): perfiles de PHP, JS, CSS, SQL, HTML y alta de lenguajes nuevos.
 - `cerrar-sesion`: cierre ordenado opcional.
 - `inicializar-repositorio`: de un enlace o un nombre a un repositorio de GitHub listo y publicado (README, descripción y topics obligatorios, secretos a salvo; comando `/inicializar-repositorio`).
 - `documentar-proyecto`: genera la documentación que falta de un proyecto existente (diagramas, requisitos de interfaz y de dominio, decisiones y reglas por confirmar), provisoria y con evidencia (comando `/documentar-proyecto`).

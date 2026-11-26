@@ -45,8 +45,9 @@ En un proyecto sin `docs/`, los pasos 1 y 5 se limitan al README (y `/adoptar-pr
 ## Dónde está el resto
 
 - **Método completo, principios y puntos de control:** `references/metodo-completo.md`.
-- **Skills del paquete:** `senior-tdd`, `senior-git`, `senior-docs`, `senior-relevar`, `senior-refactor`, `senior-seguridad`, `senior-lenguajes`, `revisar-cambio`, `cerrar-sesion`, `adoptar-proyecto`, `inicializar-repositorio`, `documentar-proyecto`, `auditar-consumo`.
+- **Skills del paquete:** `senior-tdd`, `senior-git`, `senior-docs`, `senior-relevar`, `senior-seguridad`, `revisar-cambio`, `cerrar-sesion`, `adoptar-proyecto`, `inicializar-repositorio`, `documentar-proyecto`, `auditar-consumo`.
 - **Hooks (autoría, fuera del proyecto, archivos protegidos, secretos y lectura de la documentación antes de editar)** corren solos; `references/hooks.md`.
 - **Diseño de interfaces:** es un paquete aparte (`senior-diseno`, `auditar-diseno`); si está instalado, se diseña con él antes de implementar una pantalla.
+- **Refactor** (tests en verde, un paso y un commit): `references/refactor.md`. **Lenguajes** (perfiles, herramienta de tests, alta de uno nuevo): `references/lenguajes.md`.
 - **Delegar a un agente:** `references/brief-delegacion.md`.
 - **Token Diet** (skill de ahorro de tokens, recomendada y no obligatoria) lee los PDF y los archivos largos; sin ella todo funciona igual. `scripts/token_diet.py` dice el estado.

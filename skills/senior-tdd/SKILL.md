@@ -12,7 +12,7 @@ El orden importa: el test fija **qué debe pasar** antes de decidir **cómo**. S
 1. **Fuente de verdad.** Identificar la regla de negocio (requisito RN/RF con ejemplos, ver `senior-docs`). Si no existe o es ambigua, **preguntar al usuario**; nunca deducir el valor esperado ejecutando el código.
 2. **Rojo.** Escribir un test que exprese la regla con valores concretos. Ejecutarlo y comprobar que **falla por la razón correcta** (la aserción no se cumple), no por un error de sintaxis, un import faltante o una dependencia sin configurar. Un rojo por el motivo equivocado no prueba nada.
 3. **Verde.** Escribir el mínimo código que lo hace pasar. Nada de funcionalidad adicional.
-4. **Refactor.** Con todo en verde, eliminar duplicación y mejorar nombres (`senior-refactor`). Los tests siguen en verde.
+4. **Refactor.** Con todo en verde, eliminar duplicación y mejorar nombres (`senior/references/refactor.md`). Los tests siguen en verde.
 5. **Registrar.** El test cita el ID del requisito (`// RN-001` o en el nombre) para la trazabilidad. Actualizar `ESTADO.md` (hito).
 
 Si regla y código discrepan (la regla dice 0,2 y el código da 0,1), el test **debe fallar**. Se informa al usuario la discrepancia y él decide qué manda.
@@ -37,7 +37,7 @@ No se puede escribir un test que falle sobre algo que ya está programado. Se pr
 
 ## Si no hay infraestructura de tests
 
-El primer paso es crearla: elegir la herramienta estándar del lenguaje (ver `senior-lenguajes/perfiles/<lenguaje>.json`, sección `tests`) o la que el proyecto ya use, instalarla con aprobación del usuario y dejar un comando único que corra todo. Documentarlo en el README.
+El primer paso es crearla: elegir la herramienta estándar del lenguaje (ver `senior/perfiles/<lenguaje>.json`, sección `tests`) o la que el proyecto ya use, instalarla con aprobación del usuario y dejar un comando único que corra todo. Documentarlo en el README.
 
 ## Pruebas de interfaz
 

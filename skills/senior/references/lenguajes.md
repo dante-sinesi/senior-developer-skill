@@ -1,11 +1,6 @@
----
-name: senior-lenguajes
-description: Perfiles de lenguaje para el paquete senior (PHP, JavaScript/TypeScript, CSS, SQL, HTML): cómo detectar símbolos, qué herramienta de tests usar, qué convenciones estándar aplicar y qué alertas de seguridad vigilar. Usar siempre que haya que elegir herramienta de tests, ejecutar el verificador o el indexador, o cuando aparezca un lenguaje sin perfil (Rust, Go, Python, C++, ensamblador, etc.) y haya que crear uno nuevo, aunque el usuario no lo pida de forma explícita.
----
-
 # Perfiles de lenguaje
 
-Cada lenguaje es **un archivo de datos** en `perfiles/<lenguaje>.json`. Los scripts del paquete (verificador, indexador, relevamiento) leen esos archivos, así que soportar un lenguaje nuevo significa agregar un perfil, no tocar código.
+Cada lenguaje es **un archivo de datos** en `../perfiles/<lenguaje>.json`. Los scripts del paquete (verificador, indexador, relevamiento) leen esos archivos, así que soportar un lenguaje nuevo significa agregar un perfil, no tocar código.
 
 Un perfil contiene:
 - `extensiones`: qué archivos le pertenecen.
@@ -20,7 +15,7 @@ Perfiles disponibles: php, javascript (incluye TypeScript), css, sql, html. Para
 
 - Al elegir cómo probar algo: leer la sección `tests` del lenguaje.
 - Al relevar o indexar: los scripts usan `simbolos` automáticamente.
-- Al verificar: `senior/scripts/verificar.py seguridad` aplica las `alertas_seguridad`.
+- Al verificar: `scripts/verificar.py seguridad` aplica las `alertas_seguridad`.
 
 ## Agregar un lenguaje nuevo
 
@@ -29,7 +24,7 @@ La skill puede ampliarse sola, pero **nunca guarda un perfil sin aprobación del
 1. **Investigar**: consultar la documentación oficial del lenguaje para identificar la herramienta de tests estándar, su comando, y la forma de declarar clases y funciones. Si un dato no está confirmado, dejarlo anotado como tal en `nota`.
 2. **Redactar** el perfil copiando `_plantilla.json` a un archivo temporal (por ejemplo en `perfiles/_borrador_<lenguaje>.json`).
 3. **Probarlo**: conseguir o escribir un archivo de ejemplo breve y correr
-   `python scripts/probar_perfil.py perfiles/_borrador_<lenguaje>.json <ejemplo>`.
+   `python <ruta-de-senior>/scripts/probar_perfil.py perfiles/_borrador_<lenguaje>.json <ejemplo>`.
    El script valida la estructura, compila las expresiones regulares y muestra qué símbolos y alertas detecta. Ajustar hasta que detecte bien.
 4. **Mostrar al usuario** el perfil, el resultado de la prueba y las fuentes consultadas. Esperar su aprobación explícita.
 5. Solo entonces **renombrar** el borrador a `perfiles/<lenguaje>.json`.

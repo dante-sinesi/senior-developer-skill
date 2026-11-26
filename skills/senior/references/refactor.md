@@ -1,15 +1,10 @@
----
-name: senior-refactor
-description: Refactor sistemático y seguro: detectar código repetido, decidir qué extraer y hacerlo en pasos pequeños con los tests en verde, sin mezclarlo con funcionalidades nuevas. Usar después de poner un test en verde, al notar código muy parecido repetido varias veces, al pedir limpiar, simplificar, reducir duplicación u ordenar código, o antes de ampliar una zona del sistema con mucha repetición.
----
-
 # Refactor
 
 El código repetido no falla hoy: falla el día que hay que cambiar una de las copias y se olvida otra. El refactor es la fase del ciclo (rojo, verde, **refactor**) que lo evita, pero solo es seguro con una red de tests.
 
 ## Antes de escribir algo nuevo
 
-El mejor refactor es el que no hace falta: antes de crear una función o un componente, `senior/scripts/impacto.py --existe <palabras>` dice si el proyecto ya tiene algo parecido para reusar (ver «la escalera» en `senior`).
+El mejor refactor es el que no hace falta: antes de crear una función o un componente, `scripts/impacto.py --existe <palabras>` dice si el proyecto ya tiene algo parecido para reusar (ver «la escalera» en `metodo-completo.md`).
 
 ## Reglas
 
@@ -23,7 +18,7 @@ El mejor refactor es el que no hace falta: antes de crear una función o un comp
 ## Detectar duplicación (script)
 
 ```
-python <esta-skill>/scripts/duplicados.py [--lineas 6] [--minimo 2]
+python <ruta-de-senior>/scripts/duplicados.py [--lineas 6] [--minimo 2]
 ```
 
 Busca bloques de N o más líneas idénticas (salvo espacios y comentarios) en dos o más lugares y devuelve los grupos con sus ubicaciones. Solo detecta repetición literal; son **candidatos**: el criterio de extraer o no es de quien refactoriza. Para repetición con nombres cambiados, leer los candidatos y buscar patrones a mano con el mapa de conceptos.
