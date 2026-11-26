@@ -167,6 +167,7 @@ Se probaron dos hábitos que parecían faltarle al método: **depurar por causa 
 | 2026-11-26 | Recorte: el diseñador (`senior-diseno`, `auditar-diseno`, visor y tarjetas SVG del README) sale a un paquete propio; `senior` lo usa solo si está instalado. Estado previo etiquetado en Git. | La fila del diseño queda como referencia de cuando era parte del paquete; ninguna nota. |
 | 2026-11-26 | `senior-memoria` se une a `senior-docs` (scripts, plantillas y una referencia `memoria.md`): una sola skill para documentar y recordar. | Ninguna nota. |
 | 2026-11-26 | `senior-refactor` y `senior-lenguajes` pasan a ser referencias de `senior`, con sus scripts y perfiles. | Ninguna nota. |
+| 2026-11-26 | `instalar.py` saca de las skills instaladas las que retiró el paquete (las lista antes y las guarda en `~/.claude/senior-retiradas`), sin tocar las del usuario, las de otro paquete ni el diseñador. | Ninguna nota. |
 
 ### Detalle del PR #28 (revisión completa)
 

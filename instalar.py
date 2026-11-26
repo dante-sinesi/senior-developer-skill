@@ -8,7 +8,8 @@ Uso:
 Qué hace:
   1. Comprueba Python 3.10 o superior, Git, el CLI `gh` (opcional, para GitHub) y `pip`.
   2. Copia las skills de este repositorio a ~/.claude/skills, reemplazando las del paquete (no toca ninguna otra
-     skill) y pasando los archivos de texto a fin de línea de Unix.
+     skill) y pasando los archivos de texto a fin de línea de Unix. Las skills que instaló antes y ya no están en el paquete
+     se listan y se sacan a ~/.claude/senior-retiradas (no se borran).
   3. Registra en ~/.claude/settings.json los hooks globales de Claude Code (un despachador de controles, los permisos
      desde el chat y el recordatorio del estado al abrir y compactar), conservando los ajustes que ya haya y con una copia de seguridad.
   4. Comprueba si Token Diet (skill de ahorro de tokens, recomendada, no obligatoria) está instalada y lo informa.
@@ -20,14 +21,19 @@ repositorio (guardia_autoria.py asegurar). Solo biblioteca estándar. Código de
 import argparse
 import hashlib
 import importlib.util
+import json
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent
 SKILLS = RAIZ / "skills"
 DESTINO = Path.home() / ".claude" / "skills"
+# skills que dejaron de estar en el paquete (para instalaciones sin registro) y las que se mudaron a otro paquete: esas nunca se tocan
+RETIRADAS = {"senior-memoria", "senior-refactor", "senior-lenguajes"}
+MUDADAS = {"senior-diseno", "auditar-diseno"}
 TEXTO = {".py", ".md", ".json", ".html", ".css", ".js", ".txt", ".sh", ".yml", ".yaml"}
 
 
@@ -86,6 +92,31 @@ def instalar_skills():
     return copiadas
 
 
+def registradas_en(manifiesto):
+    try:
+        return set(json.loads(manifiesto.read_text(encoding="utf-8-sig"))["skills"])
+    except (OSError, ValueError, KeyError, TypeError):
+        return set()
+
+
+def retiradas_instaladas():
+    """Lo que este instalador puso alguna vez y ya no está en el paquete; nunca lo que registra otro paquete ni lo que se mudó."""
+    propio = DESTINO / ".senior-instalacion.json"
+    ajenas = set().union(*(registradas_en(m) for m in DESTINO.glob(".*-instalacion.json") if m != propio))
+    candidatas = (registradas_en(propio) | RETIRADAS) - {d.name for d in SKILLS.iterdir() if d.is_dir()} - MUDADAS - ajenas
+    return sorted(n for n in candidatas if (DESTINO / n / "SKILL.md").is_file())
+
+
+def quitar(nombres):
+    """Las saca de skills sin borrarlas: quedan en ~/.claude/senior-retiradas por si hiciera falta recuperarlas."""
+    guardado = DESTINO.parent / "senior-retiradas"
+    guardado.mkdir(parents=True, exist_ok=True)
+    sello = time.strftime("%Y%m%d-%H%M%S")
+    for n in nombres:
+        shutil.move(str(DESTINO / n), str(guardado / f"{n}-{sello}"))
+    return guardado
+
+
 def programa(nombre, *args):
     ruta = shutil.which(nombre)
     if not ruta:
@@ -126,6 +157,14 @@ def main():
         pendientes = []
     else:
         pendientes = desactualizadas()
+        retiradas = retiradas_instaladas()  # antes de reescribir el registro
+        if retiradas and args.verificar:
+            falta.append("skills retiradas del paquete todavía instaladas: " + ", ".join(retiradas) + " (`python instalar.py` las saca)")
+        elif retiradas:
+            print("Skills retiradas del paquete que se van a sacar: " + ", ".join(retiradas))
+            avisos.append(f"saqué de las skills las retiradas del paquete ({', '.join(retiradas)}); no se borraron: están en {quitar(retiradas).as_posix()}")
+        if (DESTINO / "senior-diseno").is_dir() and not (DESTINO / ".senior-diseno-instalacion.json").exists():
+            avisos.append("el diseñador (senior-diseno, auditar-diseno) ahora es un paquete de diseño aparte: lo instalado se conserva; para actualizarlo, correr el instalador de ese paquete")
         if args.verificar:
             if (SKILLS / "senior-git" / "scripts" / "guardia_autoria.py").exists():
                 avisos.extend(l.removeprefix("AVISO: ") for l in cargar_guardia().asegurar_instalacion())
