@@ -21,6 +21,7 @@ import time
 from pathlib import Path
 
 MODOS = ("denegar", "preguntar")
+MODOS_DOCS = ("exigir", "aviso")
 NOMBRE = "senior-hooks.json"
 MAX_BLOQUEOS = 60
 ESCALA = 3  # a la tercera vez que se repite el mismo bloqueo, el mensaje deja de ser una explicación y pasa a ser una orden con la alternativa primero
@@ -30,6 +31,7 @@ REGLAS = (  # (nombre en el registro, qué frena, cómo se autoriza)
     ("secretos", "escribir claves o datos personales en archivos que van a git, leer `.env`, `git add -f` y claves en mensajes de commit", "`/permitir .env` para leer y editar `.env`"),
     ("autoría", "commits, Pull Requests e issues con Claude o coautores", "no se autoriza: en GitHub figura solo el usuario"),
     ("fusión con CI", "`gh pr merge` de un Pull Request con chequeos de CI en rojo o pendientes", "`/permitir-fusion N` (vale para una sola fusión)"),
+    ("lectura previa", "editar código en un proyecto con `docs/ESTADO.md` sin haber leído antes el estado y los requisitos", "se cumple leyendo; `/docs-modo aviso` lo deja en advertencia"),
 )
 
 
@@ -57,7 +59,7 @@ def normal(ruta):
 
 
 def cargar(raiz):
-    datos = {"modo": "denegar", "permitidos": [], "bloqueos": [], "hermanos": True, "fusiones": [], "ci_modo": "estricto", "ci_comando": "", "ci_local": []}
+    datos = {"modo": "denegar", "permitidos": [], "bloqueos": [], "hermanos": True, "fusiones": [], "ci_modo": "estricto", "ci_comando": "", "ci_local": [], "docs_modo": "exigir"}
     try:
         leido = json.loads(ruta_config(raiz).read_text(encoding="utf-8-sig"))
         if isinstance(leido, dict):
@@ -69,6 +71,8 @@ def cargar(raiz):
     datos["hermanos"] = datos["hermanos"] is not False
     if datos["ci_modo"] not in ("estricto", "local"):
         datos["ci_modo"] = "estricto"
+    if datos["docs_modo"] not in MODOS_DOCS:
+        datos["docs_modo"] = "exigir"
     datos["ci_comando"] = str(datos["ci_comando"] or "")
     datos["ci_local"] = [x for x in datos["ci_local"] if isinstance(x, dict) and x.get("sha")]
     return datos
@@ -233,6 +237,7 @@ def explicacion(raiz):
     lineas.append("CI: modo " + d["ci_modo"] + (" (las pruebas locales reemplazan a la CI de GitHub; comando: " + (d["ci_comando"] or "el detectado del proyecto") + ")" if d["ci_modo"] == "local" else " (la CI de GitHub manda)") + ".")
     if d["fusiones"]:
         lineas.append("Fusiones autorizadas una vez (pese a chequeos sin verde): " + ", ".join("el Pull Request " + x if x != "actual" else "el de la rama actual" for x in d["fusiones"]) + ".")
+    lineas.append("Documentación: modo " + d["docs_modo"] + (" (sin leerla no se edita código)" if d["docs_modo"] == "exigir" else " (solo advierte)") + ".")
     lineas += resumen_bloqueos(raiz)
     lineas.append(f"Configuración: {ruta_config(raiz)}")
     return chr(10).join(lineas)

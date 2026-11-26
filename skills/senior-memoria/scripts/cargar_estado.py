@@ -125,6 +125,18 @@ def atraso_de_docs(raiz):
         return 0
 
 
+def olvidar_lecturas(datos):
+    """Tras compactar o limpiar, lo leído ya no está en la conversación: la barrera de lectura lo vuelve a pedir."""
+    ruta = Path(__file__).resolve().parents[2] / "senior" / "scripts" / "hook_lectura_previa.py"
+    if datos.get("source") not in ("compact", "clear") or not ruta.exists():
+        return
+    import importlib.util
+    espec = importlib.util.spec_from_file_location("senior_lectura_previa", ruta)
+    modulo = importlib.util.module_from_spec(espec)
+    espec.loader.exec_module(modulo)
+    modulo.olvidar(datos.get("session_id"), {c for c in (datos.get("cwd") or os.getcwd(), os.environ.get("CLAUDE_PROJECT_DIR")) if c})
+
+
 def resumen(raiz):
     docs = raiz / "docs"
     texto = (docs / "ESTADO.md").read_text(encoding="utf-8-sig", errors="replace")
@@ -170,6 +182,7 @@ def main():
     try:
         if args.hook:
             datos = json.loads(sys.stdin.buffer.read().decode("utf-8-sig") or "{}")
+            olvidar_lecturas(datos)
             raiz = raiz_desde(datos.get("cwd") or os.getcwd())
             if raiz is None:
                 return 0

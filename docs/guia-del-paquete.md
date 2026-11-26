@@ -4,7 +4,7 @@ Qué abarca el paquete y cómo ataca cada una de sus habilidades. Es una guía d
 
 ## 1. Qué es y qué problema ataca
 
-`senior` es un paquete de 25 skills (seis son solo atajos de comandos del chat) para Claude Code que hace que el trabajo de programar se parezca al de una persona senior: entiende antes de tocar, cambia lo mínimo, prueba antes de construir, deja todo documentado y no sorprende a nadie. No es una herramienta que programa por sí sola: es un **método**, más **guardias automáticos** que impiden lo que no debe pasar aunque nadie se acuerde de la regla.
+`senior` es un paquete de 26 skills (ocho son solo atajos de comandos del chat) para Claude Code que hace que el trabajo de programar se parezca al de una persona senior: entiende antes de tocar, cambia lo mínimo, prueba antes de construir, deja todo documentado y no sorprende a nadie. No es una herramienta que programa por sí sola: es un **método**, más **guardias automáticos** que impiden lo que no debe pasar aunque nadie se acuerde de la regla.
 
 Los problemas concretos que ataca, y con qué:
 
@@ -233,7 +233,8 @@ Todos son hooks de Claude Code o de git, instalados y verificados por `guardia_a
 | **Fusión con CI sin verde** | `gh pr merge` (también dentro de `&&`, con `-R`, URL o rama) de un Pull Request con chequeos en rojo o pendientes (con `--auto` solo el rojo); si no se pudo saber el estado, deja pasar | Bloquea sin interrumpir, manda a anotar el pendiente; el usuario autoriza **una** fusión con `/permitir-fusion N`, o activa `/ci-modo local` para que valga la verificación local de cada commit |
 | **Archivos protegidos** | Editar `.env`, claves, certificados, el interior de `.git/` y archivos de bloqueo de dependencias | Bloquea o pregunta, según el modo |
 | **Secretos y datos personales** | Escribir claves o datos personales en archivos que van a git, leer `.env`, `git add -f`, claves en mensajes de commit, y **saltear los hooks de git** (`--no-verify`, `commit -n`, `core.hooksPath`) | Bloquea y da la alternativa |
-| **Permisos desde el chat** | Un hook de entrada del usuario (`UserPromptSubmit`) que recoge `/permitir`, `/permitir-fusion`, `/ci-modo`, `/quitar-permiso`, `/hooks-modo`, `/hooks-hermanos` y `/permisos`; Claude no puede usarlo | Configura sin terminal ni reiniciar |
+| **Lectura previa** | En proyectos con `docs/ESTADO.md`, editar código sin haber leído en la sesión el estado y, si existen, el índice, requisitos o casos de uso; se vuelve a pedir tras compactar | Bloquea y dice qué leer; se destraba leyendo (`/docs-modo aviso` lo deja en advertencia) |
+| **Permisos desde el chat** | Un hook de entrada del usuario (`UserPromptSubmit`) que recoge `/permitir`, `/permitir-fusion`, `/ci-modo`, `/quitar-permiso`, `/hooks-modo`, `/hooks-hermanos`, `/docs-modo` y `/permisos`; Claude no puede usarlo | Configura sin terminal ni reiniciar |
 | **Hooks de git** | `commit-msg`, `pre-commit` y `pre-push` en cada clon: autoría y secretos; el `pre-push` revisa **todo el historial que se sube**, commit por commit | Cortan el commit o el push |
 
 **Reglas comunes de diseño**

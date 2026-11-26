@@ -56,6 +56,8 @@ Claude propone un plan y espera tu aprobación. Lo que deduce del código queda 
 
 Si Claude intenta algo peligroso, el guardia lo bloquea y le explica qué hacer en su lugar. Lo bloqueado queda anotado para que lo revises al volver.
 
+También hay una barrera para la documentación: en un proyecto que la tiene, Claude no puede editar código sin haberla leído antes. Si prefieres que solo lo advierta, escribe `/docs-modo aviso`.
+
 ## Cómo empezar
 
 1. Instala Python 3.10 o superior y Git.
@@ -93,7 +95,7 @@ Listo: `senior` se activa solo cuando pides un cambio de código. Para empezar u
 | `inicializar-repositorio` | Deja un proyecto listo y publicado en GitHub. |
 | `trabajo-autonomo` | Trabaja solo durante horas, en una rama propia. |
 | `ci-modo` | Elige si, antes de fusionar, vale la CI de GitHub o las pruebas de tu máquina. |
-| `permitir`, `permitir-fusion`, `quitar-permiso`, `hooks-modo`, `hooks-hermanos`, `permisos` | Atajos de los comandos del chat que configuran los guardias: aparecen al escribir `/`. |
+| `permitir`, `permitir-fusion`, `quitar-permiso`, `hooks-modo`, `hooks-hermanos`, `docs-modo`, `permisos` | Atajos de los comandos del chat que configuran los guardias: aparecen al escribir `/`. |
 | `auditar-consumo` | Mide cuánto espacio gastan las skills. |
 
 ## Más información

@@ -11,3 +11,7 @@ El hook de escritura fuera del proyecto es una lista de patrones: no ve un scrip
 ## Con Token Diet instalada
 
 Si Token Diet (skill independiente de ahorro de tokens) está instalada, es de la versión 1.0.0 o posterior y tiene registrado su hook de lectura, el hook de lectura de documentos externos de `senior` se hace a un lado: bloquea una sola, con un solo juego de instrucciones. Si falta o es más vieja, `senior` sigue bloqueando como siempre y `instalar.py --verificar` avisa cómo instalarla. La detección está en `skills/senior/scripts/token_diet.py` (solo lee). Es el primer paso del traspaso descrito en `docs/revision-completa.md`.
+
+## Lectura previa de la documentación
+
+`hook_lectura_previa.py` (dentro del despachador). En un proyecto con `docs/ESTADO.md`, editar un archivo de código (Write, Edit, NotebookEdit) exige haber leído en esa sesión, con la herramienta Read, `docs/ESTADO.md` y, si el proyecto tiene `docs/INDEX.md`, requisitos o casos de uso, al menos uno de ellos. Cada subagente lee por su cuenta. Las marcas viven en `.temporal/senior-lecturas/` del proyecto y se borran al compactar o limpiar la conversación. No alcanza a `docs/`, tests ni `.temporal/`. El usuario puede escribir `/docs-modo aviso` para que solo advierta (`/docs-modo exigir` lo vuelve a exigir). Límites: no ve lo que edita un comando de consola; y si la sesión está abierta lejos del proyecto, al compactar puede no volver a pedir la lectura.
