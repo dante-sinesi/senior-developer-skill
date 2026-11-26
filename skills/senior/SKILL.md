@@ -29,6 +29,8 @@ Vale también para el más chico. Un paso que no corresponde no se saltea en sil
 4. **Verificar:** tests o comprobación del resultado.
 5. **Documentar** en el mismo cambio lo que quedó distinto, incluido `docs/ESTADO.md`.
 
+Al documentar mandan los requisitos y las decisiones del usuario: el código es evidencia, no fuente (`verificar.py fuentes`).
+
 En un proyecto sin `docs/`, los pasos 1 y 5 se limitan al README (y `/adoptar-proyecto` crea la base). Para que la secuencia sobreviva a conversaciones largas y llegue a los agentes delegados, `scripts/ancla.py` la deja escrita en el `CLAUDE.md` del proyecto (se muestra y se aplica con aprobación).
 
 ## Según el tamaño del cambio
