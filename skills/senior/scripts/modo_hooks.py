@@ -31,6 +31,7 @@ REGLAS = (  # (nombre en el registro, qué frena, cómo se autoriza)
     ("secretos", "escribir claves o datos personales en archivos que van a git, leer `.env`, `git add -f` y claves en mensajes de commit", "`/permitir .env` para leer y editar `.env`"),
     ("autoría", "commits, Pull Requests e issues con Claude o coautores", "no se autoriza: en GitHub figura solo el usuario"),
     ("fusión con CI", "`gh pr merge` de un Pull Request con chequeos de CI en rojo o pendientes", "`/permitir-fusion N` (vale para una sola fusión)"),
+    ("documentación en el Pull Request", "`gh pr create` que cambia código sin tocar la documentación, en proyectos medianos o grandes", "`/permitir-sin-docs` (vale para uno) o `/docs-modo aviso`"),
     ("lectura previa", "editar código en un proyecto con `docs/ESTADO.md` sin haber leído antes el estado y los requisitos", "se cumple leyendo; `/docs-modo aviso` lo deja en advertencia"),
 )
 
@@ -59,7 +60,7 @@ def normal(ruta):
 
 
 def cargar(raiz):
-    datos = {"modo": "denegar", "permitidos": [], "bloqueos": [], "hermanos": True, "fusiones": [], "ci_modo": "estricto", "ci_comando": "", "ci_local": [], "docs_modo": "exigir"}
+    datos = {"modo": "denegar", "permitidos": [], "bloqueos": [], "hermanos": True, "fusiones": [], "ci_modo": "estricto", "ci_comando": "", "ci_local": [], "docs_modo": "exigir", "sin_docs": False}
     try:
         leido = json.loads(ruta_config(raiz).read_text(encoding="utf-8-sig"))
         if isinstance(leido, dict):
@@ -91,6 +92,22 @@ def fijar_ci_modo(raiz, modo, comando=""):
     if modo == "local":
         d["ci_comando"] = comando.strip()
     guardar(raiz, d)
+
+
+def autorizar_sin_docs(raiz):
+    """El usuario autoriza UN Pull Request sin documentación."""
+    d = cargar(raiz)
+    d["sin_docs"] = True
+    guardar(raiz, d)
+
+
+def consumir_sin_docs(raiz):
+    d = cargar(raiz)
+    if d["sin_docs"] is not True:
+        return False
+    d["sin_docs"] = False
+    guardar(raiz, d)
+    return True
 
 
 def anotar_verificacion_local(raiz, sha):
