@@ -14,6 +14,7 @@ Comandos (una línea que empiece así; el resto del mensaje sigue su curso norma
     /ci-modo estricto                   vuelve a mandar la CI de GitHub (por defecto)
     /permitir-fusion [N]                autoriza UNA fusión del Pull Request N (o el de la rama actual) aunque sus chequeos de CI no estén en verde
     /docs-modo exigir|aviso             sin leer la documentación no se edita código (por defecto) o solo se advierte
+    /permitir-sin-docs                  autoriza UN Pull Request que cambia código sin tocar la documentación
     /permisos                           muestra lo configurado y lo último que se bloqueó
 
 No autoriza raíces de disco, la carpeta del usuario ni rutas casi en la raíz. Responde con un mensaje que Claude ve como
@@ -27,7 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-COMANDO = re.compile(r"^\s*/(ci-modo|permitir-fusion|permitir|quitar-permiso|hooks-modo|hooks-hermanos|docs-modo|permisos)\b\s*(.*)$", re.IGNORECASE)
+COMANDO = re.compile(r"^\s*/(ci-modo|permitir-fusion|permitir-sin-docs|permitir|quitar-permiso|hooks-modo|hooks-hermanos|docs-modo|permisos)\b\s*(.*)$", re.IGNORECASE)
 
 
 def separar_ruta_y_motivo(resto):
@@ -98,6 +99,9 @@ def aplicar(mh, raiz, orden, resto):
         d["hermanos"] = valor != "no"
         mh.guardar(raiz, d)
         return "Proyectos hermanos: " + ("permitidos." if d["hermanos"] else "no permitidos.")
+    if orden == "permitir-sin-docs":
+        mh.autorizar_sin_docs(raiz)
+        return "Autorizado una vez un Pull Request sin documentación; se gasta al usarlo."
     if orden == "docs-modo":
         valor = resto.strip().lower()
         if valor not in mh.MODOS_DOCS:

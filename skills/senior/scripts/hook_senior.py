@@ -7,6 +7,7 @@ corre los controles que corresponden a esa herramienta dentro del mismo proceso:
 
   autoría (`hook_autoria_claude.py`)                      Bash, PowerShell
   fusión con CI sin verde (`hook_fusion_ci.py`)           Bash, PowerShell
+  Pull Request sin documentación (`hook_docs_pr.py`)      Bash, PowerShell
   escritura fuera del proyecto (`hook_fuera_del_proyecto.py`)  Write, Edit, NotebookEdit, Bash, PowerShell
   archivos protegidos (`hook_archivos_protegidos.py`)     Write, Edit, NotebookEdit
   secretos y datos personales (`hook_secretos_claude.py`) Read, Grep, Write, Edit, NotebookEdit, Bash, PowerShell
@@ -28,6 +29,7 @@ SKILLS = Path(__file__).resolve().parents[2]
 HOOKS = (  # (skill, archivo, herramientas a las que aplica), en el orden en que se consultan
     ("senior-git", "hook_autoria_claude.py", {"Bash", "PowerShell"}),
     ("senior-git", "hook_fusion_ci.py", {"Bash", "PowerShell"}),
+    ("senior-git", "hook_docs_pr.py", {"Bash", "PowerShell"}),
     ("senior", "hook_fuera_del_proyecto.py", {"Write", "Edit", "NotebookEdit", "Bash", "PowerShell"}),
     ("senior", "hook_archivos_protegidos.py", {"Write", "Edit", "NotebookEdit"}),
     ("senior", "hook_secretos_claude.py", {"Read", "Grep", "Write", "Edit", "NotebookEdit", "Bash", "PowerShell"}),
