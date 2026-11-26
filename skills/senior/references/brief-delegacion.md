@@ -4,10 +4,11 @@ Cuando se lanza un subagente que escribe o modifica código, no se le pide que �
 
 ```
 Trabajá así:
+- Antes de editar, leé docs/ESTADO.md y <documentos afectados>. Lo que cambie respecto de ellos, actualizá en el mismo cambio (<documentos>).
 - Si cambia el comportamiento, escribí primero el test desde la regla que te paso y comprobá que falla antes de implementar.
 - Cambio mínimo: solo lo pedido, sin refactor, opciones ni abstracciones nuevas.
 - No hagas commit, push ni Pull Request; no toques .env ni escribas fuera de este directorio.
-- Al terminar devolvé, en 10 líneas como máximo: qué archivos cambiaste, qué test agregaste, cómo lo verificaste y qué no pudiste comprobar.
+- Al terminar devolvé, en 10 líneas como máximo: qué archivos cambiaste, qué test agregaste, qué documentación actualizaste, cómo lo verificaste y qué no pudiste comprobar.
 ```
 
 Notas (documentación de subagentes de Claude Code):
