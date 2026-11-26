@@ -17,7 +17,7 @@ Cierre opcional y liviano. No es lo único que protege el trabajo (el estado se 
 2e. **Reglas que fallaron dos veces**: si en la sesión una regla se incumplió por segunda vez o hubo que avisar de nuevo lo mismo, decírselo al usuario en el resumen (qué regla, cómo falló) y proponerle una barrera: un chequeo, un hook o un cambio en el verificador. No se arma nada sin su respuesta (principio 17 de `senior`).
 2f. **Bloqueos de los hooks**: correr `python <ruta-de-senior>/scripts/permisos_hooks.py resumen`. Si hubo bloqueos, mencionar en el resumen cuáles; si alguno **reincide** (Claude insistió tres veces o más), proponerle al usuario autorizarlo de antemano (`/permitir <ruta>`) o armar una barrera (principio 17). Es solo un aviso al cerrar: no interrumpe el trabajo. Limpiar el registro (`limpiar`) lo decide el usuario.
 3. **Pendientes**: revisar si hay ítems nuevos en `docs/pendientes.md` o deuda técnica registrada hoy y mencionarlos al usuario en una línea.
-4. **Índice**: si se tocó documentación, regenerarlo con `python <ruta-de-senior-memoria>/scripts/indexar_docs.py indexar` e incluir `docs/INDEX.md` en el commit.
+4. **Índice**: si se tocó documentación, regenerarlo con `python <ruta-de-senior-docs>/scripts/indexar_docs.py indexar` e incluir `docs/INDEX.md` en el commit.
 5. **Cambios sin guardar**: si hay cambios sin commit, mostrar la lista breve y **proponer** el commit (rama correcta, mensaje convencional en español neutro, **sin Co-Authored-By ni pies de atribución: en GitHub figura solo el usuario**). No commitear ni empujar sin aprobación del usuario.
 6. **Resumen final** (máximo cinco líneas): qué se hizo, en qué estado queda, qué sigue.
 

@@ -8,7 +8,7 @@ Crea, sin pisar nada que ya exista:
   docs/README.md, docs/ESTADO.md, docs/pendientes.md, docs/deuda-tecnica.md
   docs/cambios/, docs/decisiones/, docs/diagramas/
   docs/requisitos/{negocio,usuario,dominio,funcional,no-funcional,transicion,interfaces}/
-Usa las plantillas de senior-memoria/plantillas cuando están disponibles.
+Usa las plantillas de la skill cuando están disponibles.
 Al final regenera el índice. Solo biblioteca estándar.
 """
 import argparse
@@ -55,7 +55,7 @@ def main():
     args = ap.parse_args()
     raiz = Path(args.raiz).resolve()
     docs = raiz / args.docs
-    plantillas = Path(__file__).resolve().parents[2] / "senior-memoria" / "plantillas"
+    plantillas = Path(__file__).resolve().parents[1] / "plantillas"
     creados = []
     escribir_si_falta(docs / "README.md", README, creados)
     # el mapa de conceptos se regenera cuando hace falta: no se versiona
@@ -68,7 +68,7 @@ def main():
         marcador = docs / carpeta / ".gitkeep"
         escribir_si_falta(marcador, "", creados)
     print(f"Documentación base: {len(creados)} elementos creados en {args.docs}/ (lo existente no se tocó).")
-    indexador = Path(__file__).resolve().parents[2] / "senior-memoria" / "scripts" / "indexar_docs.py"
+    indexador = Path(__file__).resolve().with_name("indexar_docs.py")
     if indexador.exists():
         p = subprocess.run([sys.executable, "-I", str(indexador), "indexar", "--raiz", str(raiz), "--docs", args.docs],
                            capture_output=True, encoding="utf-8", errors="replace")

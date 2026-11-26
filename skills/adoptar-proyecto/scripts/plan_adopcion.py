@@ -125,7 +125,7 @@ def aplicar(raiz, info, tipo):
     secretos = SKILLS / "senior" / "scripts" / "secretos.py"
     if secretos.exists():
         salidas.append(correr([sys.executable, "-I", str(secretos), "gitignore", "--aplicar", "--raiz", str(raiz)], raiz))
-    indexador = SKILLS / "senior-memoria" / "scripts" / "indexar_docs.py"
+    indexador = SKILLS / "senior-docs" / "scripts" / "indexar_docs.py"
     if indexador.exists() and (raiz / "docs").is_dir():
         salidas.append(correr([sys.executable, "-I", str(indexador), "indexar", "--raiz", str(raiz)], raiz))
     return salidas

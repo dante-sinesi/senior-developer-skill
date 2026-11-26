@@ -255,7 +255,7 @@ HOOKS_CLAUDE = (  # hooks globales de Claude Code que esta guardia mantiene acti
     {"script": "hook_permisos_chat.py", "skill": "senior", "evento": "UserPromptSubmit", "matcher": None,
      "nombre": "de permisos desde el chat"},
     # al abrir, retomar, limpiar y compactar; fuera de un proyecto con docs/ESTADO.md no hace nada
-    {"script": "cargar_estado.py", "skill": "senior-memoria", "evento": "SessionStart", "matcher": None, "args": "--hook",
+    {"script": "cargar_estado.py", "skill": "senior-docs", "evento": "SessionStart", "matcher": None, "args": "--hook",
      "nombre": "de recordatorio del estado del proyecto"},
 )
 # hooks sueltos de versiones anteriores: los reemplaza el despachador y se sacan para que no corran dos veces

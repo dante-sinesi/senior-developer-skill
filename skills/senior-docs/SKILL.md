@@ -1,11 +1,20 @@
 ---
 name: senior-docs
-description: Documentación viva en el repositorio (docs/) con requisitos de negocio, de usuario, de dominio, funcionales, no funcionales, de transición y de interfaces externas, más diagramas Mermaid legibles (clases, secuencia, entidad-relación, estados), decisiones de arquitectura (ADR) y trazabilidad requisito-test-código. Usar al crear la base documental de un proyecto, al agregar o cambiar un requisito, al dibujar un diagrama UML o de secuencia, al registrar una decisión de arquitectura, o cuando falte documentación clara. Usar también para elicitar requisitos de una idea o un pedido nuevo (consultas por lotes que el usuario responde en un Markdown) y para revisar la calidad de los requisitos escritos. Usar también cuando un cambio afecte comportamiento y haya que actualizar lo documentado.
+description: Documentación viva y memoria del proyecto en docs/: estado, fichas de cambio, pendientes, índice y mapa de conceptos; requisitos (negocio, usuario, dominio, funcionales, no funcionales, transición, interfaces), casos de uso, diagramas Mermaid, decisiones de arquitectura (ADR), README y trazabilidad requisito-test-código. Usar al abrir o retomar un proyecto, al terminar un hito, al notar algo fuera de alcance, al ubicar un concepto sin leer todo, al crear la base documental, al agregar o cambiar un requisito, al dibujar un diagrama, al registrar una decisión, al elicitar un pedido vago y cuando un cambio altere lo que hace el programa, aunque no se hable de memoria ni de documentación.
 ---
 
 # Documentación viva
 
 La documentación sirve si se puede leer, encontrar y confiar en ella. Por eso: vive en el repositorio, tiene IDs, está indexada, se actualiza con cada cambio y sus diagramas son pequeños y legibles.
+
+## Memoria del proyecto
+
+Las conversaciones se pierden; el repositorio no. Detalle (piezas, fichas, índice, recordatorio y cierre) en `references/memoria.md`.
+
+- **Al abrir o retomar:** leer `docs/ESTADO.md` y, si hay una ficha en curso, sus pasos abiertos. Para ubicar un concepto, no leer documentos completos: `python <esta-skill>/scripts/indexar_docs.py consultar <término>` o `vecinos <id>`.
+- **Guardar en cada hito, no al final:** test que pasa a verde, commit, paso de la ficha, bloqueo. Va lo costoso de redescubrir (una decisión y su motivo, un callejón sin salida, el comando que funciona). `ESTADO.md` es una foto del presente, de 60 líneas como máximo.
+- **Fuera de alcance:** a `docs/pendientes.md`, con fecha y lugar; no se arregla de paso.
+- **Recordatorio:** `scripts/cargar_estado.py` (hook `SessionStart`) trae el estado al abrir y al compactar.
 
 ## README del repositorio (siempre al día)
 
@@ -71,7 +80,7 @@ Las decisiones de diseño viven en `docs/diseno/notas/decisiones.md` (IDs `D-001
 
 ## Trazabilidad
 
-Cada test cita el ID del requisito que verifica (en un comentario o nombre). `senior-memoria/scripts/indexar_docs.py` arma la matriz requisito → test → código y marca requisitos sin test e IDs sin documento. Regenerar el índice tras cambiar documentación.
+Cada test cita el ID del requisito que verifica (en un comentario o nombre). `scripts/indexar_docs.py` arma la matriz requisito → test → código y marca requisitos sin test e IDs sin documento. Regenerar el índice tras cambiar documentación.
 
 ## Tarjetas SVG para el README (opcional)
 

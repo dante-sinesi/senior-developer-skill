@@ -80,11 +80,10 @@ Listo: `senior` se activa solo cuando pides un cambio de código. Para empezar u
 | `senior` | La puerta de entrada: le enseña a Claude a trabajar con cuidado. |
 | `senior-tdd` | Escribe la prueba antes que el código. |
 | `senior-refactor` | Ordena código repetido sin romper nada. |
-| `senior-memoria` | Recuerda en qué quedó el trabajo entre una sesión y otra. |
 | `senior-seguridad` | Revisa que cada cambio sea seguro. |
 | `senior-git` | Ramas, commits y Pull Requests ordenados. |
 | `senior-lenguajes` | Sabe qué herramientas usar según el lenguaje. |
-| `senior-docs` | Mantiene la documentación y el README al día. |
+| `senior-docs` | Mantiene la documentación y el README al día, y recuerda en qué quedó el trabajo. |
 | `senior-relevar` | Entiende un sistema ajeno antes de tocarlo. |
 | `documentar-proyecto` | Reconstruye la documentación que le falta a un proyecto. |
 | `adoptar-proyecto` | Prepara un proyecto, nuevo o existente, para trabajar así. |

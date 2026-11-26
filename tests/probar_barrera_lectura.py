@@ -14,7 +14,7 @@ RAIZ = Path(__file__).resolve().parents[1]
 DESPACHADOR = RAIZ / "skills" / "senior" / "scripts" / "hook_senior.py"
 BARRERA = RAIZ / "skills" / "senior" / "scripts" / "hook_lectura_previa.py"
 CHAT = RAIZ / "skills" / "senior" / "scripts" / "hook_permisos_chat.py"
-CARGAR = RAIZ / "skills" / "senior-memoria" / "scripts" / "cargar_estado.py"
+CARGAR = RAIZ / "skills" / "senior-docs" / "scripts" / "cargar_estado.py"
 BASE = RAIZ / ".temporal" / "proy-barrera"
 mal = 0
 

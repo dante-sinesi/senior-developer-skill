@@ -90,7 +90,7 @@ chequear("instalador: con Token Diet lo da por listo", "Token Diet 1.0.2 instala
 chequear("la guardia del estado imprime y sale con 1 si falta", correr(TD, home=vacio).returncode == 1 and correr(TD, home=ok).returncode == 0)
 
 # 6. el aviso al abrir la sesión: una sola vez por proyecto, sin obligar a nada
-CARGAR = RAIZ / "skills" / "senior-memoria" / "scripts" / "cargar_estado.py"
+CARGAR = RAIZ / "skills" / "senior-docs" / "scripts" / "cargar_estado.py"
 Q = BASE / "proyecto-aviso"
 Q.mkdir(parents=True, exist_ok=True)
 subprocess.run(["git", "init", "-q"], cwd=Q)

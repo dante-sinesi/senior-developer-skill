@@ -12,7 +12,7 @@ from pathlib import Path
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 RAIZ = Path(__file__).resolve().parents[1]
-CARGAR = RAIZ / "skills" / "senior-memoria" / "scripts" / "cargar_estado.py"
+CARGAR = RAIZ / "skills" / "senior-docs" / "scripts" / "cargar_estado.py"
 GUARDIA = RAIZ / "skills" / "senior-git" / "scripts" / "guardia_autoria.py"
 BASE = RAIZ / ".temporal" / "proy-recordatorio"
 mal = 0

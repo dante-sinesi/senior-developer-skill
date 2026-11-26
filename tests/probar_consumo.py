@@ -10,7 +10,7 @@ from pathlib import Path
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "skills" / "auditar-consumo" / "scripts"))
-sys.path.insert(0, str(RAIZ / "skills" / "senior-memoria" / "scripts"))
+sys.path.insert(0, str(RAIZ / "skills" / "senior-docs" / "scripts"))
 sys.path.insert(0, str(RAIZ / "skills" / "senior" / "scripts"))
 import consumo  # noqa: E402
 import indexar_docs  # noqa: E402
@@ -183,8 +183,8 @@ chequear("senior enlaza tokens.md y auditar-consumo", "references/tokens.md" in 
 chequear("tokens.md existe y tiene lo esencial", all(x in (RAIZ / "skills" / "senior" / "references" / "tokens.md").read_text(encoding="utf-8") for x in ("Qué se paga", "Salidas de comandos", "auditar-consumo")))
 chequear("el README lo explica", "auditar-consumo" in readme and "hook_archivos_protegidos" in readme and "Cuando una regla falla dos veces" in readme and "dos hooks globales" in readme)
 chequear("el README no tiene texto ajeno al proyecto", verificar.contenido_ajeno(readme) == [])
-chequear("memoria: lo costoso de redescubrir y los tokens en consultar", "costoso de redescubrir" in (RAIZ / "skills" / "senior-memoria" / "SKILL.md").read_text(encoding="utf-8")
-         and "tokens aproximados" in (RAIZ / "skills" / "senior-memoria" / "SKILL.md").read_text(encoding="utf-8"))
+chequear("memoria: lo costoso de redescubrir y los tokens en consultar", "costoso de redescubrir" in (RAIZ / "skills" / "senior-docs" / "references" / "memoria.md").read_text(encoding="utf-8")
+         and "tokens aproximados" in (RAIZ / "skills" / "senior-docs" / "references" / "memoria.md").read_text(encoding="utf-8"))
 chequear("la skill nueva tiene nombre y descripción", (RAIZ / "skills" / "auditar-consumo" / "SKILL.md").read_text(encoding="utf-8").startswith("---\nname: auditar-consumo\ndescription: "))
 
 print("Todo bien." if not mal else f"{mal} casos mal.")

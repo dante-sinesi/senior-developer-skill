@@ -34,7 +34,7 @@ Token Diet (skill independiente de ahorro de tokens, https://github.com/dante-si
 | Paso | Qué se hace | Skill |
 |---|---|---|
 | 0 | Asegurar la guardia de autoría: `python <senior-git>/scripts/guardia_autoria.py asegurar --silencioso` (si falta un hook de Git o el hook global de Claude Code, lo activa; el usuario lo autorizó de forma permanente) | senior-git |
-| 1 | Leer el estado del proyecto (`docs/ESTADO.md`, índice) | senior-memoria |
+| 1 | Leer el estado del proyecto (`docs/ESTADO.md`, índice) | senior-docs |
 | 2 | Si el sistema es ajeno o heredado: relevarlo | senior-relevar |
 | 3 | Medir el tamaño del cambio, ver su impacto (`impacto.py`) y acordar un plan breve con el usuario | esta skill |
 | 4 | Crear la rama | senior-git |
@@ -44,7 +44,7 @@ Token Diet (skill independiente de ahorro de tokens, https://github.com/dante-si
 | 8 | Actualizar la documentación afectada, **incluido el README** | senior-docs |
 | 9 | Verificar (`verificar.py`), revisar seguridad y revisar el cambio con `/revisar-cambio` | esta skill, senior-seguridad, revisar-cambio |
 | 10 | Commits atómicos y PR; antes de proponer fusionarlo, `ci.py estado` (chequeos del PR: con rojos o pendientes no se propone fusionar, se informa) | senior-git |
-| 11 | Actualizar el estado | senior-memoria |
+| 11 | Actualizar el estado | senior-docs |
 
 El detalle por nivel de cambio está en `references/ceremonia-por-tamano.md`.
 
@@ -136,13 +136,12 @@ Atajos que se ofrecen solos cuando el trabajo aprieta. Si aparece uno de estos p
 
 ## Mapa del paquete
 
-- `senior-memoria`: estado, fichas, pendientes, índice y mapa de conceptos.
 - `senior-relevar`: entender un sistema antes de tocarlo.
 - `revisar-cambio`: revisar un diff, una rama o un Pull Request con un informe de hallazgos numerados (comando `/revisar-cambio`).
 - `senior-diseno` y `auditar-diseno` (paquete de diseño aparte, opcional): diseñar interfaces antes de implementarlas y revisar una existente.
 - `senior-tdd`: ciclo rojo-verde-refactor, código heredado, interfaz, base de prueba.
 - `senior-refactor`: duplicación y limpieza segura.
-- `senior-docs`: requisitos, diagramas legibles, decisiones, trazabilidad.
+- `senior-docs`: requisitos, diagramas legibles, decisiones, trazabilidad; y la memoria del proyecto: estado, fichas, pendientes, índice y mapa de conceptos.
 - `senior-git`: ramas, commits convencionales, PRs.
 - `senior-seguridad`: lente ISO/IEC 27000, lista de revisión, modo formal.
 - `senior-lenguajes`: perfiles de PHP, JS, CSS, SQL, HTML y alta de lenguajes nuevos.
